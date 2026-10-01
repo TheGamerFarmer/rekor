@@ -2,7 +2,7 @@ name: Frontend Web CI
 
 on:
   push:
-    branches: [main]
+    branches: [main, configuration-CI-CD]
     paths:
       - 'frontend-web/**'
       - '.github/workflows/frontend-web-ci.yml'
@@ -31,7 +31,7 @@ jobs:
 
   build:
     needs: test
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/configuration-CI-CD') && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read

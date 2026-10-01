@@ -1,14 +1,19 @@
 name: Main docker construct
 
 on:
+  push:
+    branches: [main, configuration-CI-CD]
+    paths:
+      - 'docker-compose.prod.yml'
+      - '.github/workflows/main-docker.yml'
   workflow_run:
     workflows: ["Backend CI", "Frontend Web CI"]
     types: [completed]
-    branches: [main]
+    branches: [main, configuration-CI-CD]
 
 jobs:
   publish:
-    if: github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -20,5 +25,5 @@ jobs:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
-      - name: Main docker construct
+      - name: Publish compose stack to GHCR
         run: docker compose -f docker-compose.prod.yml publish -y ghcr.io/thegamerfarmer/rekor:latest
