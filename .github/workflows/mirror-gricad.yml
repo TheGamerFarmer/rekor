@@ -1,0 +1,17 @@
+name: Mirror to GRICAD
+
+on:
+  push:
+    branches: ['**']
+
+jobs:
+  mirror:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Push to GRICAD
+        run: |
+          git remote add gricad https://oauth2:${{ secrets.GRICAD_TOKEN }}@gricad-gitlab.univ-grenoble-alpes.fr/iut2-info-stud/2026-s5/sae5a/team3/rendus.git
+          git push gricad HEAD:${{ github.ref_name }}
