@@ -14,4 +14,4 @@ jobs:
       - name: Push to GRICAD
         run: |
           git remote add gricad https://oauth2:${{ secrets.GRICAD_TOKEN }}@gricad-gitlab.univ-grenoble-alpes.fr/iut2-info-stud/2026-s5/sae5a/team3/rendus.git
-          git push gricad HEAD:${{ github.ref_name }}
+          git push gricad HEAD:${{ github.ref_name }} --force
