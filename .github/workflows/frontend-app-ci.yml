@@ -58,18 +58,23 @@ jobs:
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/configuration-CI-CD') && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: read
+      packages: write
     steps:
+      - name: Lowercase repository name
+        run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
       - uses: actions/download-artifact@v4
         with:
           name: app-release-apk
-          path: release-assets
+          path: android-release
       - uses: actions/download-artifact@v4
         with:
           name: app-release-ios-unsigned
-          path: release-assets
-      - uses: softprops/action-gh-release@v2
-        with:
-          tag_name: latest
-          name: Latest build
-          files: release-assets/*
+          path: ios-release
+      - uses: oras-project/setup-oras@v1
+      - name: Login to GHCR with oras
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | oras login ghcr.io -u ${{ github.actor }} --password-stdin
+      - name: Push Android APK as OCI artifact
+        run: oras push ghcr.io/${{ env.REPO_LC }}/frontend-app-android:latest android-release/app-release.apk
+      - name: Push iOS .app as OCI artifact
+        run: oras push ghcr.io/${{ env.REPO_LC }}/frontend-app-ios:latest ios-release/Runner.app.zip
