@@ -1,0 +1,54 @@
+name: Frontend App CI (Flutter)
+
+on:
+  push:
+    paths:
+      - 'frontend-app/**'
+      - '.github/workflows/frontend-app-ci.yml'
+  pull_request:
+    paths:
+      - 'frontend-app/**'
+      - '.github/workflows/frontend-app-ci.yml'
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.6'
+          channel: stable
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release-apk
+          path: frontend-app/build/app/outputs/flutter-apk/app-release.apk
+
+  build-ios:
+    runs-on: macos-latest
+    defaults:
+      run:
+        working-directory: frontend-app
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.47.6'
+          channel: stable
+      - run: flutter pub get
+      - run: flutter build ios --release --no-codesign
+      - name: Zip the unsigned .app
+        run: |
+          cd build/ios/iphoneos
+          zip -r Runner.app.zip Runner.app
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release-ios-unsigned
+          path: frontend-app/build/ios/iphoneos/Runner.app.zip
