@@ -6,12 +6,34 @@ on:
       - 'frontend-app/**'
       - '.github/workflows/frontend-app-ci.yml'
   pull_request:
-    paths:
-      - 'frontend-app/**'
-      - '.github/workflows/frontend-app-ci.yml'
 
 jobs:
+  changes:
+    name: App - changes
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.diff.outputs.app }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - id: diff
+        env:
+          EVENT: ${{ github.event_name }}
+          BASE: ${{ github.event.pull_request.base.sha }}
+        run: |
+          # Sur un push, le filtre "paths" du déclencheur a déjà fait le tri.
+          # Sur une PR, on regarde si l'app Flutter a changé pour éviter les jobs lourds (macOS, émulateur).
+          if [ "$EVENT" != "pull_request" ]; then
+            echo "app=true" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "$BASE" HEAD | grep -qE '^(frontend-app/|\.github/workflows/frontend-app-ci\.yml)'; then
+            echo "app=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "app=false" >> "$GITHUB_OUTPUT"
+          fi
+
   build-android:
+    name: App - android build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -32,6 +54,9 @@ jobs:
           path: frontend-app/build/app/outputs/flutter-apk/app-release.apk
 
   build-ios:
+    name: App - iOS build
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
     runs-on: macos-latest
     defaults:
       run:
@@ -54,6 +79,9 @@ jobs:
           path: frontend-app/build/ios/iphoneos/Runner.app.zip
 
   e2e-android:
+    name: App - android e2e
+    needs: changes
+    if: needs.changes.outputs.app == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -73,6 +101,12 @@ jobs:
           sudo udevadm trigger --name-match=kvm
       - run: flutter pub get
         working-directory: frontend-app
+      - name: Start the real backend (built from this commit)
+        run: |
+          docker build -t rekor-backend:e2e backend
+          docker run -d --rm --name rekor-e2e-backend -p 3000:3000 rekor-backend:e2e
+          for i in $(seq 1 30); do curl -sf http://localhost:3000/ > /dev/null && exit 0; sleep 1; done
+          echo "Le backend ne répond pas"; docker logs rekor-e2e-backend; exit 1
       - name: Run integration tests on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:

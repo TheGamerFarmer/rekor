@@ -2,17 +2,14 @@ name: Frontend Web CI
 
 on:
   push:
-    branches: [main, configuration-CI-CD]
     paths:
       - 'frontend-web/**'
       - '.github/workflows/frontend-web-ci.yml'
   pull_request:
-    paths:
-      - 'frontend-web/**'
-      - '.github/workflows/frontend-web-ci.yml'
 
 jobs:
   test:
+    name: Front web - test
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -30,6 +27,7 @@ jobs:
       - run: npm run build
 
   build:
+    name: Front web - image
     needs: test
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/configuration-CI-CD') && github.event_name == 'push'
     runs-on: ubuntu-latest

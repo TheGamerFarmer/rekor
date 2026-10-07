@@ -2,17 +2,14 @@ name: Backend CI
 
 on:
   push:
-    branches: [main, configuration-CI-CD]
     paths:
       - 'backend/**'
       - '.github/workflows/backend-ci.yml'
   pull_request:
-    paths:
-      - 'backend/**'
-      - '.github/workflows/backend-ci.yml'
 
 jobs:
   test:
+    name: Backend - test
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -21,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 26
+          node-version: 20
           cache: npm
           cache-dependency-path: backend/package-lock.json
       - run: npm ci
@@ -29,6 +26,7 @@ jobs:
       - run: npm test
 
   build:
+    name: Backend - image
     needs: test
     if: (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/configuration-CI-CD') && github.event_name == 'push'
     runs-on: ubuntu-latest
