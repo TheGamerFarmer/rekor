@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'health_status.dart';
 
 void main() {
   runApp(const MyApp());
@@ -104,6 +105,7 @@ class _MyHomePageState extends State<MyHomePage> {
           // wireframe for each widget.
           mainAxisAlignment: .center,
           children: [
+            const HealthStatus(),
             const Text('You have pushed the button this many times:'),
             Text(
               '$_counter',
