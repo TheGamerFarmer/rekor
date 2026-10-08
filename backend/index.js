@@ -29,7 +29,6 @@ app.get('/', (req, res) => {
 });
 
 // Erreurs du validateur (400 requête invalide, 404 route non documentée, 500 réponse non conforme)
-// eslint-disable-next-line no-unused-vars
 app.use((err, req, res) => {
   res.status(err.status || 500).json({
     message: err.message,
