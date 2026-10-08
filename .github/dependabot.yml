@@ -15,6 +15,10 @@ updates:
     directory: /frontend-web
     schedule:
       interval: weekly
+    # Angular impose sa propre plage de TypeScript : on ne monte TypeScript qu'avec `ng update`
+    ignore:
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
     groups:
       angular:
         patterns: ['@angular/*', '@angular-devkit/*']
@@ -73,6 +77,10 @@ updates:
     open-pull-requests-limit: 2
     schedule:
       interval: weekly
+    # Angular impose sa propre plage de TypeScript : on ne monte TypeScript qu'avec `ng update`
+    ignore:
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
     groups:
       angular:
         patterns: ['@angular/*', '@angular-devkit/*']
