@@ -15,6 +15,10 @@ updates:
     directory: /frontend-web
     schedule:
       interval: weekly
+    # Angular impose sa propre plage de TypeScript : on ne monte TypeScript qu'avec `ng update`
+    ignore:
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
     groups:
       angular:
         patterns: ['@angular/*', '@angular-devkit/*']
@@ -44,6 +48,76 @@ updates:
   # --- Actions des workflows (.github/workflows) ---
   - package-ecosystem: github-actions
     directory: /
+    schedule:
+      interval: weekly
+    groups:
+      actions:
+        patterns: ['*']
+
+  # ==========================================================================
+  # TEMPORAIRE : les mêmes mises à jour, mais vers la branche configuration-CI-CD,
+  # pour tester Dependabot. À supprimer, de cette ligne jusqu'à la fin du fichier,
+  # quand la branche ne sert plus.
+  # ==========================================================================
+  # --- Back (Express) ---
+  - package-ecosystem: npm
+    directory: /backend
+    target-branch: configuration-CI-CD
+    open-pull-requests-limit: 2
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # --- Front web (Angular) : les paquets Angular montent de version ensemble ---
+  - package-ecosystem: npm
+    directory: /frontend-web
+    target-branch: configuration-CI-CD
+    open-pull-requests-limit: 2
+    schedule:
+      interval: weekly
+    # Angular impose sa propre plage de TypeScript : on ne monte TypeScript qu'avec `ng update`
+    ignore:
+      - dependency-name: typescript
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+    groups:
+      angular:
+        patterns: ['@angular/*', '@angular-devkit/*']
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # --- App (Flutter) ---
+  - package-ecosystem: pub
+    directory: /frontend-app
+    target-branch: configuration-CI-CD
+    open-pull-requests-limit: 2
+    schedule:
+      interval: weekly
+    groups:
+      minor-and-patch:
+        update-types: [minor, patch]
+
+  # --- Images de base des Dockerfiles (node, nginx) ---
+  - package-ecosystem: docker
+    directory: /backend
+    target-branch: configuration-CI-CD
+    open-pull-requests-limit: 2
+    schedule:
+      interval: weekly
+
+  - package-ecosystem: docker
+    directory: /frontend-web
+    target-branch: configuration-CI-CD
+    open-pull-requests-limit: 2
+    schedule:
+      interval: weekly
+
+  # --- Actions des workflows (.github/workflows) ---
+  - package-ecosystem: github-actions
+    directory: /
+    target-branch: configuration-CI-CD
+    open-pull-requests-limit: 2
     schedule:
       interval: weekly
     groups:
