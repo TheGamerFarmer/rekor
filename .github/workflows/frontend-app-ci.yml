@@ -14,7 +14,7 @@ jobs:
     outputs:
       app: ${{ steps.diff.outputs.app }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - id: diff
@@ -39,7 +39,7 @@ jobs:
       run:
         working-directory: frontend-app
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.47.6'
@@ -48,7 +48,7 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - run: flutter build apk --release
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: app-release-apk
           path: frontend-app/build/app/outputs/flutter-apk/app-release.apk
@@ -62,7 +62,7 @@ jobs:
       run:
         working-directory: frontend-app
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.47.6'
@@ -73,7 +73,7 @@ jobs:
         run: |
           cd build/ios/iphoneos
           zip -r Runner.app.zip Runner.app
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: app-release-ios-unsigned
           path: frontend-app/build/ios/iphoneos/Runner.app.zip
@@ -85,8 +85,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-java@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: 17
@@ -126,15 +126,15 @@ jobs:
     steps:
       - name: Lowercase repository name
         run: echo "REPO_LC=${GITHUB_REPOSITORY,,}" >> "$GITHUB_ENV"
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: app-release-apk
           path: android-release
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: app-release-ios-unsigned
           path: ios-release
-      - uses: oras-project/setup-oras@v1
+      - uses: oras-project/setup-oras@v2
       - name: Login to GHCR with oras
         run: echo "${{ secrets.GITHUB_TOKEN }}" | oras login ghcr.io -u ${{ github.actor }} --password-stdin
       - name: Push Android APK as OCI artifact
@@ -149,15 +149,15 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: app-release-apk
           path: release-assets
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v7
         with:
           name: app-release-ios-unsigned
           path: release-assets
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           tag_name: latest
           name: Latest build
