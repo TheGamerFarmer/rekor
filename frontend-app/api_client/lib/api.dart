@@ -29,8 +29,12 @@ part 'auth/http_basic_auth.dart';
 part 'auth/http_bearer_auth.dart';
 
 part 'api/health_api.dart';
+part 'api/users_api.dart';
 
+part 'model/error_response.dart';
 part 'model/health_response.dart';
+part 'model/user.dart';
+part 'model/user_input.dart';
 
 
 /// An [ApiClient] instance that uses the default values obtained from
