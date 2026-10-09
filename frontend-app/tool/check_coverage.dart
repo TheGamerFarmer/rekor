@@ -9,24 +9,31 @@ void main(List<String> args) {
   final covered = <String>{};
 
   for (final line in File('coverage/lcov.info').readAsLinesSync()) {
-    if (line.startsWith('SF:'))
+    if (line.startsWith('SF:')) {
       covered.add(line.substring(3).replaceAll('\\', '/'));
-    if (line.startsWith('LF:')) found += int.parse(line.substring(3));
-    if (line.startsWith('LH:')) hit += int.parse(line.substring(3));
+    } else if (line.startsWith('LF:')) {
+      found += int.parse(line.substring(3));
+    } else if (line.startsWith('LH:')) {
+      hit += int.parse(line.substring(3));
+    }
   }
 
   // Un fichier de lib/ qu'aucun test n'importe n'apparaît pas dans lcov.info :
   // on le compte comme entièrement non couvert pour ne pas gonfler le résultat.
   for (final entity in Directory('lib').listSync(recursive: true)) {
-    if (entity is! File || !entity.path.endsWith('.dart')) continue;
+    if (entity is! File || !entity.path.endsWith('.dart')) {
+      continue;
+    }
     final path = entity.path.replaceAll('\\', '/');
-    if (covered.any((c) => c.endsWith(path))) continue;
+    if (covered.any((c) => c.endsWith(path))) {
+      continue;
+    }
     final lines = entity
         .readAsLinesSync()
         .where((l) => l.trim().isNotEmpty)
         .length;
     stdout.writeln(
-      'Attention : $path n\'est importé par aucun test ($lines lignes non couvertes)',
+      "Attention : $path n'est importé par aucun test ($lines lignes non couvertes)",
     );
     found += lines;
   }
