@@ -1,0 +1,5 @@
+node_modules
+coverage
+package-lock.json
+# Généré par `npm run clients:generate` : ne pas reformater
+openapi.json

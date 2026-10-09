@@ -49,5 +49,5 @@ jobs:
           flutter-version: '3.47.6'
           channel: stable
       - name: Check Dart formatting
-        run: dart format --output=none --set-exit-if-changed lib test integration_test
+        run: dart format --output=none --set-exit-if-changed lib test integration_test tool
         working-directory: frontend-app
