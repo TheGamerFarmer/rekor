@@ -8,6 +8,9 @@ on:
       - '.github/workflows/e2e.yml'
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   e2e:
     name: E2E (${{ matrix.project }})

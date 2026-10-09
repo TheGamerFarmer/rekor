@@ -1,0 +1,64 @@
+name: Contract
+
+on:
+  push:
+    paths:
+      - 'backend/openapi.js'
+      - 'backend/openapi.json'
+      - 'backend/openapitools.json'
+      - 'backend/generator-ignore'
+      - 'backend/scripts/**'
+      - 'frontend-web/src/app/api/**'
+      - 'frontend-app/api_client/**'
+      - '.github/workflows/contract.yml'
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    name: Contract - check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+      - name: Install backend
+        run: npm ci
+        working-directory: backend
+      - name: Regenerate the contract and the clients
+        run: npm run clients:generate
+        working-directory: backend
+      - name: Check that the committed clients are up to date
+        run: |
+          paths="backend/openapi.json frontend-web/src/app/api frontend-app/api_client"
+          if [ -n "$(git status --porcelain -- $paths)" ]; then
+            echo "::error::Le contrat ou les clients générés ne sont pas à jour. Lance 'npm run clients:generate' dans backend/ puis commite le résultat."
+            git status --short -- $paths
+            exit 1
+          fi
+      - name: Install oasdiff
+        run: |
+          curl -fsSL https://github.com/oasdiff/oasdiff/releases/download/v1.33.0/oasdiff_1.33.0_linux_amd64.tar.gz | tar -xz oasdiff
+          sudo mv oasdiff /usr/local/bin/oasdiff
+      - name: Detect breaking changes (compared with the base branch)
+        if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'breaking-change')
+        env:
+          BASE: ${{ github.base_ref }}
+        run: |
+          if git cat-file -e "origin/$BASE:backend/openapi.json" 2>/dev/null; then
+            git show "origin/$BASE:backend/openapi.json" > /tmp/openapi.base.json
+            oasdiff breaking /tmp/openapi.base.json backend/openapi.json --fail-on ERR
+          else
+            echo "Pas de contrat sur la branche de base : rien à comparer."
+          fi

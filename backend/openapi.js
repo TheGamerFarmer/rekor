@@ -22,6 +22,8 @@ const HealthResponse = z
 registry.registerPath({
   method: 'get',
   path: '/',
+  operationId: 'getHealth',
+  tags: ['Health'],
   summary: 'Health check',
   responses: {
     200: {

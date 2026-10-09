@@ -1,16 +1,19 @@
-import 'dart:convert';
-
 import 'package:http/http.dart' as http;
+import 'package:rekor_api/api.dart' as generated;
 
-/// Client du back-end.
+/// Client du back-end, au-dessus du client généré depuis le contrat OpenAPI (api_client/).
+/// Ne modifie jamais le code généré : si le contrat change, relance `npm run clients:generate` dans backend/.
 ///
 /// Par défaut, il vise la machine hôte vue depuis l'émulateur Android (10.0.2.2).
 /// Pour une autre adresse : `flutter run --dart-define=API_URL=http://192.168.1.10:3000`
 class ApiClient {
-  ApiClient(this.baseUrl, {http.Client? client}) : _client = client ?? http.Client();
+  ApiClient(this.baseUrl, {http.Client? client})
+      : _health = generated.HealthApi(
+          generated.ApiClient(basePath: baseUrl)..client = client ?? http.Client(),
+        );
 
   final String baseUrl;
-  final http.Client _client;
+  final generated.HealthApi _health;
 
   /// Instance utilisée par l'application. Les tests peuvent la remplacer
   /// (par exemple par un client qui simule les réponses du back).
@@ -20,21 +23,8 @@ class ApiClient {
 
   /// GET / : le statut du back ("ok" quand tout va bien).
   Future<String> health() async {
-    final response = await _client.get(Uri.parse('$baseUrl/'));
-    if (response.statusCode != 200) {
-      throw ApiException(response.statusCode, response.body);
-    }
-    final body = jsonDecode(response.body) as Map<String, dynamic>;
-    return body['status'] as String;
+    final response = await _health.getHealth();
+    if (response == null) throw StateError('Réponse vide du back');
+    return response.status;
   }
-}
-
-class ApiException implements Exception {
-  ApiException(this.statusCode, this.body);
-
-  final int statusCode;
-  final String body;
-
-  @override
-  String toString() => 'ApiException($statusCode): $body';
 }
