@@ -1,0 +1,8 @@
+# Fichiers du générateur dont on n'a pas besoin
+git_push.sh
+.gitignore
+.travis.yml
+README.md
+docs/**
+doc/**
+test/**

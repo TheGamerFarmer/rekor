@@ -1,15 +1,13 @@
 import { test, expect } from './fixtures';
 
-// Exemple de test valable dans les DEUX modes : même scénario, même assertion.
-// Le front n'appelle pas encore l'API, donc l'appel est fait depuis la page ;
-// à remplacer par un vrai scénario (clic, formulaire...) quand une fonctionnalité utilisera le back.
-test('GET /api/ renvoie le statut ok', async ({ page, arrange }) => {
+// Même scénario dans les DEUX modes : l'application appelle le back avec le client généré
+// (HealthService) et affiche le statut reçu.
+test("l'application affiche le statut du back", async ({ page, arrange }) => {
   await arrange({
     mock: (p) => p.route('**/api/', (route) => route.fulfill({ json: { status: 'ok' } })),
   });
 
   await page.goto('/');
-  const body = await page.evaluate(() => fetch('/api/').then((r) => r.json()));
 
-  expect(body).toEqual({ status: 'ok' });
+  await expect(page.getByTestId('backend-status')).toHaveText('Backend : ok');
 });

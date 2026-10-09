@@ -35,6 +35,8 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^2.0.0
   http: ^1.6.0
+  rekor_api:
+    path: api_client
 
 dev_dependencies:
   flutter_test:
