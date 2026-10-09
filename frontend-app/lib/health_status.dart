@@ -21,8 +21,8 @@ class _HealthStatusState extends State<HealthStatus> {
         final text = snapshot.hasError
             ? 'Backend : indisponible'
             : snapshot.hasData
-                ? 'Backend : ${snapshot.data}'
-                : 'Backend : …';
+            ? 'Backend : ${snapshot.data}'
+            : 'Backend : …';
         return Text(text, key: const Key('backend-status'));
       },
     );

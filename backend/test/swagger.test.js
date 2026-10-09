@@ -10,7 +10,7 @@ test('GET /api-docs.json expose la spec OpenAPI avec la route /', async () => {
   assert.ok(res.body.paths['/']);
 });
 
-test('GET /api-docs/ sert l\'interface Swagger UI', async () => {
+test("GET /api-docs/ sert l'interface Swagger UI", async () => {
   const res = await request(app).get('/api-docs/');
   assert.strictEqual(res.status, 200);
   assert.match(res.text, /swagger-ui/i);

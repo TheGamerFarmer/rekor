@@ -40,7 +40,7 @@ describe('/users (avec un vrai mongod)', () => {
     assert.strictEqual(stored._id.toString(), res.body.id);
   });
 
-  it('GET /users/:id récupère l\'utilisateur enregistré', async () => {
+  it("GET /users/:id récupère l'utilisateur enregistré", async () => {
     const created = await request(app).post('/users').send(ada);
 
     const res = await request(app).get(`/users/${created.body.id}`);
@@ -56,29 +56,32 @@ describe('/users (avec un vrai mongod)', () => {
     const res = await request(app).get('/users');
 
     assert.strictEqual(res.status, 200);
-    assert.deepStrictEqual(res.body.map((u) => u.name), ['Ada', 'Alan']);
+    assert.deepStrictEqual(
+      res.body.map((u) => u.name),
+      ['Ada', 'Alan'],
+    );
   });
 
-  it('GET /users/:id renvoie 404 si l\'utilisateur n\'existe pas', async () => {
+  it("GET /users/:id renvoie 404 si l'utilisateur n'existe pas", async () => {
     const res = await request(app).get(`/users/${UNKNOWN_ID}`);
 
     assert.strictEqual(res.status, 404);
     assert.strictEqual(res.body.message, 'Utilisateur introuvable');
   });
 
-  it('GET /users/:id renvoie 400 si l\'identifiant est mal formé', async () => {
+  it("GET /users/:id renvoie 400 si l'identifiant est mal formé", async () => {
     const res = await request(app).get('/users/pas-un-id');
 
     assert.strictEqual(res.status, 400);
   });
 
-  it('POST /users renvoie 400 s\'il manque un champ', async () => {
+  it("POST /users renvoie 400 s'il manque un champ", async () => {
     const res = await request(app).post('/users').send({ email: ada.email });
 
     assert.strictEqual(res.status, 400);
   });
 
-  it('POST /users renvoie 400 si l\'e-mail est invalide', async () => {
+  it("POST /users renvoie 400 si l'e-mail est invalide", async () => {
     const res = await request(app).post('/users').send({ email: 'pas-un-email', name: 'Ada' });
 
     assert.strictEqual(res.status, 400);
@@ -91,10 +94,12 @@ describe('/users (avec un vrai mongod)', () => {
     );
   });
 
-  it('POST /users renvoie 409 si l\'e-mail existe déjà', async () => {
+  it("POST /users renvoie 409 si l'e-mail existe déjà", async () => {
     await request(app).post('/users').send(ada);
 
-    const res = await request(app).post('/users').send({ ...ada, name: 'Autre Ada' });
+    const res = await request(app)
+      .post('/users')
+      .send({ ...ada, name: 'Autre Ada' });
 
     assert.strictEqual(res.status, 409);
     assert.strictEqual(await db.getDb().collection('users').countDocuments(), 1);

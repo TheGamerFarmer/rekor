@@ -5,8 +5,7 @@ const { getDb } = require('../db');
 const router = express.Router();
 
 // Express 4 n'attrape pas les erreurs d'une route async : on les transmet à next()
-const wrap = (handler) => (req, res, next) =>
-  Promise.resolve(handler(req, res, next)).catch(next);
+const wrap = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 
 const users = () => getDb().collection('users');
 const toUser = (doc) => ({ id: doc._id.toString(), email: doc.email, name: doc.name });

@@ -21,7 +21,9 @@ export const test = base.extend<{ backend: Backend; arrange: Arrange; mockGuard:
         await page.route('**/api/**', (route) =>
           route.fulfill({
             status: 501,
-            json: { message: `Mock manquant : ${route.request().method()} ${route.request().url()}` },
+            json: {
+              message: `Mock manquant : ${route.request().method()} ${route.request().url()}`,
+            },
           }),
         );
       }
@@ -32,10 +34,8 @@ export const test = base.extend<{ backend: Backend; arrange: Arrange; mockGuard:
 
   arrange: async ({ backend, page, request }, use) => {
     await use(async ({ mock, real }) => {
-      if (backend === 'mock')
-        await mock?.(page);
-      else
-        await real?.(request);
+      if (backend === 'mock') await mock?.(page);
+      else await real?.(request);
     });
   },
 });

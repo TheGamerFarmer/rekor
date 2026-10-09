@@ -4,9 +4,5 @@ import { ApplicationConfig, provideBrowserGlobalErrorListeners } from '@angular/
 import { provideApi } from './api';
 
 export const appConfig: ApplicationConfig = {
-  providers: [
-    provideBrowserGlobalErrorListeners(),
-    provideHttpClient(),
-    provideApi('/api')
-  ],
+  providers: [provideBrowserGlobalErrorListeners(), provideHttpClient(), provideApi('/api')],
 };
