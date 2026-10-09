@@ -71,6 +71,7 @@ registry.registerPath({
     201: { description: 'Utilisateur créé', content: json(User) },
     400: failure('Requête invalide'),
     409: failure('Un utilisateur avec cet e-mail existe déjà'),
+    429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
   },
 });
@@ -83,6 +84,7 @@ registry.registerPath({
   summary: 'Liste les utilisateurs (100 au maximum)',
   responses: {
     200: { description: 'Les utilisateurs', content: json(z.array(User)) },
+    429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
   },
 });
@@ -98,6 +100,7 @@ registry.registerPath({
     200: { description: "L'utilisateur", content: json(User) },
     400: failure('Identifiant invalide'),
     404: failure('Utilisateur introuvable'),
+    429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
   },
 });

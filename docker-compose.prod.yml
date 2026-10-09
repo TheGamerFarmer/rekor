@@ -5,6 +5,7 @@ services:
       - "3000:3000"
     environment:
       - PORT=3000
+      - TRUST_PROXY=1
       - MONGODB_URI=mongodb://db:27017
       - MONGODB_DB=${DB_NAME}
       - MONGODB_USER=${DB_USER}

@@ -4,14 +4,18 @@ const OpenApiValidator = require('express-openapi-validator');
 const { buildSpec } = require('./openapi');
 const db = require('./db');
 const { ensureSchema } = require('./schema');
-const usersRouter = require('./routes/users');
-const helmet = require('helmet');
+const createUsersRouter = require('./routes/users');
 
 const app = express();
+
+// Derrière nginx (docker compose), l'adresse du client arrive dans X-Forwarded-For :
+// TRUST_PROXY=1 permet de limiter chaque client séparément, et non nginx tout entier.
+if (process.env.TRUST_PROXY) {
+  app.set('trust proxy', Number(process.env.TRUST_PROXY));
+}
 const port = process.env.PORT || 3000;
 const spec = buildSpec();
 
-app.use(helmet());
 app.use(express.json());
 
 // Documentation (montée avant le validateur pour ne pas être filtrée par lui)
@@ -33,7 +37,7 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok' });
 });
 
-app.use('/users', usersRouter);
+app.use('/users', createUsersRouter());
 
 // Erreurs du validateur (400 requête invalide, 404 route non documentée, 500 réponse non conforme)
 // et des routes (503 base indisponible). Express exige EXACTEMENT 4 paramètres pour reconnaître
