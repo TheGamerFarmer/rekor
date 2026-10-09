@@ -34,7 +34,10 @@ app.get('/', (req, res) => {
 app.use('/users', usersRouter);
 
 // Erreurs du validateur (400 requête invalide, 404 route non documentée, 500 réponse non conforme)
-app.use((err, req, res) => {
+// et des routes (503 base indisponible). Express exige EXACTEMENT 4 paramètres pour reconnaître
+// un gestionnaire d'erreurs : `next` doit donc rester dans la signature.
+app.use((err, req, res, next) => {
+  if (res.headersSent) return next(err);
   res.status(err.status || 500).json({
     message: err.message,
     errors: err.errors,
