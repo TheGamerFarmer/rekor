@@ -11,6 +11,9 @@ on:
     types: [completed]
     branches: [main, configuration-CI-CD]
 
+permissions:
+  contents: read
+
 jobs:
   publish:
     if: github.event_name == 'push' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')

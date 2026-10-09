@@ -13,6 +13,9 @@ on:
       - '.github/workflows/contract.yml'
   pull_request:
 
+permissions:
+  contents: read
+
 jobs:
   contract:
     name: Contract - check
