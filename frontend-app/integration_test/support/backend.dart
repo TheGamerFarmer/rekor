@@ -11,14 +11,21 @@ import 'package:http/testing.dart';
 const selectedBackend = String.fromEnvironment('BACKEND', defaultValue: 'all');
 
 /// Adresse du vrai back. 10.0.2.2 = la machine hôte, vue depuis l'émulateur Android.
-const apiUrl = String.fromEnvironment('API_URL', defaultValue: 'http://10.0.2.2:3000');
+const apiUrl = String.fromEnvironment(
+  'API_URL',
+  defaultValue: 'http://10.0.2.2:3000',
+);
 
 const backendModes = ['mock', 'real'];
 
-bool isSelected(String mode) => selectedBackend == 'all' || selectedBackend == mode;
+bool isSelected(String mode) =>
+    selectedBackend == 'all' || selectedBackend == mode;
 
-http.Response jsonResponse(Object body, [int status = 200]) =>
-    http.Response(jsonEncode(body), status, headers: {'content-type': 'application/json'});
+http.Response jsonResponse(Object body, [int status = 200]) => http.Response(
+  jsonEncode(body),
+  status,
+  headers: {'content-type': 'application/json'},
+);
 
 /// Réponses simulées par défaut ("METHODE /chemin" -> réponse).
 final Map<String, http.Response Function()> _defaultMocks = {
@@ -30,7 +37,10 @@ final Map<String, http.Response Function()> _defaultMocks = {
 /// - `real` : le vrai back, à [apiUrl].
 /// - `mock` : les réponses viennent de [_defaultMocks] et de [mocks]. Tout appel non simulé
 ///   échoue en 501 "Mock manquant" au lieu de passer inaperçu.
-void installBackend(String mode, {Map<String, http.Response Function()> mocks = const {}}) {
+void installBackend(
+  String mode, {
+  Map<String, http.Response Function()> mocks = const {},
+}) {
   if (mode == 'real') {
     ApiClient.instance = ApiClient(apiUrl);
     return;

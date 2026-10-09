@@ -8,9 +8,10 @@ import 'package:rekor_api/api.dart' as generated;
 /// Pour une autre adresse : `flutter run --dart-define=API_URL=http://192.168.1.10:3000`
 class ApiClient {
   ApiClient(this.baseUrl, {http.Client? client})
-      : _health = generated.HealthApi(
-          generated.ApiClient(basePath: baseUrl)..client = client ?? http.Client(),
-        );
+    : _health = generated.HealthApi(
+        generated.ApiClient(basePath: baseUrl)
+          ..client = client ?? http.Client(),
+      );
 
   final String baseUrl;
   final generated.HealthApi _health;
@@ -18,7 +19,10 @@ class ApiClient {
   /// Instance utilisée par l'application. Les tests peuvent la remplacer
   /// (par exemple par un client qui simule les réponses du back).
   static ApiClient instance = ApiClient(
-    const String.fromEnvironment('API_URL', defaultValue: 'http://10.0.2.2:3000'),
+    const String.fromEnvironment(
+      'API_URL',
+      defaultValue: 'http://10.0.2.2:3000',
+    ),
   );
 
   /// GET / : le statut du back ("ok" quand tout va bien).

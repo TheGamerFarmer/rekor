@@ -1,26 +1,26 @@
 {
-    "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
-    "spaces": 2,
-    "generator-cli": {
+  "$schema": "./node_modules/@openapitools/openapi-generator-cli/config.schema.json",
+  "spaces": 2,
+  "generator-cli": {
     "version": "7.26.0",
-        "generators": {
-        "web": {
-            "generatorName": "typescript-angular",
-                "inputSpec": "openapi.json",
-                "output": "../frontend-web/src/app/api",
-                "additionalProperties": {
-                "ngVersion": "22.0.0"
-            }
-        },
-        "app": {
-            "generatorName": "dart",
-                "inputSpec": "openapi.json",
-                "output": "../frontend-app/api_client",
-                "additionalProperties": {
-                "pubName": "rekor_api",
-                    "pubLibrary": "rekor_api"
-            }
+    "generators": {
+      "web": {
+        "generatorName": "typescript-angular",
+        "inputSpec": "openapi.json",
+        "output": "../frontend-web/src/app/api",
+        "additionalProperties": {
+          "ngVersion": "22.0.0"
         }
+      },
+      "app": {
+        "generatorName": "dart",
+        "inputSpec": "openapi.json",
+        "output": "../frontend-app/api_client",
+        "additionalProperties": {
+          "pubName": "rekor_api",
+          "pubLibrary": "rekor_api"
+        }
+      }
     }
-}
+  }
 }

@@ -10,6 +10,6 @@ test('openapi.json correspond à openapi.js', () => {
   assert.deepStrictEqual(
     committed,
     current,
-    "openapi.js a changé : lance `npm run clients:generate`",
+    'openapi.js a changé : lance `npm run clients:generate`',
   );
 });

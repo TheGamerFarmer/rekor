@@ -1,0 +1,62 @@
+#!/bin/sh
+# Hook Git "pre-commit" : formate les fichiers du commit, puis les remet dans le commit.
+#
+# À activer une fois par clone :  git config core.hooksPath .githooks
+# Pour passer outre exceptionnellement :  git commit --no-verify
+
+root=$(git rev-parse --show-toplevel) || exit 1
+cd "$root" || exit 1
+
+# Fichiers qui ont aussi des modifications NON ajoutées au commit. On ne les formate pas :
+# le `git add` final y glisserait ces modifications.
+partial=$(mktemp)
+trap 'rm -f "$partial"' EXIT
+git diff --name-only >"$partial"
+
+# list_staged <dossier> [chemins...] : les fichiers ajoutés ou modifiés dans ce commit,
+# sous <dossier>, avec des chemins relatifs à <dossier>.
+list_staged() {
+  folder=$1
+  shift
+  git diff --cached --name-only --diff-filter=ACM --relative="$folder" -- "$@" |
+    while IFS= read -r file; do
+      if grep -qxF "$folder/$file" "$partial"; then
+        echo "pre-commit : $folder/$file a des modifications non ajoutées : non formaté" >&2
+      else
+        printf '%s\n' "$file"
+      fi
+    done
+}
+
+# restage <dossier> <fichiers> : remet dans le commit les fichiers qu'on vient de formater.
+restage() {
+  folder=$1
+  printf '%s\n' "$2" | while IFS= read -r file; do
+    git add -- "$folder/$file"
+  done
+}
+
+# Back et front web : Prettier
+for folder in backend frontend-web; do
+  files=$(list_staged "$folder")
+  [ -z "$files" ] && continue
+  if [ ! -d "$folder/node_modules" ]; then
+    echo "pre-commit : $folder/node_modules est absent (npm install ?) : formatage ignoré" >&2
+    continue
+  fi
+  printf '%s\n' "$files" | (cd "$folder" && tr '\n' '\0' | xargs -0 npx --no-install prettier --write --ignore-unknown --log-level warn) || exit 1
+  restage "$folder" "$files"
+done
+
+# App Flutter : dart format
+files=$(list_staged frontend-app frontend-app/lib frontend-app/test frontend-app/integration_test frontend-app/tool | grep '\.dart$')
+if [ -n "$files" ]; then
+  if command -v dart >/dev/null 2>&1; then
+    printf '%s\n' "$files" | (cd frontend-app && tr '\n' '\0' | xargs -0 dart format) || exit 1
+    restage frontend-app "$files"
+  else
+    echo "pre-commit : dart est introuvable dans le PATH (Flutter installé ?) : formatage ignoré" >&2
+  fi
+fi
+
+exit 0

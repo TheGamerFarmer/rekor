@@ -1,0 +1,4 @@
+node_modules
+package-lock.json
+# Généré par `npm run clients:generate` : ne pas reformater
+openapi.json

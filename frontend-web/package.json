@@ -10,7 +10,10 @@
     "lint": "ng lint",
     "e2e": "playwright test",
     "test:all": "npm test -- --no-watch && npm run e2e",
-    "verify": "npm run lint && npm run test:all"
+    "verify": "npm run lint && npm run test:all",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test:coverage": "ng test --no-watch --coverage"
   },
   "private": true,
   "packageManager": "npm@11.12.1",
@@ -28,13 +31,15 @@
     "@angular/build": "^22.2.1",
     "@angular/cli": "^22.2.1",
     "@angular/compiler-cli": "^22.2.0",
+    "@axe-core/playwright": "^4.13.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.63.0",
     "@types/node": "^26.6.4",
+    "@vitest/coverage-v8": "5.0.3",
     "angular-eslint": "22.5.0",
     "eslint": "^10.12.0",
     "jsdom": "^30.1.2",
-    "prettier": "^3.8.1",
+    "prettier": "3.9.9",
     "typescript": "~6.0.3",
     "typescript-eslint": "8.71.0",
     "vitest": "^5.0.0"

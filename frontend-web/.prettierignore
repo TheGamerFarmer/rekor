@@ -1,0 +1,10 @@
+node_modules
+dist
+.angular
+.idea
+coverage
+test-results
+playwright-report
+package-lock.json
+# Généré par `npm run clients:generate` : ne pas reformater
+src/app/api

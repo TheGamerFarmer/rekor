@@ -12,7 +12,9 @@ void main() {
   // Les mêmes tests tournent deux fois : back simulé (mock), puis vrai back (real).
   for (final mode in backendModes.where(isSelected)) {
     group('backend $mode', () {
-      testWidgets("le compteur démarre à 0 et s'incrémente au clic", (tester) async {
+      testWidgets("le compteur démarre à 0 et s'incrémente au clic", (
+        tester,
+      ) async {
         installBackend(mode);
         // Lance l'application réelle (main.dart), comme sur un appareil
         app.main();
