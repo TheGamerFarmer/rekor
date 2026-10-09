@@ -107,6 +107,16 @@ Le formatage est vérifié par la CI. Avant de commiter :
 
 Utilise la même version de Flutter que la CI (3.47.6) : `dart format` varie légèrement d'une version à l'autre.
 
+### Formatage automatique avant chaque commit (facultatif)
+
+Un hook Git formate à ta place les fichiers de ton commit. À activer une fois par clone :
+
+```
+git config core.hooksPath .githooks
+```
+
+Il demande d'avoir lancé `npm install` dans `backend/` et `frontend-web/`, et d'avoir `dart` dans le PATH ; sinon il prévient et ne formate pas. Si un fichier du commit a aussi des modifications non ajoutées, il n'y touche pas. `git commit --no-verify` le contourne exceptionnellement.
+
 ## Intégration continue
 
 | Workflow                | Rôle                                                                    |
