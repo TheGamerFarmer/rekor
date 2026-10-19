@@ -1,0 +1,984 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guide équipe — Rekor CI/CD</title>
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --border: #e0e4ea;
+      --accent: #2563eb;
+      --accent-light: #eff6ff;
+      --text: #1e2330;
+      --muted: #6b7280;
+      --code-bg: #1e2330;
+      --code-text: #e2e8f0;
+      --warn: #f59e0b;
+      --warn-light: #fffbeb;
+      --ok: #10b981;
+      --ok-light: #ecfdf5;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --nav-width: 220px;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      font-size: 15px;
+      line-height: 1.65;
+      background: var(--bg);
+      color: var(--text);
+      display: flex;
+    }
+
+    /* ── NAV ── */
+    nav {
+      width: var(--nav-width);
+      min-height: 100vh;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow-y: auto;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      flex-shrink: 0;
+    }
+
+    nav .nav-title {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--muted);
+      padding: 0 16px 12px;
+    }
+
+    nav a {
+      display: block;
+      padding: 5px 16px;
+      font-size: 13.5px;
+      color: var(--text);
+      text-decoration: none;
+      border-left: 3px solid transparent;
+      line-height: 1.4;
+    }
+
+    nav a:hover { background: var(--accent-light); color: var(--accent); }
+    nav a.active { border-left-color: var(--accent); color: var(--accent); font-weight: 600; }
+
+    nav .nav-group {
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px solid var(--border);
+    }
+
+    /* ── MAIN ── */
+    main {
+      flex: 1;
+      min-width: 0;
+      padding: 40px 48px;
+      max-width: 900px;
+    }
+
+    /* ── HEADER ── */
+    header {
+      margin-bottom: 40px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    header h1 {
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    header p { color: var(--muted); font-size: 14px; }
+
+    /* ── SECTIONS ── */
+    section {
+      margin-bottom: 44px;
+      scroll-margin-top: 20px;
+    }
+
+    h2 {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 16px;
+      padding-bottom: 8px;
+      border-bottom: 2px solid var(--accent);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    h2 .icon { font-size: 16px; }
+
+    h3 {
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      margin: 20px 0 8px;
+    }
+
+    p { margin-bottom: 10px; }
+
+    /* ── CODE ── */
+    pre {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+      font-size: 13px;
+      font-family: "SF Mono", Consolas, "Liberation Mono", Menlo, monospace;
+      overflow-x: auto;
+      margin: 10px 0 14px;
+      line-height: 1.6;
+    }
+
+    code {
+      background: #eef2f7;
+      color: #c7253e;
+      padding: 1px 5px;
+      border-radius: 3px;
+      font-size: .875em;
+      font-family: "SF Mono", Consolas, monospace;
+    }
+
+    pre code {
+      background: none;
+      color: inherit;
+      padding: 0;
+      font-size: inherit;
+    }
+
+    .comment { color: #6b7280; }
+
+    /* ── TABLES ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+      margin: 12px 0 16px;
+    }
+
+    th {
+      background: var(--bg);
+      text-align: left;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--muted);
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    td {
+      padding: 8px 10px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--accent-light); }
+
+    td code { white-space: nowrap; }
+
+    /* ── CALLOUTS ── */
+    .callout {
+      border-radius: var(--radius);
+      padding: 12px 16px;
+      margin: 12px 0;
+      font-size: 14px;
+      border-left: 4px solid;
+    }
+
+    .callout.warn  { background: var(--warn-light);   border-color: var(--warn);   }
+    .callout.ok    { background: var(--ok-light);     border-color: var(--ok);     }
+    .callout.info  { background: var(--accent-light); border-color: var(--accent); }
+    .callout.danger{ background: var(--danger-light); border-color: var(--danger); }
+
+    .callout strong { display: block; margin-bottom: 2px; }
+
+    /* ── BADGES ── */
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 700;
+      padding: 2px 7px;
+      border-radius: 20px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    .badge.green  { background: var(--ok-light);      color: #065f46; }
+    .badge.blue   { background: var(--accent-light);  color: #1e40af; }
+    .badge.yellow { background: var(--warn-light);    color: #92400e; }
+    .badge.red    { background: var(--danger-light);  color: #991b1b; }
+    .badge.gray   { background: #f3f4f6;              color: #374151; }
+
+    /* ── DIAGRAM ── */
+    .diagram {
+      background: var(--code-bg);
+      color: var(--code-text);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      font-family: "SF Mono", Consolas, monospace;
+      font-size: 13px;
+      line-height: 2;
+      margin: 12px 0;
+    }
+
+    /* ── GRID ── */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 12px 0;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px 16px;
+    }
+
+    .card h4 {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--accent);
+    }
+
+    .card p, .card li {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .card ul { padding-left: 16px; }
+
+    /* ── FLOW ── */
+    .flow {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: center;
+      margin: 12px 0;
+      font-size: 13px;
+    }
+
+    .flow-step {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 4px 12px;
+      white-space: nowrap;
+    }
+
+    .flow-arrow { color: var(--muted); font-size: 16px; }
+
+    @media (max-width: 768px) {
+      nav { display: none; }
+      main { padding: 20px; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════ NAV ══════════════════ -->
+<nav>
+  <div class="nav-title">Rekor — Guide équipe</div>
+  <a href="#architecture">Architecture</a>
+  <a href="#setup">Setup local</a>
+  <a href="#contrat">Contrat d'API</a>
+  <a href="#tests">Tests</a>
+  <a href="#qualite">Qualité du code</a>
+  <a href="#git">Git & PR</a>
+  <a href="#ci">CI (GitHub Actions)</a>
+  <a href="#apres-main">Après main</a>
+  <div class="nav-group">
+    <a href="#troubleshooting">Dépannage</a>
+  </div>
+  <div class="nav-group">
+    <a href="#ref-backend">↳ Commandes backend</a>
+    <a href="#ref-web">↳ Commandes web</a>
+    <a href="#ref-app">↳ Commandes app</a>
+    <a href="#ref-docker">↳ Docker</a>
+    <a href="#ref-git">↳ Git</a>
+  </div>
+</nav>
+
+<!-- ══════════════════ MAIN ══════════════════ -->
+<main>
+
+<header>
+  <h1>Guide équipe — Rekor</h1>
+  <p>Monorepo · Node.js + Angular + Flutter · GitHub Actions CI/CD</p>
+</header>
+
+<!-- ═══ ARCHITECTURE ═══ -->
+<section id="architecture">
+  <h2><span class="icon">🏗</span> Architecture</h2>
+
+  <div class="diagram">
+frontend-web/  (Angular 19) ──┐<br>
+                               ├──►  backend/  (Node.js/Express)  ──►  MongoDB<br>
+frontend-app/  (Flutter)    ──┘     API REST · OpenAPI · /api-docs
+  </div>
+
+  <p>Un seul dépôt, trois applications. Les clients ne parlent jamais directement à la base, tout passe par l'API.</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4>backend/</h4>
+      <ul>
+        <li><code>index.js</code> — point d'entrée</li>
+        <li><code>openapi.js</code> — <strong>le contrat</strong> (Zod + OpenAPI)</li>
+        <li><code>routes/users.js</code> — routes</li>
+        <li><code>db.js</code> / <code>schema.js</code> — MongoDB</li>
+        <li><code>scripts/</code> — génération des clients</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4>frontend-web/ et frontend-app/</h4>
+      <ul>
+        <li><code>src/app/api/</code> — client TS <em>généré</em></li>
+        <li><code>api_client/</code> — client Dart <em>généré</em></li>
+        <li>Ne jamais éditer ces dossiers à la main</li>
+      </ul>
+    </div>
+  </div>
+
+  <p>Chemin d'une requête backend :</p>
+  <pre>requête → validateur OpenAPI → rate-limit → route → MongoDB
+                 (400)              (429)         ↓
+réponse ← validateur (vérifie aussi la réponse) ←┘</pre>
+
+  <div class="callout info">
+    Le validateur vérifie les réponses aussi. Si le code renvoie quelque chose qui ne correspond pas au contrat → 500. C'est voulu : le contrat reste toujours vrai.
+  </div>
+</section>
+
+<!-- ═══ SETUP ═══ -->
+<section id="setup">
+  <h2><span class="icon">⚙️</span> Setup local</h2>
+
+  <h3>Versions requises</h3>
+  <table>
+    <tr><th>Outil</th><th>Version</th><th>Pourquoi cette contrainte</th></tr>
+    <tr><td>Flutter</td><td><code>3.47.6</code> <span class="badge red">exactement</span></td><td><code>dart format</code> produit un résultat différent selon la version — la CI refusera un diff</td></tr>
+    <tr><td>Node.js</td><td>20+ pour le back, 26 pour le web</td><td>Versions utilisées par la CI</td></tr>
+    <tr><td>Java</td><td>17+</td><td>Générateur OpenAPI (refuse le JDK 8)</td></tr>
+    <tr><td>Docker Desktop</td><td>récent (Compose v2)</td><td>Stack complète + tests E2E CI</td></tr>
+  </table>
+
+  <h3>Clone et installation</h3>
+  <pre><span class="comment"># Une seule fois par clone</span>
+git clone https://github.com/TheGamerFarmer/rekor.git
+cd rekor
+
+git config core.hooksPath .githooks   <span class="comment"># hook de formatage pre-commit</span>
+
+cd backend     &amp;&amp; npm install &amp;&amp; cd ..   <span class="comment"># télécharge aussi mongodb-memory-server</span>
+cd frontend-web &amp;&amp; npm install &amp;&amp; cd ..
+cd frontend-app &amp;&amp; flutter pub get &amp;&amp; cd ..
+
+cd frontend-web &amp;&amp; npx playwright install chromium &amp;&amp; cd ..</pre>
+
+  <h3>Fichier .env</h3>
+  <pre>cp .env.example .env   <span class="comment"># puis éditer DB_USER, DB_PASSWORD, DB_NAME</span></pre>
+
+  <div class="callout warn">
+    <strong>Avant le premier <code>docker compose up</code></strong>
+    MongoDB ne crée son compte admin qu'au tout premier démarrage. Changer le mot de passe après nécessite <code>docker compose down -v</code> (supprime les données de dev).
+  </div>
+
+  <h3>Lancer la stack</h3>
+  <pre>docker compose up -d --build</pre>
+
+  <table>
+    <tr><th>Quoi</th><th>Adresse</th></tr>
+    <tr><td>App web</td><td><code>http://localhost:8080</code> — affiche « Backend : ok » si tout marche</td></tr>
+    <tr><td>API (via nginx)</td><td><code>http://localhost:8080/api/</code></td></tr>
+    <tr><td>Swagger UI (via nginx)</td><td><code>http://localhost:8080/api-docs</code></td></tr>
+    <tr><td>MongoDB</td><td><code>127.0.0.1:27017</code> (local seulement)</td></tr>
+  </table>
+
+  <h3>Dev sans Docker</h3>
+  <pre><span class="comment"># Back seul (sans base → les routes qui en ont besoin répondent 503, / répond toujours)</span>
+cd backend &amp;&amp; node index.js
+
+<span class="comment"># Ou avec la base du compose :</span>
+docker compose up -d db
+MONGODB_URI=mongodb://127.0.0.1:27017 MONGODB_DB=... node index.js
+
+<span class="comment"># Web (proxy /api → localhost:3000)</span>
+cd frontend-web &amp;&amp; npm start -- --proxy-config proxy.conf.json
+
+<span class="comment"># App (émulateur Android : 10.0.2.2 pointe vers la machine hôte)</span>
+cd frontend-app &amp;&amp; flutter run
+<span class="comment"># Vrai téléphone :</span>
+flutter run --dart-define=API_URL=http://&lt;IP_PC&gt;:3000</pre>
+</section>
+
+<!-- ═══ CONTRAT D'API ═══ -->
+<section id="contrat">
+  <h2><span class="icon">📄</span> Contrat d'API</h2>
+
+  <p>C'est la pièce centrale. L'API est décrite <strong>une seule fois</strong> dans <code>backend/openapi.js</code> (Zod + openapi-zod-client). Tout découle de là :</p>
+
+  <div class="diagram">
+backend/openapi.js<br>
+  │  npm run clients:generate<br>
+  ├──►  backend/openapi.json        ← contrat JSON (versionné)<br>
+  ├──►  frontend-web/src/app/api/   ← client TypeScript (Angular)<br>
+  └──►  frontend-app/api_client/    ← client Dart (Flutter)
+  </div>
+
+  <p>Ce même contrat sert aussi à <strong>valider les requêtes et les réponses</strong> à runtime, à générer le Swagger UI, et à détecter les breaking changes sur les PR.</p>
+
+  <h3>Modifier le contrat</h3>
+  <ol style="padding-left:20px; margin-bottom:12px;">
+    <li>Modifie <code>backend/openapi.js</code></li>
+    <li>Écris la route dans <code>backend/routes/</code> et ses tests</li>
+    <li><code>npm run clients:generate</code> dans <code>backend/</code> (Java requis)</li>
+    <li>Commite <strong>tout ensemble</strong> : code + <code>openapi.json</code> + clients régénérés</li>
+  </ol>
+
+  <div class="callout info">
+    <strong>Conflit Git sur un fichier généré ?</strong>
+    Ne pas résoudre à la main. Prendre n'importe quelle version, puis relancer <code>npm run clients:generate</code>.
+  </div>
+
+  <h3>Breaking changes</h3>
+  <p>Sur chaque PR, <strong>oasdiff</strong> compare le contrat avec celui de <code>main</code>.</p>
+
+  <table>
+    <tr>
+      <th><span class="badge red">Cassant → CI échoue</span></th>
+      <th><span class="badge green">Non cassant → OK</span></th>
+    </tr>
+    <tr>
+      <td>Supprimer ou renommer un champ de réponse</td>
+      <td>Ajouter une nouvelle route</td>
+    </tr>
+    <tr>
+      <td>Rendre un champ de requête obligatoire</td>
+      <td>Ajouter un champ <em>facultatif</em></td>
+    </tr>
+    <tr>
+      <td>Supprimer une route</td>
+      <td>Ajouter un code de réponse (ex. 429)</td>
+    </tr>
+    <tr>
+      <td>Changer le type d'un champ</td>
+      <td>Ajouter une valeur à une liste</td>
+    </tr>
+  </table>
+
+  <p>Si la rupture est intentionnelle (tous les clients mis à jour dans la même PR) : ajouter le label <strong><code>breaking-change</code></strong> sur la PR. La détection est alors ignorée.</p>
+
+  <h3>Utiliser un client généré</h3>
+  <pre><span class="comment">// Angular</span>
+private readonly health = inject(HealthService);
+this.health.getHealth().subscribe(...)
+
+<span class="comment">// Flutter</span>
+final response = await ApiClient.instance.health();</pre>
+
+  <p>Les noms de méthodes viennent des <code>operationId</code> du contrat : identiques des deux côtés.</p>
+</section>
+
+<!-- ═══ TESTS ═══ -->
+<section id="tests">
+  <h2><span class="icon">🧪</span> Tests</h2>
+
+  <h3>Couverture minimale</h3>
+  <table>
+    <tr><th>Projet</th><th>Outil</th><th>Seuil</th></tr>
+    <tr><td>Backend</td><td>c8</td><td>80 % lignes/fonctions/instructions — 70 % branches</td></tr>
+    <tr><td>Web</td><td>Vitest (v8)</td><td>80 % lignes/fonctions/instructions — 70 % branches</td></tr>
+    <tr><td>App</td><td><code>check_coverage.dart</code></td><td>80 % lignes</td></tr>
+  </table>
+  <p>Le code généré est exclu. Si la couverture passe sous le seuil, la CI échoue. On ne baisse pas le seuil.</p>
+
+  <h3>Pattern mock / real</h3>
+  <p>Les tests E2E du web (Playwright) et les tests d'intégration Flutter tournent <strong>deux fois</strong> :</p>
+
+  <table>
+    <tr><th>Mode</th><th>Back</th><th>Ce que ça prouve</th></tr>
+    <tr><td><span class="badge blue">mock</span></td><td>Simulé — réponses prévues d'avance</td><td>Le client se comporte correctement</td></tr>
+    <tr><td><span class="badge green">real</span></td><td>Vrai back, vraie base (construit depuis la PR)</td><td>Client et API s'entendent vraiment</td></tr>
+  </table>
+
+  <div class="callout warn">
+    En mode <code>mock</code>, tout appel <code>/api</code> non simulé échoue avec <strong>501 "Mock manquant"</strong> — plutôt que de passer silencieusement. Si tu vois ce message, il manque un <code>arrange.mock</code> dans ton test.
+  </div>
+
+  <h3>Tests du back (Node test runner + supertest)</h3>
+  <table>
+    <tr><th>Fichier</th><th>Ce qu'il teste</th></tr>
+    <tr><td><code>app.test.js</code></td><td>GET / → ok</td></tr>
+    <tr><td><code>contract.test.js</code></td><td><code>openapi.json</code> correspond à <code>openapi.js</code></td></tr>
+    <tr><td><code>users.test.js</code></td><td>Routes <code>/users</code> avec un vrai MongoDB temporaire (<code>mongodb-memory-server</code>)</td></tr>
+    <tr><td><code>users-sans-base.test.js</code></td><td>Réponses 503 sans base, <code>/</code> répond toujours</td></tr>
+    <tr><td><code>rate-limit.test.js</code></td><td>Limite 100 req/min, comportement derrière proxy</td></tr>
+    <tr><td><code>db.test.js</code>, <code>swagger.test.js</code></td><td>Connexion MongoDB, Swagger UI</td></tr>
+  </table>
+
+  <h3>Tests web (Vitest + Playwright)</h3>
+  <p>Unitaires : fichiers <code>*.spec.ts</code> à côté du code, avec <code>HttpTestingController</code> (pas de vrai appel réseau).</p>
+  <p>E2E Playwright : <code>frontend-web/e2e/*.e2e.ts</code>. Deux projets : <code>mock</code> et <code>real</code>. Les éléments sont trouvés via <code>data-testid</code> (stable face aux refactos de texte ou de style).</p>
+  <pre>npx playwright test                   <span class="comment"># les deux modes</span>
+npx playwright test --project=mock    <span class="comment"># un seul mode</span>
+npx playwright test --ui              <span class="comment"># interface de debug</span>
+npx playwright show-report</pre>
+
+  <h3>Tests Flutter</h3>
+  <p><code>test/</code> : unitaires et widgets. <code>integration_test/</code> : sur émulateur ou appareil, pattern mock/real via <code>--dart-define=BACKEND=mock</code>.</p>
+
+  <h3>Accessibilité</h3>
+  <p>
+    Web : <code>e2e/a11y.e2e.ts</code> avec <strong>axe-core</strong> (WCAG 2.0 + 2.1, niveaux A et AA).<br>
+    App : <code>test/accessibility_test.dart</code> — tailles tactiles, libellés, contraste.
+  </p>
+  <div class="callout info">
+    <strong>Règle d'équipe</strong> — Quand tu ajoutes une page ou un écran, tu ajoutes son test d'accessibilité.
+  </div>
+</section>
+
+<!-- ═══ QUALITÉ ═══ -->
+<section id="qualite">
+  <h2><span class="icon">✅</span> Qualité du code</h2>
+
+  <table>
+    <tr><th>Outil</th><th>Portée</th><th>Commande locale</th></tr>
+    <tr>
+      <td><strong>ESLint</strong></td>
+      <td>Back + Web</td>
+      <td><code>npm run lint</code></td>
+    </tr>
+    <tr>
+      <td><strong>flutter analyze</strong></td>
+      <td>App</td>
+      <td><code>flutter analyze</code></td>
+    </tr>
+    <tr>
+      <td><strong>Prettier</strong> (lignes 100, quotes simples)</td>
+      <td>Back + Web</td>
+      <td><code>npm run format</code> / <code>npm run format:check</code></td>
+    </tr>
+    <tr>
+      <td><strong>dart format</strong> (Flutter 3.47.6)</td>
+      <td>App</td>
+      <td><code>dart format lib test integration_test tool</code></td>
+    </tr>
+    <tr>
+      <td><strong>CodeQL</strong></td>
+      <td>Tout le repo</td>
+      <td>Automatique — commente la PR, bloque si ≥ High</td>
+    </tr>
+    <tr>
+      <td><strong>Dependabot</strong></td>
+      <td>Back, Web, App, images Docker</td>
+      <td>Ouvre des PR chaque semaine — <code>.github/dependabot.yml</code></td>
+    </tr>
+  </table>
+
+  <h3>Hook pre-commit</h3>
+  <p><code>.githooks/pre-commit</code> — activé par <code>git config core.hooksPath .githooks</code>. Formate automatiquement les fichiers du commit avant sa création. Comportements à connaître :</p>
+  <ul style="padding-left:20px; margin-bottom:10px;">
+    <li>Ne touche que les fichiers stagés.</li>
+    <li>Si un fichier a des modifications non stagées, il les ignore et prévient.</li>
+    <li>Erreur de syntaxe → commit bloqué.</li>
+    <li><code>git commit --no-verify</code> pour contourner exceptionnellement.</li>
+  </ul>
+  <div class="callout info">
+    Le hook est un confort, pas une protection. La vraie garantie, c'est le check <strong>Format</strong> en CI. Le <code>.gitattributes</code> force les fins de ligne LF pour éviter que Windows casse le script.
+  </div>
+
+  <h3>CodeQL — comment réagir</h3>
+  <ol style="padding-left:20px;">
+    <li>Cliquer sur « Show more details » dans la PR pour comprendre le vecteur d'attaque</li>
+    <li>Corriger le code — l'alerte se ferme seule à la prochaine analyse</li>
+    <li>« Dismiss » uniquement si c'est un faux positif documenté</li>
+  </ol>
+  <p><em>Exemple concret :</em> CodeQL a signalé l'absence de rate-limiting sur <code>/users</code>. Le correctif : 100 req/min par IP avec <code>express-rate-limit</code>, plus <code>TRUST_PROXY=1</code> pour lire la vraie IP derrière nginx (sans ça, tous les visiteurs partagent la même limite).</p>
+</section>
+
+<!-- ═══ GIT ═══ -->
+<section id="git">
+  <h2><span class="icon">🔀</span> Git &amp; Pull Requests</h2>
+
+  <div class="callout danger">
+    <strong>Push direct sur <code>main</code> : interdit.</strong> Les règles de protection GitHub le bloquent de toute façon.
+  </div>
+
+  <h3>Branches</h3>
+  <pre>git switch main &amp;&amp; git pull
+git switch -c feature/SAE-42-pseudo-utilisateur</pre>
+  <p>Convention proposée : <code>feature/&lt;ticket&gt;-&lt;description&gt;</code>, <code>fix/</code>, <code>docs/</code>, <code>chore/</code>. <code>&lt;ticket&gt;</code> = clé Jira.</p>
+
+  <h3>Règles de protection de main</h3>
+  <p>Configurées dans <em>Settings → Rules</em> du dépôt. La fusion n'est possible que si :</p>
+  <ul style="padding-left:20px; margin-bottom:10px;">
+    <li>PR ouverte (no direct push)</li>
+    <li>1 approbation d'un coéquipier (pas la sienne)</li>
+    <li>Tous les checks obligatoires sont verts :</li>
+  </ul>
+  <p>
+    <span class="badge gray">Backend - test</span>
+    <span class="badge gray">Front web - test</span>
+    <span class="badge gray">E2E (mock)</span>
+    <span class="badge gray">E2E (real)</span>
+    <span class="badge gray">App - android build</span>
+    <span class="badge gray">App - android e2e</span>
+    <span class="badge gray">App - changes</span>
+    <span class="badge gray">Contract - check</span>
+    <span class="badge gray">Format - JS/TS</span>
+    <span class="badge gray">Format - Dart</span>
+    + règle CodeQL
+  </p>
+  <div class="callout warn">
+    Si un workflow est renommé ou ajouté, cette liste doit être mise à jour dans les Settings, sinon la PR reste bloquée en attente d'un check qui n'arrive jamais (ou un check disparu ne bloque plus rien).
+  </div>
+
+  <h3>Modèle de PR</h3>
+  <p>Le fichier <code>.github/pull_request_template.md</code> s'affiche à l'ouverture de chaque PR. Checklist : description + ticket Jira, tests passent, formatage fait, <code>clients:generate</code> si contrat modifié, label <code>breaking-change</code> si cassant, capture d'écran si l'interface change.</p>
+
+  <h3>Relecture</h3>
+  <ol style="padding-left:20px;">
+    <li>Vérifier que la CI est verte avant de commencer</li>
+    <li>Le code fait-il ce que la PR annonce ? Les cas d'erreur sont-ils testés ?</li>
+    <li>Si le contrat change : clients régénérés ? changement cassant justifié ?</li>
+    <li>Si l'interface change : test d'accessibilité présent ?</li>
+    <li>Aucun secret, aucun fichier de debug oublié</li>
+  </ol>
+
+  <h3>Garder sa branche à jour</h3>
+  <pre>git fetch origin &amp;&amp; git merge origin/main</pre>
+  <p>Sur un conflit dans un fichier généré (<code>openapi.json</code>, <code>api/</code>, <code>api_client/</code>) : prendre n'importe quelle version, puis relancer <code>npm run clients:generate</code>.</p>
+</section>
+
+<!-- ═══ CI ═══ -->
+<section id="ci">
+  <h2><span class="icon">⚡</span> CI (GitHub Actions)</h2>
+
+  <p>Les workflows sont dans <code>.github/workflows/</code>. Sur un <strong>push</strong>, ils ne se déclenchent que si leurs fichiers surveillés ont changé. Sur une <strong>PR</strong>, ils se déclenchent toujours (nécessaire pour les checks obligatoires).</p>
+
+  <h3>Workflows</h3>
+  <table>
+    <tr><th>Fichier</th><th>Jobs</th><th>Ce qu'il fait</th></tr>
+    <tr>
+      <td><code>backend-ci.yml</code></td>
+      <td>Backend - test<br>Backend - image</td>
+      <td>lint → tests avec couverture. Sur main : publie l'image Docker du back sur GHCR.</td>
+    </tr>
+    <tr>
+      <td><code>frontend-web-ci.yml</code></td>
+      <td>Front web - test<br>Front web - image</td>
+      <td>lint → tests avec couverture → build. Sur main : publie l'image du web.</td>
+    </tr>
+    <tr>
+      <td><code>frontend-app-ci.yml</code></td>
+      <td>App - changes<br>App - android build<br>App - iOS build<br>App - android e2e<br>publish-packages / release</td>
+      <td>
+        <code>App - android build</code> tourne toujours (analyze, tests, couverture, APK).<br>
+        iOS (macOS) et e2e-android (émulateur) ne tournent que si l'app a changé — <code>App - changes</code> le détecte.<br>
+        Sur main : publie APK + Runner.app.zip sur GHCR et crée une GitHub Release.
+      </td>
+    </tr>
+    <tr>
+      <td><code>e2e.yml</code></td>
+      <td>E2E (mock)<br>E2E (real)</td>
+      <td>Tests Playwright, les deux modes en parallèle. Le back est construit depuis le code de la PR. Artefacts conservés 14 jours.</td>
+    </tr>
+    <tr>
+      <td><code>contract.yml</code></td>
+      <td>Contract - check</td>
+      <td>Régénère les clients, compare avec le commit (détecte l'oubli de <code>clients:generate</code>). Détecte les breaking changes avec oasdiff (ignoré si label <code>breaking-change</code>).</td>
+    </tr>
+    <tr>
+      <td><code>format.yml</code></td>
+      <td>Format - JS/TS<br>Format - Dart</td>
+      <td>Vérifie le formatage sans modifier (mode check). Dart avec Flutter 3.47.6.</td>
+    </tr>
+    <tr>
+      <td><code>main-docker.yml</code></td>
+      <td>publish</td>
+      <td>Publie <code>docker-compose.prod.yml</code> sur GHCR après succès de Backend CI ou Frontend Web CI sur main.</td>
+    </tr>
+    <tr>
+      <td><code>mirror-gricad.yml</code></td>
+      <td>—</td>
+      <td>Sur tout push, toutes branches : copie vers le GitLab de l'IUT via le secret <code>GRICAD_TOKEN</code>.</td>
+    </tr>
+  </table>
+
+  <h3>Ce qui se passe sur une PR</h3>
+  <div class="flow">
+    <span class="flow-step">push</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">Backend - test</span>
+    <span class="flow-step">Front web - test</span>
+    <span class="flow-step">E2E (mock/real)</span>
+    <span class="flow-step">App - android build</span>
+    <span class="flow-step">App - android e2e</span>
+    <span class="flow-step">Contract - check</span>
+    <span class="flow-step">Format - JS/TS</span>
+    <span class="flow-step">Format - Dart</span>
+    <span class="flow-step">CodeQL</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step">tout vert + 1 approbation</span>
+    <span class="flow-arrow">→</span>
+    <span class="flow-step" style="background:var(--ok-light); border-color:var(--ok);">fusion</span>
+  </div>
+
+  <h3>Lire un échec</h3>
+  <p>Dans la PR → section <em>Checks</em> → <strong>Details</strong> à côté de la croix rouge → ouvrir l'étape en rouge → les dernières lignes contiennent l'erreur.</p>
+
+  <table>
+    <tr><th>Check rouge</th><th>Reproduire en local</th></tr>
+    <tr><td>Backend - test</td><td><code>npm run lint</code> puis <code>npm run test:coverage</code> dans <code>backend/</code></td></tr>
+    <tr><td>Front web - test</td><td><code>npm run lint</code>, <code>npm run test:coverage</code>, <code>npm run build</code> dans <code>frontend-web/</code></td></tr>
+    <tr><td>E2E (mock) ou (real)</td><td><code>npx playwright test</code> dans <code>frontend-web/</code> (ajouter <code>--ui</code> pour débugger)</td></tr>
+    <tr><td>App - android build</td><td><code>flutter analyze</code>, <code>flutter test --coverage</code>, <code>dart run tool/check_coverage.dart 80</code></td></tr>
+    <tr><td>App - android e2e</td><td><code>flutter test integration_test</code> sur un émulateur</td></tr>
+    <tr><td>Contract - check</td><td><code>npm run clients:generate</code> dans <code>backend/</code>, puis commiter le résultat</td></tr>
+    <tr><td>Format - JS/TS</td><td><code>npm run format</code> dans <code>backend/</code> et <code>frontend-web/</code></td></tr>
+    <tr><td>Format - Dart</td><td><code>dart format lib test integration_test tool</code> dans <code>frontend-app/</code></td></tr>
+    <tr><td>Alerte CodeQL</td><td>Lire l'alerte → corriger le code (voir section Qualité)</td></tr>
+  </table>
+
+  <div class="callout warn">
+    <strong>« Re-run failed jobs »</strong> — uniquement si l'échec vient clairement de GitHub (réseau, machine indisponible). Si ça repasse « tout seul » sur un test, le test est instable : à corriger, pas à ignorer.
+  </div>
+</section>
+
+<!-- ═══ APRÈS MAIN ═══ -->
+<section id="apres-main">
+  <h2><span class="icon">🚀</span> Après la fusion sur main</h2>
+
+  <p>Tout ce qui suit est <strong>automatique</strong> :</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4>Images Docker</h4>
+      <p><code>ghcr.io/thegamerfarmer/rekor/backend:latest</code></p>
+      <p><code>ghcr.io/thegamerfarmer/rekor/frontend-web:latest</code></p>
+      <p>Aussi taguées avec le SHA du commit.</p>
+    </div>
+    <div class="card">
+      <h4>Stack complète</h4>
+      <p><code>docker-compose.prod.yml</code> publié sur GHCR.</p>
+      <pre style="font-size:11px;">docker compose \
+  -f oci://ghcr.io/thegamerfarmer/rekor:latest \
+  up</pre>
+      <p style="font-size:12px;">Fonctionne sans le code. Il faut définir <code>DB_USER</code>, <code>DB_PASSWORD</code>, <code>DB_NAME</code>.</p>
+    </div>
+    <div class="card">
+      <h4>App mobile</h4>
+      <p>APK Android + <code>Runner.app.zip</code> publiés comme paquets OCI (<code>frontend-app-android</code>, <code>frontend-app-ios</code>) et attachés à une <strong>GitHub Release</strong>.</p>
+    </div>
+    <div class="card">
+      <h4>Miroir GRICAD</h4>
+      <p>Toutes branches → GitLab IUT. Secret <code>GRICAD_TOKEN</code>. Si le jeton expire, le miroir échoue sans bloquer les fusions.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══ TROUBLESHOOTING ═══ -->
+<section id="troubleshooting">
+  <h2><span class="icon">🔧</span> Dépannage</h2>
+
+  <table>
+    <tr><th>Symptôme</th><th>Cause</th><th>Solution</th></tr>
+    <tr>
+      <td><code>failed to connect to the docker API</code></td>
+      <td>Docker Desktop pas lancé</td>
+      <td>Lancer Docker Desktop, attendre qu'il soit prêt</td>
+    </tr>
+    <tr>
+      <td>Back refusé par MongoDB (<code>Authentication failed</code>)</td>
+      <td>Base créée avant le <code>.env</code>, ou mot de passe changé après</td>
+      <td><code>docker compose down -v</code> puis <code>docker compose up -d --build</code> <strong>(efface les données de dev)</strong></td>
+    </tr>
+    <tr>
+      <td>Port déjà utilisé (3000, 8080, 27017)</td>
+      <td>Conteneur ou process existant</td>
+      <td><code>docker ps</code> → <code>docker stop &lt;nom&gt;</code></td>
+    </tr>
+    <tr>
+      <td>« Backend : indisponible » sur <code>localhost:8080</code></td>
+      <td>Back arrêté ou en erreur</td>
+      <td><code>docker compose ps</code>, <code>docker compose logs backend</code></td>
+    </tr>
+    <tr>
+      <td><code>UnsupportedClassVersionError</code> pendant <code>clients:generate</code></td>
+      <td>Java 8 (trop ancien)</td>
+      <td>Installer JDK 17+ ; vérifier <code>java -version</code></td>
+    </tr>
+    <tr>
+      <td>Contract - check rouge : « pas à jour »</td>
+      <td>Fichiers générés non régénérés ou non commités</td>
+      <td><code>npm run clients:generate</code> dans <code>backend/</code>, puis commiter</td>
+    </tr>
+    <tr>
+      <td>Format - Dart rouge alors que <code>dart format</code> a été lancé</td>
+      <td>Mauvaise version de Flutter</td>
+      <td>Aligner sur Flutter 3.47.6, relancer <code>dart format</code></td>
+    </tr>
+    <tr>
+      <td>« Mock manquant » (501) dans Playwright</td>
+      <td>Route non simulée en mode mock</td>
+      <td>Ajouter la réponse simulée dans <code>arrange.mock</code></td>
+    </tr>
+    <tr>
+      <td>Playwright : <code>Executable doesn't exist</code></td>
+      <td>Chromium non installé</td>
+      <td><code>npx playwright install chromium</code> dans <code>frontend-web/</code></td>
+    </tr>
+    <tr>
+      <td>Playwright mode real ne démarre pas le back</td>
+      <td><code>backend/node_modules</code> absent</td>
+      <td><code>npm install</code> dans <code>backend/</code></td>
+    </tr>
+    <tr>
+      <td>Couverture sous le seuil</td>
+      <td>Code non testé</td>
+      <td>Ouvrir <code>backend/coverage/lcov-report/index.html</code>, écrire les tests manquants</td>
+    </tr>
+    <tr>
+      <td>Hook de formatage silencieux</td>
+      <td>Hook non activé ou non exécutable</td>
+      <td><code>git config core.hooksPath</code> → doit afficher <code>.githooks</code> ; Linux/macOS : <code>chmod +x .githooks/pre-commit</code></td>
+    </tr>
+    <tr>
+      <td>PR bloquée en « Waiting for status to be reported »</td>
+      <td>Check obligatoire introuvable (workflow renommé ou supprimé)</td>
+      <td>Comparer la liste dans Settings → Rules avec les noms réels des jobs</td>
+    </tr>
+    <tr>
+      <td>PR Dependabot rouge</td>
+      <td>Mise à jour incompatible</td>
+      <td>Ne pas fusionner — lire l'erreur ou fermer la PR</td>
+    </tr>
+  </table>
+</section>
+
+<!-- ═══ TODO ═══ -->
+<!-- ═══ COMMANDES ═══ -->
+<section id="ref-backend">
+  <h2><span class="icon">📚</span> Référence rapide — Commandes</h2>
+
+  <h3>Backend (<code>backend/</code>)</h3>
+  <table>
+    <tr><th>Commande</th><th>Rôle</th></tr>
+    <tr><td><code>npm install</code></td><td>Installer les dépendances</td></tr>
+    <tr><td><code>node index.js</code></td><td>Lancer le back</td></tr>
+    <tr><td><code>npm test</code></td><td>Tests sans couverture</td></tr>
+    <tr><td><code>npm run test:coverage</code></td><td>Tests avec couverture et seuils</td></tr>
+    <tr><td><code>npm run lint</code></td><td>ESLint</td></tr>
+    <tr><td><code>npm run format</code></td><td>Prettier (réécrit les fichiers)</td></tr>
+    <tr><td><code>npm run format:check</code></td><td>Prettier (vérifie sans modifier, comme la CI)</td></tr>
+    <tr><td><code>npm run clients:generate</code></td><td>Régénère <code>openapi.json</code> + clients TS et Dart (Java requis)</td></tr>
+    <tr><td><code>npm run openapi:export</code></td><td>Régénère uniquement <code>openapi.json</code></td></tr>
+  </table>
+</section>
+
+<section id="ref-web">
+  <h3>Web (<code>frontend-web/</code>)</h3>
+  <table>
+    <tr><th>Commande</th><th>Rôle</th></tr>
+    <tr><td><code>npm install</code></td><td>Installer les dépendances</td></tr>
+    <tr><td><code>npm start -- --proxy-config proxy.conf.json</code></td><td>Dev server avec proxy vers le back</td></tr>
+    <tr><td><code>npm run watch</code></td><td>Build Angular en mode watch (développement)</td></tr>
+    <tr><td><code>npm test</code> / <code>npm run test:coverage</code></td><td>Vitest unitaires / avec couverture</td></tr>
+    <tr><td><code>npm run lint</code></td><td>ESLint</td></tr>
+    <tr><td><code>npm run build</code></td><td>Build Angular</td></tr>
+    <tr><td><code>npm run format</code> / <code>npm run format:check</code></td><td>Prettier</td></tr>
+    <tr><td><code>npm run e2e</code> / <code>npx playwright test</code></td><td>Tests E2E — options : <code>--project=mock</code>, <code>--ui</code>, <code>--headed</code></td></tr>
+    <tr><td><code>npm run test:all</code></td><td>Tests unitaires (sans watch) + E2E</td></tr>
+    <tr><td><code>npm run verify</code></td><td>Lint + test:all — tout en une commande</td></tr>
+    <tr><td><code>npx playwright show-report</code></td><td>Dernier rapport Playwright</td></tr>
+  </table>
+</section>
+
+<section id="ref-app">
+  <h3>App (<code>frontend-app/</code>)</h3>
+  <table>
+    <tr><th>Commande</th><th>Rôle</th></tr>
+    <tr><td><code>flutter pub get</code></td><td>Installer les dépendances</td></tr>
+    <tr><td><code>flutter run</code></td><td>Lancer (<code>--dart-define=API_URL=...</code> pour changer l'adresse)</td></tr>
+    <tr><td><code>flutter analyze</code></td><td>Analyse statique</td></tr>
+    <tr><td><code>flutter test</code> / <code>flutter test --coverage</code></td><td>Unitaires + widgets</td></tr>
+    <tr><td><code>dart run tool/check_coverage.dart 80</code></td><td>Vérifier le seuil de 80 %</td></tr>
+    <tr><td><code>flutter test integration_test</code></td><td>Tests d'intégration (émulateur/appareil)</td></tr>
+    <tr><td><code>flutter test integration_test --dart-define=BACKEND=mock</code></td><td>Mode simulé uniquement</td></tr>
+    <tr><td><code>dart format lib test integration_test tool</code></td><td>Formater</td></tr>
+  </table>
+</section>
+
+<section id="ref-docker">
+  <h3>Docker (racine)</h3>
+  <table>
+    <tr><th>Commande</th><th>Rôle</th></tr>
+    <tr><td><code>docker compose up -d --build</code></td><td>Construire et lancer la stack de dev</td></tr>
+    <tr><td><code>docker compose ps</code></td><td>État des conteneurs</td></tr>
+    <tr><td><code>docker compose logs backend</code></td><td>Journaux du back</td></tr>
+    <tr><td><code>docker compose down</code></td><td>Arrêter (données conservées)</td></tr>
+    <tr><td><code>docker compose down -v</code></td><td>Arrêter et supprimer la base</td></tr>
+    <tr><td><code>docker compose -f oci://ghcr.io/thegamerfarmer/rekor:latest up</code></td><td>Lancer la version publiée (sans le code)</td></tr>
+  </table>
+</section>
+
+<section id="ref-git">
+  <h3>Git</h3>
+  <table>
+    <tr><th>Commande</th><th>Rôle</th></tr>
+    <tr><td><code>git config core.hooksPath .githooks</code></td><td>Activer le hook de formatage (une fois par clone)</td></tr>
+    <tr><td><code>git switch -c feature/&lt;ticket&gt;-&lt;description&gt;</code></td><td>Créer une branche</td></tr>
+    <tr><td><code>git push -u origin &lt;branche&gt;</code></td><td>Publier la branche et ouvrir la PR</td></tr>
+    <tr><td><code>git fetch origin &amp;&amp; git merge origin/main</code></td><td>Mettre à jour sa branche</td></tr>
+    <tr><td><code>git commit --no-verify</code></td><td>Contourner le hook (exceptionnellement)</td></tr>
+  </table>
+
+  <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px;">
+    Ce guide fait partie du projet. Quand une commande, un outil ou un nom de check change, mettre ce fichier à jour dans la même PR.
+  </div>
+</section>
+
+</main>
+
+<script>
+  // Highlight active nav item on scroll
+  const sections = document.querySelectorAll('section[id], header');
+  const navLinks = document.querySelectorAll('nav a');
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        navLinks.forEach(a => a.classList.remove('active'));
+        const active = document.querySelector(`nav a[href="#${entry.target.id}"]`);
+        if (active) active.classList.add('active');
+      }
+    });
+  }, { rootMargin: '-20% 0px -70% 0px' });
+
+  sections.forEach(s => observer.observe(s));
+</script>
+
+</body>
+</html>

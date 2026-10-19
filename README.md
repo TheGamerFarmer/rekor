@@ -4,6 +4,8 @@
 
 Projet de SAE (BUT Informatique, semestre 5), réalisé en équipe.
 
+**Nouveau dans le projet ?** Lis d'abord le [guide de l'équipe](docs/guide-equipe.md) : les outils, les automatisations et la façon de travailler.
+
 ## Équipe
 
 <!-- À compléter : noms et rôles. -->
@@ -119,16 +121,16 @@ Il demande d'avoir lancé `npm install` dans `backend/` et `frontend-web/`, et d
 
 ## Intégration continue
 
-| Workflow                | Rôle                                                                    |
-| ----------------------- | ----------------------------------------------------------------------- |
-| `Backend CI`            | lint, tests et couverture du back ; sur `main`, publie l'image Docker   |
-| `Frontend Web CI`       | lint, tests, couverture et build du front ; sur `main`, publie l'image  |
-| `Frontend App CI`       | analyse, tests, couverture, APK, build iOS, tests sur émulateur Android |
-| `E2E`                   | tests Playwright du front web, en modes `mock` et `real`                |
-| `Contract`              | clients générés à jour, et pas de rupture du contrat                    |
-| `Format`                | vérifie le formatage (Prettier et `dart format`)                        |
-| `Main docker construct` | publie le compose complet comme package `rekor`                         |
-| `Mirror to GRICAD`      | copie chaque push vers le dépôt GitLab de l'IUT                         |
+| Workflow                    | Rôle                                                                    |
+| --------------------------- | ----------------------------------------------------------------------- |
+| `Backend CI`                | lint, tests et couverture du back ; sur `main`, publie l'image Docker   |
+| `Frontend Web CI`           | lint, tests, couverture et build du front ; sur `main`, publie l'image  |
+| `Frontend App CI (Flutter)` | analyse, tests, couverture, APK, build iOS, tests sur émulateur Android |
+| `E2E`                       | tests Playwright du front web, en modes `mock` et `real`                |
+| `Contract`                  | clients générés à jour, et pas de rupture du contrat                    |
+| `Format`                    | vérifie le formatage (Prettier et `dart format`)                        |
+| `Main docker construct`     | publie le compose complet comme package `rekor`                         |
+| `Mirror to GRICAD`          | copie chaque push vers le dépôt GitLab de l'IUT                         |
 
 CodeQL analyse la sécurité du code, et Dependabot propose chaque semaine les mises à jour de dépendances.
 
