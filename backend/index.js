@@ -5,6 +5,7 @@ const { buildSpec } = require('./openapi');
 const db = require('./db');
 const { ensureSchema } = require('./schema');
 const createUsersRouter = require('./routes/users');
+const helmet = require('helmet');
 
 const app = express();
 
@@ -16,6 +17,7 @@ if (process.env.TRUST_PROXY) {
 const port = process.env.PORT || 3000;
 const spec = buildSpec();
 
+app.use(helmet());
 app.use(express.json());
 
 // Documentation (montée avant le validateur pour ne pas être filtrée par lui)
