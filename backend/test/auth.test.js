@@ -43,11 +43,7 @@ describe('/auth', () => {
     const res = await request(app).post('/auth/register').send(account);
 
     assert.strictEqual(res.status, 201);
-    assert.match(res.body.id, /^[0-9a-f]{24}$/);
-    assert.deepStrictEqual(
-      { email: res.body.email, name: res.body.name },
-      { email: account.email, name: account.name },
-    );
+    assert.deepStrictEqual(res.body, {});
 
     const stored = await db.getDb().collection('users').findOne({ email: account.email });
     assert.notStrictEqual(stored.password, account.password);
@@ -57,7 +53,7 @@ describe('/auth', () => {
   it('authentifie avec le bon mot de passe sans exposer le hash', async () => {
     const registration = await request(app).post('/auth/register').send(account);
     assert.strictEqual(registration.status, 201);
-    assert.strictEqual(registration.body.role, 'Visiteur');
+    const storedUser = await db.getDb().collection('users').findOne({ email: account.email });
 
     const res = await request(app).post('/auth/login').send({
       email: account.email,
@@ -74,7 +70,7 @@ describe('/auth', () => {
 
     const me = await request(app).get('/auth/me').set('Authorization', `Bearer ${res.body.token}`);
     assert.strictEqual(me.status, 200);
-    assert.deepStrictEqual(me.body, { id: registration.body.id, role: 'Visiteur' });
+    assert.deepStrictEqual(me.body, { id: storedUser._id.toString(), role: 'Visiteur' });
   });
 
   it('protège les routes et refuse les tokens invalides', async () => {
