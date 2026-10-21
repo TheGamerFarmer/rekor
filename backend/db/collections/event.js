@@ -10,7 +10,7 @@ async function createCollection(db) {
           type: { enum: ['Entrainement', 'Match-amical', 'Match-compétitif', 'Réunion', 'Autre'] },
           name: { bsonType: 'string' },
           description: { bsonType: 'string' },
-          group: { bsonType: 'objectID' },
+          group: { bsonType: 'objectId' },
         },
       },
     },

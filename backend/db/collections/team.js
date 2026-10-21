@@ -6,7 +6,7 @@ async function createCollection(db) {
         required: ['name', 'leader'],
         properties: {
           name: { bsonType: 'string' },
-          leader: { bsonType: 'objectID' },
+          leader: { bsonType: 'objectId' },
         },
       },
     },

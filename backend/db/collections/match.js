@@ -5,7 +5,7 @@ async function createCollection(db) {
         bsonType: 'object',
         required: ['event', 'opponent'],
         properties: {
-          event: { bsonType: 'objectID' },
+          event: { bsonType: 'objectId' },
           opponent: { bsonType: 'string' },
         },
       },

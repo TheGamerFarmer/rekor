@@ -6,7 +6,7 @@ async function createCollection(db) {
         required: ['number', 'match'],
         properties: {
           number: { bsonType: 'int' },
-          match: { bsonType: 'objectID' },
+          match: { bsonType: 'objectId' },
         },
       },
     },
