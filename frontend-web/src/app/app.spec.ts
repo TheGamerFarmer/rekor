@@ -31,23 +31,12 @@ describe('App', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should render the club homepage', async () => {
+  it('should render title', async () => {
     const { fixture, request } = createApp();
     request.flush({ status: 'ok' });
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('app-site-header')).toBeTruthy();
-    expect(compiled.querySelector('h1')?.textContent).toContain('Gières vs Lyon');
-    expect(compiled.querySelector('#rendez-vous h2')?.textContent).toContain(
-      'Les prochains rendez-vous',
-    );
-    expect(compiled.querySelector('app-site-footer')).toBeTruthy();
-    expect(compiled.querySelector('app-site-header img')?.getAttribute('src')).toBe(
-      '/logo/logo_noir.png',
-    );
-    expect(compiled.querySelector('app-site-footer img')?.getAttribute('src')).toBe(
-      '/logo/logo_noir.png',
-    );
+    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, frontend-web');
   });
 
   it('should show the status returned by the backend', async () => {

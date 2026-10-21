@@ -1,5 +1,7 @@
 :host {
   display: block;
+  padding: 24px max(6vw, calc((100vw - 1120px) / 2));
+  background: #091b3b;
   color: #fff;
   font-family: 'DM Sans', Arial, sans-serif;
 }
@@ -58,6 +60,10 @@ a {
 }
 
 @media (max-width: 720px) {
+  :host {
+    padding: 18px 22px;
+  }
+
   .site-header {
     flex-wrap: wrap;
     gap: 10px 14px;
