@@ -1,13 +1,7 @@
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
 const { ObjectId } = require('mongodb');
-const { getDb } = require('../db/db');
-
-// Express 4 n'attrape pas les erreurs d'une route async : on les transmet à next()
-const wrap = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
-
-const users = () => getDb().collection('users');
-const toUser = (doc) => ({ id: doc._id.toString(), email: doc.email, name: doc.name });
+const { wrapAsync, usersCollection, toPublicUser } = require('./shared');
 
 function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   const router = express.Router();
@@ -27,10 +21,10 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   // Enregistrer
   router.post(
     '/',
-    wrap(async (req, res) => {
+    wrapAsync(async (req, res) => {
       const { email, name } = req.body;
       try {
-        const { insertedId } = await users().insertOne({ email, name });
+        const { insertedId } = await usersCollection().insertOne({ email, name });
         res.status(201).json({ id: insertedId.toString(), email, name });
       } catch (error) {
         if (error.code === 11000) {
@@ -44,19 +38,19 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   // Lister
   router.get(
     '/',
-    wrap(async (req, res) => {
-      const docs = await users().find({}).sort({ _id: 1 }).limit(100).toArray();
-      res.json(docs.map(toUser));
+    wrapAsync(async (req, res) => {
+      const docs = await usersCollection().find({}).sort({ _id: 1 }).limit(100).toArray();
+      res.json(docs.map(toPublicUser));
     }),
   );
 
   // Récupérer
   router.get(
     '/:id',
-    wrap(async (req, res) => {
-      const doc = await users().findOne({ _id: new ObjectId(req.params.id) });
+    wrapAsync(async (req, res) => {
+      const doc = await usersCollection().findOne({ _id: new ObjectId(req.params.id) });
       if (!doc) return res.status(404).json({ message: 'Utilisateur introuvable' });
-      res.json(toUser(doc));
+      res.json(toPublicUser(doc));
     }),
   );
 

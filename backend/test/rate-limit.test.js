@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const express = require('express');
 const request = require('supertest');
-const createUsersRouter = require('../routes/users');
+const createUsersRouter = require('../controllers/users');
 
 // Application minimale : sans base connectée, chaque route répond 503, ce qui suffit
 // à compter les requêtes sans avoir besoin d'un mongod.

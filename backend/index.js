@@ -1,10 +1,9 @@
 const express = require('express');
-const swaggerUi = require('swagger-ui-express');
 const OpenApiValidator = require('express-openapi-validator');
 const { buildSpec } = require('./swagger/openapi');
 const db = require('./db/db');
 const { ensureSchema } = require('./db/schema');
-const createUsersRouter = require('./routes/users');
+const { registerRoutes, registerSwagger } = require('./controllers/routes');
 const helmet = require('helmet');
 
 const app = express();
@@ -20,11 +19,7 @@ const spec = buildSpec();
 app.use(helmet());
 app.use(express.json());
 
-// Documentation (montée avant le validateur pour ne pas être filtrée par lui)
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(spec));
-app.get('/api-docs.json', (req, res) => {
-  res.json(spec);
-});
+registerSwagger(app);
 
 // Toute requête/réponse est vérifiée contre la spec générée depuis openapi.js
 app.use(
@@ -35,14 +30,10 @@ app.use(
   }),
 );
 
-app.get('/', (req, res) => {
-  res.json({ status: 'ok' });
-});
-
-app.use('/users', createUsersRouter());
+registerRoutes(app);
 
 // Erreurs du validateur (400 requête invalide, 404 route non documentée, 500 réponse non conforme)
-// et des routes (503 base indisponible). Express exige EXACTEMENT 4 paramètres pour reconnaître
+// et des controllers (503 base indisponible). Express exige EXACTEMENT 4 paramètres pour reconnaître
 // un gestionnaire d'erreurs : `next` doit donc rester dans la signature.
 app.use((err, req, res, next) => {
   if (res.headersSent) return next(err);
