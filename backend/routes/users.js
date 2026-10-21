@@ -6,7 +6,7 @@ const { getDb } = require('../db/db');
 // Express 4 n'attrape pas les erreurs d'une route async : on les transmet à next()
 const wrap = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
 
-const users = () => getDb().collection('users');
+const users = () => getDb().collection('user');
 const toUser = (doc) => ({ id: doc._id.toString(), email: doc.email, name: doc.name });
 
 function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
@@ -28,9 +28,14 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   router.post(
     '/',
     wrap(async (req, res) => {
-      const { email, name } = req.body;
+      const { email, name, firstName, password, role, pronoun, phoneNumber, birthday } = req.body;
+      const doc = { email, name, firstName, password, role, pronoun };
+
+      if (phoneNumber !== undefined) doc.phoneNumber = phoneNumber;
+      if (birthday !== undefined) doc.birthday = birthday;
+
       try {
-        const { insertedId } = await users().insertOne({ email, name });
+        const { insertedId } = await users().insertOne(doc);
         res.status(201).json({ id: insertedId.toString(), email, name });
       } catch (error) {
         if (error.code === 11000) {

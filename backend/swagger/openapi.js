@@ -26,7 +26,15 @@ const UserId = z
 const UserInput = z
   .object({
     email: z.email().openapi({ example: 'ada@exemple.fr' }),
-    name: z.string().min(1).openapi({ example: 'Ada' }),
+    name: z.string().min(1).openapi({ example: 'Lovelace' }),
+    firstName: z.string().min(1).openapi({ example: 'Ada' }),
+    password: z.string().min(1).openapi({ example: 'motdepasse' }),
+    role: z
+      .enum(['Entraineur', 'Capitaine', 'Adhérent', 'Visiteur'])
+      .openapi({ example: 'Adhérent' }),
+    pronoun: z.enum(['Il', 'Elle', 'Iel', 'Autre']).openapi({ example: 'Elle' }),
+    phoneNumber: z.string().optional().openapi({ example: '0612345678' }),
+    birthday: z.iso.date().optional().openapi({ example: '1815-12-10' }),
   })
   .openapi('UserInput');
 

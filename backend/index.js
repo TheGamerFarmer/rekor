@@ -45,8 +45,13 @@ app.use('/users', createUsersRouter());
 // et des routes (503 base indisponible). Express exige EXACTEMENT 4 paramètres pour reconnaître
 // un gestionnaire d'erreurs : `next` doit donc rester dans la signature.
 app.use((err, req, res, next) => {
-  if (res.headersSent) return next(err);
-  res.status(err.status || 500).json({
+  if (res.headersSent) return;
+
+  const status = err.status || 500;
+
+  if (!err.status) console.error(err);
+
+  res.status(status).json({
     message: err.message,
     errors: err.errors,
   });
