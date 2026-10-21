@@ -44,6 +44,7 @@ app.use('/users', createUsersRouter());
 // Erreurs du validateur (400 requête invalide, 404 route non documentée, 500 réponse non conforme)
 // et des routes (503 base indisponible). Express exige EXACTEMENT 4 paramètres pour reconnaître
 // un gestionnaire d'erreurs : `next` doit donc rester dans la signature.
+// eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (res.headersSent) return;
 
