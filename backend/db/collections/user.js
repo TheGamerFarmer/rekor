@@ -17,6 +17,13 @@ async function createCollection(db) {
       },
     },
   });
+
+  await db
+    .collection('user')
+    .createIndex(
+      { name: 1, firstName: 1, email: 1, phoneNumber: 1, birthday: 1 },
+      { unique: true },
+    );
 }
 
 module.exports = { createCollection };

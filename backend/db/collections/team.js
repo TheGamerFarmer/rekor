@@ -6,11 +6,13 @@ async function createCollection(db) {
         required: ['name', 'leader'],
         properties: {
           name: { bsonType: 'string' },
-          leader: { bsonType: 'objectID' },
+          leader: { bsonType: 'objectId' },
         },
       },
     },
   });
+
+  await db.collection('team').createIndex({ name: 1, leader: 1 }, { unique: true });
 }
 
 module.exports = { createCollection };
