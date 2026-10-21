@@ -1,7 +1,7 @@
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
 const { ObjectId } = require('mongodb');
-const { wrapAsync, usersCollection, toPublicUser } = require('./shared');
+const { wrapAsync, usersCollection, toPublicUser, toEssentialPublicUser } = require('./shared');
 
 function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   const router = express.Router();
@@ -39,8 +39,8 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   router.get(
     '/',
     wrapAsync(async (req, res) => {
-      const docs = await usersCollection().find({}).sort({ _id: 1 }).limit(100).toArray();
-      res.json(docs.map(toPublicUser));
+      const docs = await usersCollection().find({}).sort({ _id: 1 }).toArray();
+      res.json(docs.map(toEssentialPublicUser));
     }),
   );
 
