@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { MongoMemoryServer } = require('mongodb-memory-server');
-const db = require('../db');
+const db = require('../db/db');
 
 test("getDb() échoue tant que connect() n'a pas été appelé", () => {
   assert.throws(() => db.getDb(), /n'est pas connectée/);

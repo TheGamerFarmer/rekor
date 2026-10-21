@@ -1,9 +1,9 @@
 const express = require('express');
 const swaggerUi = require('swagger-ui-express');
 const OpenApiValidator = require('express-openapi-validator');
-const { buildSpec } = require('./openapi');
-const db = require('./db');
-const { ensureSchema } = require('./schema');
+const { buildSpec } = require('./swagger/openapi');
+const db = require('./db/db');
+const { ensureSchema } = require('./db/schema');
 const createUsersRouter = require('./routes/users');
 const helmet = require('helmet');
 

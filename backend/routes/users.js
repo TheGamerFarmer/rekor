@@ -1,7 +1,7 @@
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
 const { ObjectId } = require('mongodb');
-const { getDb } = require('../db');
+const { getDb } = require('../db/db');
 
 // Express 4 n'attrape pas les erreurs d'une route async : on les transmet à next()
 const wrap = (handler) => (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);

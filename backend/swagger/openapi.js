@@ -5,7 +5,7 @@ const {
   OpenAPIRegistry,
   OpenApiGeneratorV3,
 } = require('@asteasolutions/zod-to-openapi');
-const { version } = require('./package.json');
+const { version } = require('../package.json');
 
 extendZodWithOpenApi(z);
 

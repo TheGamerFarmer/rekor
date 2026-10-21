@@ -2,7 +2,7 @@ const test = require('node:test');
 const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
-const { buildSpec } = require('../openapi');
+const { buildSpec } = require('../swagger/openapi');
 
 test('openapi.json correspond à openapi.js', () => {
   const committed = JSON.parse(fs.readFileSync(path.join(__dirname, '..', 'openapi.json'), 'utf8'));

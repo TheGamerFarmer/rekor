@@ -2,8 +2,8 @@ const { describe, it, before, after, beforeEach } = require('node:test');
 const assert = require('node:assert');
 const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
-const db = require('../db');
-const { ensureSchema } = require('../schema');
+const db = require('../db/db');
+const { ensureSchema } = require('../db/schema');
 const app = require('../index');
 
 const ada = { email: 'ada@exemple.fr', name: 'Ada' };
