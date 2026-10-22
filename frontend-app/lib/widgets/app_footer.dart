@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/home_page.dart';
 
 class AppFooter extends StatelessWidget{
-  const AppFooter({super.key});
+  final VoidCallback onMenuTap;
+  const AppFooter({super.key, required this.onMenuTap});
+
 
   @override
   Widget build(BuildContext context) {
@@ -33,14 +35,7 @@ class AppFooter extends StatelessWidget{
             ),
           ),
           InkWell(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MyHomePage(title: 'Accueil'),
-                ),
-              );
-            },
+            onTap: onMenuTap,
             child: const Text(
               'Menu',
               style: TextStyle(color: Colors.white),
