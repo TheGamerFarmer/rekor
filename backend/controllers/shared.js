@@ -7,19 +7,19 @@ const usersCollection = () => getDb().collection('users');
 
 const toPublicUser = (user) => {
   const { _id, name, firstName, email, phoneNumber, role, birthday, pronoun } = user;
+  const doc = {
+    id: _id.toString(),
+    name,
+    firstName,
+    email,
+    role,
+    pronoun,
+  };
 
-  return Object.fromEntries(
-    Object.entries({
-      id: _id.toString(),
-      name,
-      firstName,
-      email,
-      phoneNumber,
-      role,
-      birthday,
-      pronoun,
-    }).filter(([, value]) => value !== undefined),
-  );
+  if (phoneNumber !== undefined) doc.phoneNumber = phoneNumber;
+  if (birthday !== undefined) doc.birthday = birthday;
+
+  return Object.fromEntries(Object.entries(doc));
 };
 
 const toEssentialPublicUser = (user) => {
