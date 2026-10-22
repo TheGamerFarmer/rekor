@@ -37,13 +37,13 @@ jobs:
         run: npm ci
         working-directory: backend
       - name: Regenerate the contract and the clients
-        run: npm run clients:generate
+        run: npm run clients
         working-directory: backend
       - name: Check that the committed clients are up to date
         run: |
-          paths="backend/openapi.json frontend-web/src/app/api frontend-app/api_client"
+          paths="backend/swagger/openapi.json frontend-web/src/app/api frontend-app/api_client"
           if [ -n "$(git status --porcelain -- $paths)" ]; then
-            echo "::error::Le contrat ou les clients générés ne sont pas à jour. Lance 'npm run clients:generate' dans backend/ puis commite le résultat."
+            echo "::error::Le contrat ou les clients générés ne sont pas à jour. Lance 'npm run clients' dans backend/ puis commite le résultat."
             git status --short -- $paths
             exit 1
           fi
