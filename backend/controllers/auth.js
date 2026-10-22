@@ -45,7 +45,7 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
       const { name, firstName, email, password, phoneNumber, birthday, pronoun } = req.body;
       const collection = usersCollection();
 
-      if (await collection.findOne({ email }, { projection: { _id: 1 } })) {
+      if (await collection.findOne({ email: { $eq: email } }, { projection: { _id: 1 } })) {
         return res.status(409).json({ message: 'Un utilisateur avec cet e-mail existe déjà' });
       }
 
@@ -74,7 +74,7 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
     '/login',
     wrapAsync(async (req, res) => {
       const { email, password } = req.body;
-      const user = await usersCollection().findOne({ email });
+      const user = await usersCollection().findOne({ email: { $eq: email } });
 
       if (!user || !(await verifyPassword(password, user.password))) {
         return res.status(401).json({ message: 'E-mail ou mot de passe incorrect' });
