@@ -62,4 +62,16 @@ describe('ensureSchema', () => {
   it('est idempotente (peut tourner deux fois sans erreur)', async () => {
     await assert.doesNotReject(ensureSchema(database));
   });
+
+  it('propage les erreurs inattendues de createCollection', async () => {
+    const fakeDb = {
+      createCollection: async () => {
+        const err = new Error('erreur inattendue');
+        err.codeName = 'UnexpectedError';
+        throw err;
+      },
+      collection: () => ({ createIndex: async () => {} }),
+    };
+    await assert.rejects(ensureSchema(fakeDb), /erreur inattendue/);
+  });
 });
