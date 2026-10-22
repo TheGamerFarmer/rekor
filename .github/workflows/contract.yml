@@ -56,8 +56,8 @@ jobs:
         env:
           BASE: ${{ github.base_ref }}
         run: |
-          if git cat-file -e "origin/$BASE:backend/openapi.json" 2>/dev/null; then
-            git show "origin/$BASE:backend/openapi.json" > /tmp/openapi.base.json
+          if git cat-file -e "origin/$BASE:backend/swagger/openapi.json" 2>/dev/null; then
+            git show "origin/$BASE:backend/swagger/openapi.json" > /tmp/openapi.base.json
             oasdiff breaking /tmp/openapi.base.json backend/openapi.json --fail-on ERR
           else
             echo "Pas de contrat sur la branche de base : rien à comparer."
