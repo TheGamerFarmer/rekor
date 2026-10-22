@@ -9,24 +9,16 @@
  */
 
 
-export interface UserInput { 
-    email: string;
+export interface RegisterInput { 
     name: string;
     firstName: string;
+    email: string;
     password: string;
-    role: UserInput.RoleEnum;
-    pronoun: UserInput.PronounEnum;
+    pronoun: RegisterInput.PronounEnum;
     phoneNumber?: string;
     birthday?: string;
 }
-export namespace UserInput {
-    export const RoleEnum = {
-        Entraineur: 'Entraineur',
-        Capitaine: 'Capitaine',
-        Adhrent: 'Adhérent',
-        Visiteur: 'Visiteur',
-    } as const;
-    export type RoleEnum = typeof RoleEnum[keyof typeof RoleEnum];
+export namespace RegisterInput {
     export const PronounEnum = {
         Il: 'Il',
         Elle: 'Elle',

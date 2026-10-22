@@ -16,8 +16,8 @@ const toPublicUser = (user) => {
     pronoun,
   };
 
-  if (phoneNumber !== undefined) doc.phoneNumber = phoneNumber;
-  if (birthday !== undefined) doc.birthday = birthday;
+  if (phoneNumber !== undefined && phoneNumber !== null) doc.phoneNumber = phoneNumber;
+  if (birthday !== undefined && birthday !== null) doc.birthday = birthday;
 
   return Object.fromEntries(Object.entries(doc));
 };

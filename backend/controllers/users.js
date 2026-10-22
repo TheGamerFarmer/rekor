@@ -18,23 +18,6 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     }),
   );
 
-  // Enregistrer
-  router.post(
-    '/',
-    wrapAsync(async (req, res) => {
-      const { email, name } = req.body;
-      try {
-        const { insertedId } = await usersCollection().insertOne({ email, name });
-        res.status(201).json({ id: insertedId.toString(), email, name });
-      } catch (error) {
-        if (error.code === 11000) {
-          return res.status(409).json({ message: 'Un utilisateur avec cet e-mail existe déjà' });
-        }
-        throw error;
-      }
-    }),
-  );
-
   // Lister
   router.get(
     '/',

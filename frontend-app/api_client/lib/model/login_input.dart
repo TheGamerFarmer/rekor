@@ -10,48 +10,42 @@
 
 part of rekor_api;
 
-class User {
-  /// Returns a new [User] instance.
-  User({
-    required this.id,
+class LoginInput {
+  /// Returns a new [LoginInput] instance.
+  LoginInput({
     required this.email,
-    required this.name,
+    required this.password,
   });
-
-  String id;
 
   String email;
 
-  String name;
+  String password;
 
   @override
-  bool operator ==(Object other) => identical(this, other) || other is User &&
-    other.id == id &&
+  bool operator ==(Object other) => identical(this, other) || other is LoginInput &&
     other.email == email &&
-    other.name == name;
+    other.password == password;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (id.hashCode) +
     (email.hashCode) +
-    (name.hashCode);
+    (password.hashCode);
 
   @override
-  String toString() => 'User[id=$id, email=$email, name=$name]';
+  String toString() => 'LoginInput[email=$email, password=$password]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'id'] = this.id;
       json[r'email'] = this.email;
-      json[r'name'] = this.name;
+      json[r'password'] = this.password;
     return json;
   }
 
-  /// Returns a new [User] instance and imports its values from
+  /// Returns a new [LoginInput] instance and imports its values from
   /// [value] if it's a [Map], null otherwise.
   // ignore: prefer_constructors_over_static_methods
-  static User? fromJson(dynamic value) {
+  static LoginInput? fromJson(dynamic value) {
     if (value is Map) {
       final json = value.cast<String, dynamic>();
 
@@ -59,29 +53,26 @@ class User {
       // Note 1: the values aren't checked for validity beyond being non-null.
       // Note 2: this code is stripped in release mode!
       assert(() {
-        assert(json.containsKey(r'id'), 'Required key "User[id]" is missing from JSON.');
-        assert(json[r'id'] != null, 'Required key "User[id]" has a null value in JSON.');
-        assert(json.containsKey(r'email'), 'Required key "User[email]" is missing from JSON.');
-        assert(json[r'email'] != null, 'Required key "User[email]" has a null value in JSON.');
-        assert(json.containsKey(r'name'), 'Required key "User[name]" is missing from JSON.');
-        assert(json[r'name'] != null, 'Required key "User[name]" has a null value in JSON.');
+        assert(json.containsKey(r'email'), 'Required key "LoginInput[email]" is missing from JSON.');
+        assert(json[r'email'] != null, 'Required key "LoginInput[email]" has a null value in JSON.');
+        assert(json.containsKey(r'password'), 'Required key "LoginInput[password]" is missing from JSON.');
+        assert(json[r'password'] != null, 'Required key "LoginInput[password]" has a null value in JSON.');
         return true;
       }());
 
-      return User(
-        id: mapValueOfType<String>(json, r'id')!,
+      return LoginInput(
         email: mapValueOfType<String>(json, r'email')!,
-        name: mapValueOfType<String>(json, r'name')!,
+        password: mapValueOfType<String>(json, r'password')!,
       );
     }
     return null;
   }
 
-  static List<User> listFromJson(dynamic json, {bool growable = false,}) {
-    final result = <User>[];
+  static List<LoginInput> listFromJson(dynamic json, {bool growable = false,}) {
+    final result = <LoginInput>[];
     if (json is List && json.isNotEmpty) {
       for (final row in json) {
-        final value = User.fromJson(row);
+        final value = LoginInput.fromJson(row);
         if (value != null) {
           result.add(value);
         }
@@ -90,12 +81,12 @@ class User {
     return result.toList(growable: growable);
   }
 
-  static Map<String, User> mapFromJson(dynamic json) {
-    final map = <String, User>{};
+  static Map<String, LoginInput> mapFromJson(dynamic json) {
+    final map = <String, LoginInput>{};
     if (json is Map && json.isNotEmpty) {
       json = json.cast<String, dynamic>(); // ignore: parameter_assignments
       for (final entry in json.entries) {
-        final value = User.fromJson(entry.value);
+        final value = LoginInput.fromJson(entry.value);
         if (value != null) {
           map[entry.key] = value;
         }
@@ -104,14 +95,14 @@ class User {
     return map;
   }
 
-  // maps a json object with a list of User-objects as value to a dart map
-  static Map<String, List<User>> mapListFromJson(dynamic json, {bool growable = false,}) {
-    final map = <String, List<User>>{};
+  // maps a json object with a list of LoginInput-objects as value to a dart map
+  static Map<String, List<LoginInput>> mapListFromJson(dynamic json, {bool growable = false,}) {
+    final map = <String, List<LoginInput>>{};
     if (json is Map && json.isNotEmpty) {
       // ignore: parameter_assignments
       json = json.cast<String, dynamic>();
       for (final entry in json.entries) {
-        map[entry.key] = User.listFromJson(entry.value, growable: growable,);
+        map[entry.key] = LoginInput.listFromJson(entry.value, growable: growable,);
       }
     }
     return map;
@@ -119,9 +110,8 @@ class User {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'id',
     'email',
-    'name',
+    'password',
   };
 }
 

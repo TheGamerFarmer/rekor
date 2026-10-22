@@ -4,7 +4,20 @@
     "title": "Rekor API",
     "version": "1.0.0"
   },
+  "servers": [
+    {
+      "url": "/api",
+      "description": "API via le reverse proxy"
+    }
+  ],
   "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
     "schemas": {
       "HealthResponse": {
         "type": "object",
@@ -18,7 +31,7 @@
           "status"
         ]
       },
-      "User": {
+      "UserListItem": {
         "type": "object",
         "properties": {
           "id": {
@@ -26,18 +39,21 @@
             "pattern": "^[0-9a-f]{24}$",
             "example": "6ac8c78e50318b28d457048f"
           },
+          "name": {
+            "type": "string"
+          },
+          "firstName": {
+            "type": "string"
+          },
           "email": {
             "type": "string",
             "format": "email"
-          },
-          "name": {
-            "type": "string"
           }
         },
         "required": [
           "id",
-          "email",
-          "name"
+          "name",
+          "email"
         ]
       },
       "ErrorResponse": {
@@ -51,14 +67,50 @@
           "message"
         ]
       },
-      "UserInput": {
+      "UserDetails": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserListItem"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": [
+                  "Entraineur",
+                  "Capitaine",
+                  "Adhérent",
+                  "Visiteur"
+                ]
+              },
+              "pronoun": {
+                "type": "string",
+                "enum": [
+                  "Il",
+                  "Elle",
+                  "Iel",
+                  "Autre"
+                ]
+              },
+              "phoneNumber": {
+                "type": "string"
+              },
+              "birthday": {
+                "type": "string",
+                "format": "date-time"
+              }
+            },
+            "required": [
+              "role",
+              "pronoun"
+            ]
+          }
+        ]
+      },
+      "RegisterInput": {
         "type": "object",
         "properties": {
-          "email": {
-            "type": "string",
-            "format": "email",
-            "example": "ada@exemple.fr"
-          },
           "name": {
             "type": "string",
             "minLength": 1,
@@ -69,20 +121,15 @@
             "minLength": 1,
             "example": "Ada"
           },
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ada@exemple.fr"
+          },
           "password": {
             "type": "string",
             "minLength": 1,
             "example": "motdepasse"
-          },
-          "role": {
-            "type": "string",
-            "enum": [
-              "Entraineur",
-              "Capitaine",
-              "Adhérent",
-              "Visiteur"
-            ],
-            "example": "Adhérent"
           },
           "pronoun": {
             "type": "string",
@@ -105,12 +152,100 @@
           }
         },
         "required": [
-          "email",
           "name",
           "firstName",
+          "email",
           "password",
-          "role",
           "pronoun"
+        ]
+      },
+      "LoginResponse": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/LoginUser"
+          }
+        },
+        "required": [
+          "token",
+          "user"
+        ]
+      },
+      "LoginUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "name": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "Entraineur",
+              "Capitaine",
+              "Adhérent",
+              "Visiteur"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "name",
+          "role"
+        ]
+      },
+      "LoginInput": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ada@exemple.fr"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "example": "motdepasse"
+          }
+        },
+        "required": [
+          "email",
+          "password"
+        ]
+      },
+      "CurrentUser": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "Entraineur",
+              "Capitaine",
+              "Adhérent",
+              "Visiteur"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "role"
         ]
       }
     },
@@ -139,81 +274,12 @@
       }
     },
     "/users": {
-      "post": {
-        "operationId": "createUser",
-        "tags": [
-          "Users"
-        ],
-        "summary": "Crée un utilisateur",
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UserInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Utilisateur créé",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/User"
-                }
-              }
-            }
-          },
-          "400": {
-            "description": "Requête invalide",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Un utilisateur avec cet e-mail existe déjà",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Trop de requêtes",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "503": {
-            "description": "Base de données indisponible",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      },
       "get": {
         "operationId": "listUsers",
         "tags": [
           "Users"
         ],
-        "summary": "Liste les utilisateurs (100 au maximum)",
+        "summary": "Liste les utilisateurs",
         "responses": {
           "200": {
             "description": "Les utilisateurs",
@@ -222,7 +288,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/User"
+                    "$ref": "#/components/schemas/UserListItem"
                   }
                 }
               }
@@ -230,6 +296,16 @@
           },
           "429": {
             "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur",
             "content": {
               "application/json": {
                 "schema": {
@@ -276,7 +352,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/User"
+                  "$ref": "#/components/schemas/UserDetails"
                 }
               }
             }
@@ -311,8 +387,229 @@
               }
             }
           },
+          "500": {
+            "description": "Erreur interne du serveur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "503": {
             "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "operationId": "register",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Crée un compte utilisateur (rôle Visiteur attribué par le serveur)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Compte créé, sans contenu de réponse"
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Un utilisateur avec cet e-mail existe déjà",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "operationId": "login",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Vérifie les identifiants et renvoie un token JWT",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Utilisateur authentifié",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "E-mail ou mot de passe incorrect",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne ou configuration d’authentification indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "operationId": "getCurrentUser",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Récupère l’identité portée par le token",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Utilisateur authentifié",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CurrentUser"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentification requise ou token invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Configuration d’authentification indisponible",
             "content": {
               "application/json": {
                 "schema": {
