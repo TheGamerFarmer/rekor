@@ -1,4 +1,7 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
+import '../widgets/app_footer.dart';
 
 class MainLayout extends StatelessWidget {
   final Widget child;
@@ -37,19 +40,25 @@ class MainLayout extends StatelessWidget {
       body: Stack(
         fit: StackFit.expand,
         children: [
-      // Image de fond en noir et blanc
-      ColorFiltered(
-      colorFilter: const ColorFilter.matrix([
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0.2126, 0.7152, 0.0722, 0, 0,
-          0,      0,      0,      1, 0,
-          ]),
-          // Image de fond
-          child: Image.asset(
-            'public/img/volley_ball1.jpg',
-            fit: BoxFit.cover,
-          ),
+      ImageFiltered(
+        imageFilter: ImageFilter.blur(
+        sigmaX: 5,
+          sigmaY: 5,
+        ),
+        // Image de fond en noir et blanc
+        child: ColorFiltered(
+        colorFilter: const ColorFilter.matrix([
+            0.2126, 0.7152, 0.0722, 0, 0,
+            0.2126, 0.7152, 0.0722, 0, 0,
+            0.2126, 0.7152, 0.0722, 0, 0,
+            0,      0,      0,      1, 0,
+            ]),
+            // Image de fond
+            child: Image.asset(
+              'public/img/volley_ball1.jpg',
+              fit: BoxFit.cover,
+            ),
+        ),
       ),
 
           // Voile sombre pour améliorer la lisibilité
@@ -59,6 +68,13 @@ class MainLayout extends StatelessWidget {
 
           // Contenu de la page
           child,
+          
+          Positioned(
+            bottom: 80,
+            left: 20,
+            right: 20,
+            child: const AppFooter(),
+          )
         ],
       ),
     );
