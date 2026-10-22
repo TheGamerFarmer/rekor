@@ -28,13 +28,19 @@ part 'auth/oauth.dart';
 part 'auth/http_basic_auth.dart';
 part 'auth/http_bearer_auth.dart';
 
+part 'api/authentication_api.dart';
 part 'api/health_api.dart';
 part 'api/users_api.dart';
 
+part 'model/current_user.dart';
 part 'model/error_response.dart';
 part 'model/health_response.dart';
-part 'model/user.dart';
-part 'model/user_input.dart';
+part 'model/login_input.dart';
+part 'model/login_response.dart';
+part 'model/login_user.dart';
+part 'model/register_input.dart';
+part 'model/user_details.dart';
+part 'model/user_list_item.dart';
 
 
 /// An [ApiClient] instance that uses the default values obtained from

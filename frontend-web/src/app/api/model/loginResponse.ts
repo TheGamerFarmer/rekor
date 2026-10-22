@@ -7,10 +7,11 @@
  * https://openapi-generator.tech
  * Do not edit the class manually.
  */
+import { LoginUser } from './loginUser';
 
 
-export interface UserInput { 
-    email: string;
-    name: string;
+export interface LoginResponse { 
+    token: string;
+    user: LoginUser;
 }
 
