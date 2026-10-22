@@ -5,7 +5,14 @@ const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const db = require('../db/db');
 const app = require('../index');
-const { authenticate, authorize, signAccessToken } = require('../controllers/auth-middleware');
+const createAuthRouter = require('../controllers/auth');
+const {
+  authenticate,
+  authorize,
+  signAccessToken,
+  verifyAccessToken,
+} = require('../controllers/auth-middleware');
+const { createHmac } = require('node:crypto');
 
 const account = {
   email: 'ada@exemple.fr',
@@ -15,6 +22,12 @@ const account = {
   pronoun: 'Elle',
 };
 
+function buildMiddlewareApp() {
+  const middlewareApp = express();
+  middlewareApp.get('/me', authenticate, (req, res) => res.json(req.auth));
+  return middlewareApp;
+}
+
 describe('/auth', () => {
   let mongod;
   const previousJwtSecret = process.env.JWT_SECRET;
@@ -23,6 +36,7 @@ describe('/auth', () => {
     process.env.JWT_SECRET = 'test-secret-with-at-least-32-bytes-long';
     mongod = await MongoMemoryServer.create();
     await db.connect({ uri: mongod.getUri(), dbName: 'auth-test' });
+    await db.getDb().collection('users').createIndex({ email: 1 }, { unique: true });
   });
 
   after(async () => {
@@ -119,5 +133,123 @@ describe('/auth', () => {
       .get('/trainers')
       .set('Authorization', `Bearer ${trainerToken}`);
     assert.strictEqual(allowed.status, 204);
+  });
+
+  it('rejette les tokens mal formés, falsifiés ou avec des claims invalides', async () => {
+    const validHeader = Buffer.from(JSON.stringify({ alg: 'HS256', typ: 'JWT' })).toString(
+      'base64url',
+    );
+    const encode = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
+    const sign = (header, payload) => {
+      const unsigned = `${encode(header)}.${encode(payload)}`;
+      const signature = createHmac('sha256', process.env.JWT_SECRET)
+        .update(unsigned)
+        .digest('base64url');
+      return `${unsigned}.${signature}`;
+    };
+    const validPayload = {
+      sub: '6ac8c78e50318b28d457048f',
+      role: 'Visiteur',
+      exp: Math.floor(Date.now() / 1000) + 60,
+    };
+    const tokens = [
+      'not-a-jwt',
+      `${validHeader}.${Buffer.from('not-json').toString('base64url')}.signature`,
+      sign({ alg: 'none', typ: 'JWT' }, validPayload),
+      `${sign({ alg: 'HS256', typ: 'JWT' }, validPayload).slice(0, -1)}x`,
+      sign({ alg: 'HS256', typ: 'JWT' }, { ...validPayload, role: 'Admin' }),
+      sign({ alg: 'HS256', typ: 'JWT' }, { ...validPayload, exp: 'later' }),
+      sign({ alg: 'HS256', typ: 'JWT' }, { ...validPayload, exp: 1 }),
+      sign({ alg: 'HS256', typ: 'JWT' }, { role: 'Visiteur', exp: validPayload.exp }),
+    ];
+    const middlewareApp = buildMiddlewareApp();
+
+    for (const token of tokens) {
+      assert.throws(() => verifyAccessToken(token));
+      const res = await request(middlewareApp).get('/me').set('Authorization', `Bearer ${token}`);
+      assert.strictEqual(res.status, 401);
+    }
+  });
+
+  it('transmet les erreurs de configuration JWT du middleware au gestionnaire Express', async () => {
+    const validToken = signAccessToken({
+      _id: { toString: () => '6ac8c78e50318b28d457048f' },
+      role: 'Visiteur',
+    });
+    process.env.JWT_SECRET = 'short';
+
+    try {
+      const res = await request(buildMiddlewareApp())
+        .get('/me')
+        .set('Authorization', `Bearer ${validToken}`);
+      assert.strictEqual(res.status, 500);
+      assert.match(res.text, /JWT_SECRET/);
+    } finally {
+      process.env.JWT_SECRET = 'test-secret-with-at-least-32-bytes-long';
+    }
+  });
+
+  it('rejette la création de token si JWT_SECRET est absent ou trop court', () => {
+    const user = {
+      _id: { toString: () => '6ac8c78e50318b28d457048f' },
+      role: 'Visiteur',
+    };
+    delete process.env.JWT_SECRET;
+    assert.throws(() => signAccessToken(user), /JWT_SECRET doit contenir/);
+
+    process.env.JWT_SECRET = 'short';
+    assert.throws(() => signAccessToken(user), /JWT_SECRET doit contenir/);
+    process.env.JWT_SECRET = 'test-secret-with-at-least-32-bytes-long';
+  });
+
+  it('renvoie 401 si authorize est appelé sans authentification', async () => {
+    const roleApp = express();
+    roleApp.get('/trainers', authorize('Entraineur'), (req, res) => res.sendStatus(204));
+
+    const res = await request(roleApp).get('/trainers');
+    assert.strictEqual(res.status, 401);
+  });
+
+  it('renvoie 409 si une insertion concurrente viole la contrainte d’unicité', async () => {
+    const registrationApp = express();
+    registrationApp.use(express.json());
+    registrationApp.use('/auth', createAuthRouter({ limit: 100 }));
+    const collection = db.getDb().collection('users');
+    const collectionPrototype = Object.getPrototypeOf(collection);
+    const originalInsertOne = collectionPrototype.insertOne;
+    collectionPrototype.insertOne = async () => {
+      throw Object.assign(new Error('Duplicate email'), { code: 11000 });
+    };
+
+    try {
+      const res = await request(registrationApp)
+        .post('/auth/register')
+        .send({ ...account, email: 'concurrent@exemple.fr' });
+      assert.strictEqual(res.status, 409);
+    } finally {
+      collectionPrototype.insertOne = originalInsertOne;
+    }
+  });
+
+  it('transmet les erreurs d’insertion qui ne sont pas des doublons', async () => {
+    const registrationApp = express();
+    registrationApp.use(express.json());
+    registrationApp.use('/auth', createAuthRouter({ limit: 100 }));
+    const collection = db.getDb().collection('users');
+    const collectionPrototype = Object.getPrototypeOf(collection);
+    const originalInsertOne = collectionPrototype.insertOne;
+    collectionPrototype.insertOne = async () => {
+      throw Object.assign(new Error('Database write failed'), { code: 12345 });
+    };
+
+    try {
+      const res = await request(registrationApp)
+        .post('/auth/register')
+        .send({ ...account, email: 'write-error@exemple.fr' });
+      assert.strictEqual(res.status, 500);
+      assert.match(res.text, /Database write failed/);
+    } finally {
+      collectionPrototype.insertOne = originalInsertOne;
+    }
   });
 });

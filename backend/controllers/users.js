@@ -31,6 +31,10 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   router.get(
     '/:id',
     wrapAsync(async (req, res) => {
+      if (!ObjectId.isValid(req.params.id)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
       const doc = await usersCollection().findOne({ _id: new ObjectId(req.params.id) });
       if (!doc) return res.status(404).json({ message: 'Utilisateur introuvable' });
       res.json(toPublicUser(doc));

@@ -3,6 +3,7 @@ const assert = require('node:assert');
 const express = require('express');
 const request = require('supertest');
 const createUsersRouter = require('../controllers/users');
+const createAuthRouter = require('../controllers/auth');
 
 // Application minimale : sans base connectée, chaque route répond 503, ce qui suffit
 // à compter les requêtes sans avoir besoin d'un mongod.
@@ -11,6 +12,7 @@ function buildApp(options, { trustProxy = false } = {}) {
   if (trustProxy) app.set('trust proxy', 1);
   app.use(express.json());
   app.use('/users', createUsersRouter(options));
+  app.use('/auth', createAuthRouter(options));
   return app;
 }
 
@@ -26,12 +28,18 @@ test('au-delà de la limite, les requêtes sont refusées avec un 429 JSON', asy
   assert.strictEqual(res.headers['ratelimit-limit'], '2');
 });
 
-test('la limite vaut aussi pour les écritures', async () => {
+test('la limite d’authentification vaut aussi pour les inscriptions', async () => {
   const app = buildApp({ limit: 1 });
-  const body = { email: 'ada@exemple.fr', name: 'Ada' };
+  const body = {
+    name: 'Lovelace',
+    firstName: 'Ada',
+    email: 'ada@exemple.fr',
+    password: 'motdepasse',
+    pronoun: 'Elle',
+  };
 
-  assert.strictEqual((await request(app).post('/users').send(body)).status, 503);
-  assert.strictEqual((await request(app).post('/users').send(body)).status, 429);
+  assert.strictEqual((await request(app).post('/auth/register').send(body)).status, 503);
+  assert.strictEqual((await request(app).post('/auth/register').send(body)).status, 429);
 });
 
 test('derrière un proxy, chaque client a sa propre limite', async () => {

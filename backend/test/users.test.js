@@ -2,27 +2,30 @@ const { describe, it, before, after, beforeEach } = require('node:test');
 const assert = require('node:assert');
 const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
+const { ObjectId } = require('mongodb');
 const db = require('../db/db');
-const { ensureSchema } = require('../db/schema');
 const app = require('../index');
 
 const ada = {
-  email: 'ada@exemple.fr',
-  name: 'Ada',
+  name: 'Lovelace',
   firstName: 'Ada',
-  password: 'motdepasse',
+  email: 'ada@exemple.fr',
+  password: 'hash-secret',
   role: 'Adhérent',
   pronoun: 'Elle',
+  phoneNumber: '0612345678',
+  birthday: new Date('1815-12-10T00:00:00.000Z'),
 };
 const UNKNOWN_ID = '000000000000000000000000';
 
 describe('/users (avec un vrai mongod)', () => {
   let mongod;
+  let adaId;
+  let alanId;
 
   before(async () => {
     mongod = await MongoMemoryServer.create();
-    await db.connect({ uri: mongod.getUri(), dbName: 'test' });
-    await ensureSchema(db.getDb());
+    await db.connect({ uri: mongod.getUri(), dbName: 'users-test' });
   });
 
   after(async () => {
@@ -31,49 +34,58 @@ describe('/users (avec un vrai mongod)', () => {
   });
 
   beforeEach(async () => {
-    await db.getDb().collection('user').deleteMany({});
-  });
-
-  it('POST /users enregistre un utilisateur', async () => {
-    const res = await request(app).post('/users').send(ada);
-
-    assert.strictEqual(res.status, 201);
-    assert.match(res.body.id, /^[0-9a-f]{24}$/);
-    assert.strictEqual(res.body.email, ada.email);
-    assert.strictEqual(res.body.name, ada.name);
-
-    // il est bien dans la base
-    const stored = await db.getDb().collection('user').findOne({ email: ada.email });
-    assert.strictEqual(stored._id.toString(), res.body.id);
-  });
-
-  it("GET /users/:id récupère l'utilisateur enregistré", async () => {
-    const created = await request(app).post('/users').send(ada);
-
-    const res = await request(app).get(`/users/${created.body.id}`);
-
-    assert.strictEqual(res.status, 200);
-    assert.deepStrictEqual(res.body, created.body);
-  });
-
-  it('GET /users liste les utilisateurs', async () => {
-    await request(app).post('/users').send(ada);
-    await request(app).post('/users').send({
-      email: 'alan@exemple.fr',
-      name: 'Alan',
+    const collection = db.getDb().collection('users');
+    await collection.deleteMany({});
+    adaId = new ObjectId('000000000000000000000001');
+    alanId = new ObjectId('000000000000000000000002');
+    await collection.insertOne({ ...ada, _id: adaId });
+    await collection.insertOne({
+      _id: alanId,
+      name: 'Byron',
       firstName: 'Alan',
-      password: 'motdepasse2',
+      email: 'alan@exemple.fr',
+      password: 'another-secret',
       role: 'Adhérent',
       pronoun: 'Il',
     });
+  });
 
+  it('GET /users liste les profils essentiels sans données privées', async () => {
     const res = await request(app).get('/users');
 
     assert.strictEqual(res.status, 200);
-    assert.deepStrictEqual(
-      res.body.map((u) => u.name),
-      ['Ada', 'Alan'],
-    );
+    assert.deepStrictEqual(res.body, [
+      {
+        id: adaId.toString(),
+        name: 'Lovelace',
+        firstName: 'Ada',
+        email: 'ada@exemple.fr',
+      },
+      {
+        id: alanId.toString(),
+        name: 'Byron',
+        firstName: 'Alan',
+        email: 'alan@exemple.fr',
+      },
+    ]);
+    assert.strictEqual('password' in res.body[0], false);
+    assert.strictEqual('role' in res.body[0], false);
+  });
+
+  it('GET /users/:id renvoie le profil public complet sans mot de passe', async () => {
+    const res = await request(app).get(`/users/${adaId}`);
+
+    assert.strictEqual(res.status, 200);
+    assert.deepStrictEqual(res.body, {
+      id: adaId.toString(),
+      name: 'Lovelace',
+      firstName: 'Ada',
+      email: 'ada@exemple.fr',
+      role: 'Adhérent',
+      pronoun: 'Elle',
+      phoneNumber: '0612345678',
+      birthday: '1815-12-10T00:00:00.000Z',
+    });
   });
 
   it("GET /users/:id renvoie 404 si l'utilisateur n'existe pas", async () => {
@@ -87,33 +99,5 @@ describe('/users (avec un vrai mongod)', () => {
     const res = await request(app).get('/users/pas-un-id');
 
     assert.strictEqual(res.status, 400);
-  });
-
-  it("POST /users renvoie 400 s'il manque un champ", async () => {
-    const res = await request(app).post('/users').send({ email: ada.email });
-
-    assert.strictEqual(res.status, 400);
-  });
-
-  it("POST /users renvoie 400 si l'e-mail est invalide", async () => {
-    const res = await request(app).post('/users').send({ email: 'pas-un-email', name: 'Ada' });
-
-    assert.strictEqual(res.status, 400);
-  });
-
-  it('la base refuse elle-même un document sans nom', async () => {
-    await assert.rejects(
-      db.getDb().collection('user').insertOne({ email: 'sans-nom@exemple.fr' }),
-      /Document failed validation/,
-    );
-  });
-
-  it("POST /users renvoie 409 si l'utilisateur existe déjà", async () => {
-    await request(app).post('/users').send(ada);
-
-    const res = await request(app).post('/users').send(ada);
-
-    assert.strictEqual(res.status, 409);
-    assert.strictEqual(await db.getDb().collection('user').countDocuments(), 1);
   });
 });
