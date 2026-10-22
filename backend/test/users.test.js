@@ -6,7 +6,14 @@ const db = require('../db/db');
 const { ensureSchema } = require('../db/schema');
 const app = require('../index');
 
-const ada = { email: 'ada@exemple.fr', name: 'Ada' };
+const ada = {
+  email: 'ada@exemple.fr',
+  name: 'Ada',
+  firstName: 'Ada',
+  password: 'motdepasse',
+  role: 'Adhérent',
+  pronoun: 'Elle',
+};
 const UNKNOWN_ID = '000000000000000000000000';
 
 describe('/users (avec un vrai mongod)', () => {
@@ -24,7 +31,7 @@ describe('/users (avec un vrai mongod)', () => {
   });
 
   beforeEach(async () => {
-    await db.getDb().collection('users').deleteMany({});
+    await db.getDb().collection('user').deleteMany({});
   });
 
   it('POST /users enregistre un utilisateur', async () => {
@@ -36,7 +43,7 @@ describe('/users (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.name, ada.name);
 
     // il est bien dans la base
-    const stored = await db.getDb().collection('users').findOne({ email: ada.email });
+    const stored = await db.getDb().collection('user').findOne({ email: ada.email });
     assert.strictEqual(stored._id.toString(), res.body.id);
   });
 
@@ -51,7 +58,14 @@ describe('/users (avec un vrai mongod)', () => {
 
   it('GET /users liste les utilisateurs', async () => {
     await request(app).post('/users').send(ada);
-    await request(app).post('/users').send({ email: 'alan@exemple.fr', name: 'Alan' });
+    await request(app).post('/users').send({
+      email: 'alan@exemple.fr',
+      name: 'Alan',
+      firstName: 'Alan',
+      password: 'motdepasse2',
+      role: 'Adhérent',
+      pronoun: 'Il',
+    });
 
     const res = await request(app).get('/users');
 
@@ -89,19 +103,17 @@ describe('/users (avec un vrai mongod)', () => {
 
   it('la base refuse elle-même un document sans nom', async () => {
     await assert.rejects(
-      db.getDb().collection('users').insertOne({ email: 'sans-nom@exemple.fr' }),
+      db.getDb().collection('user').insertOne({ email: 'sans-nom@exemple.fr' }),
       /Document failed validation/,
     );
   });
 
-  it("POST /users renvoie 409 si l'e-mail existe déjà", async () => {
+  it("POST /users renvoie 409 si l'utilisateur existe déjà", async () => {
     await request(app).post('/users').send(ada);
 
-    const res = await request(app)
-      .post('/users')
-      .send({ ...ada, name: 'Autre Ada' });
+    const res = await request(app).post('/users').send(ada);
 
     assert.strictEqual(res.status, 409);
-    assert.strictEqual(await db.getDb().collection('users').countDocuments(), 1);
+    assert.strictEqual(await db.getDb().collection('user').countDocuments(), 1);
   });
 });

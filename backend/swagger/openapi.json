@@ -62,12 +62,55 @@
           "name": {
             "type": "string",
             "minLength": 1,
+            "example": "Lovelace"
+          },
+          "firstName": {
+            "type": "string",
+            "minLength": 1,
             "example": "Ada"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 1,
+            "example": "motdepasse"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "Entraineur",
+              "Capitaine",
+              "Adhérent",
+              "Visiteur"
+            ],
+            "example": "Adhérent"
+          },
+          "pronoun": {
+            "type": "string",
+            "enum": [
+              "Il",
+              "Elle",
+              "Iel",
+              "Autre"
+            ],
+            "example": "Elle"
+          },
+          "phoneNumber": {
+            "type": "string",
+            "example": "0612345678"
+          },
+          "birthday": {
+            "type": "string",
+            "format": "date",
+            "example": "1815-12-10"
           }
         },
         "required": [
           "email",
-          "name"
+          "name",
+          "firstName",
+          "password",
+          "role",
+          "pronoun"
         ]
       }
     },

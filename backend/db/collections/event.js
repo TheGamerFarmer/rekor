@@ -15,6 +15,13 @@ async function createCollection(db) {
       },
     },
   });
+
+  await db
+    .collection('event')
+    .createIndex(
+      { date: 1, place: 1, type: 1, name: 1, description: 1, group: 1 },
+      { unique: true },
+    );
 }
 
 module.exports = { createCollection };

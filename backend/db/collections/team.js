@@ -11,6 +11,8 @@ async function createCollection(db) {
       },
     },
   });
+
+  await db.collection('team').createIndex({ name: 1, leader: 1 }, { unique: true });
 }
 
 module.exports = { createCollection };
