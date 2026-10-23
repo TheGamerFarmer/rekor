@@ -4,7 +4,7 @@
 
 .registration-page {
   align-items: center;
-  background: #f4f7fb;
+  background: var(--color-background);
   display: flex;
   font-family: Inter, 'Segoe UI', sans-serif;
   justify-content: center;
@@ -13,10 +13,10 @@
 }
 
 .registration-card {
-  background: #fff;
-  border: 1px solid #e3e9f2;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 1.25rem;
-  box-shadow: 0 1rem 3rem rgb(28 52 84 / 10%);
+  box-shadow: 0 1rem 3rem var(--glass-shadow);
   max-width: 42rem;
   padding: 2.5rem;
   width: 100%;
@@ -29,9 +29,9 @@
 
 .brand {
   align-items: center;
-  background: #2355c4;
+  background: var(--color-primary);
   border-radius: 0.75rem;
-  color: #fff;
+  color: var(--color-surface);
   display: flex;
   font-size: 1.5rem;
   font-weight: 800;
@@ -41,14 +41,15 @@
   width: 3rem;
 }
 
-h1 {
-  color: #18243a;
+h1,
+.registration-header h2 {
+  color: var(--color-text);
   font-size: 1.75rem;
   margin: 0 0 0.5rem;
 }
 
 .subtitle {
-  color: #62708a;
+  color: var(--color-text-muted);
   line-height: 1.5;
   margin: 0;
 }
@@ -65,7 +66,7 @@ h1 {
 
 label,
 legend {
-  color: #26354f;
+  color: var(--color-text);
   font-size: 0.9rem;
   font-weight: 600;
 }
@@ -79,11 +80,11 @@ input[type='email'],
 input[type='password'],
 input[type='tel'],
 input[type='text'] {
-  background: #fff;
-  border: 1px solid #cbd5e3;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 0.625rem;
   box-sizing: border-box;
-  color: #18243a;
+  color: var(--color-text);
   font: inherit;
   padding: 0.8rem 0.9rem;
   transition:
@@ -93,8 +94,8 @@ input[type='text'] {
 }
 
 input:focus {
-  border-color: #2355c4;
-  box-shadow: 0 0 0 3px rgb(38 89 216 / 15%);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
   outline: none;
 }
 
@@ -113,7 +114,7 @@ input[aria-invalid='true'] {
 .password-toggle {
   background: none;
   border: 0;
-  color: #2355c4;
+  color: var(--color-primary);
   cursor: pointer;
   font: inherit;
   font-size: 0.8rem;
@@ -137,7 +138,7 @@ input[aria-invalid='true'] {
 
 .checkbox-field {
   align-items: flex-start;
-  color: #62708a;
+  color: var(--color-text-muted);
   display: flex;
   font-size: 0.85rem;
   font-weight: 400;
@@ -147,7 +148,7 @@ input[aria-invalid='true'] {
 }
 
 .checkbox-field input {
-  accent-color: #2355c4;
+  accent-color: var(--color-primary);
   flex: 0 0 auto;
   height: 1rem;
   margin: 0.15rem 0 0;
@@ -185,22 +186,22 @@ input[aria-invalid='true'] {
 }
 
 .secondary-button {
-  background: #e8edf5;
-  color: #26354f;
+  background: var(--color-primary-light);
+  color: var(--color-text);
 }
 
 .secondary-button:hover {
-  background: #d6dfed;
+  background: var(--color-border);
 }
 
 .submit-button {
-  background: #ffd900;
-  color: black;
+  background: var(--color-secondary);
+  color: var(--color-text);
 }
 
 .submit-button:hover {
-  background: #2355c4;
-  color: #fff;
+  background: var(--color-primary-hover);
+  color: var(--color-surface);
 }
 
 .secondary-button:active,
