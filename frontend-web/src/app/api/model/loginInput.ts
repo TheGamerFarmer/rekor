@@ -9,9 +9,8 @@
  */
 
 
-export interface User { 
-    id: string;
+export interface LoginInput { 
     email: string;
-    name: string;
+    password: string;
 }
 

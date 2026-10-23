@@ -6,7 +6,7 @@
     "generators": {
       "web": {
         "generatorName": "typescript-angular",
-        "inputSpec": "openapi.json",
+        "inputSpec": "swagger/openapi.json",
         "output": "../frontend-web/src/app/api",
         "additionalProperties": {
           "ngVersion": "22.0.0"
@@ -14,7 +14,7 @@
       },
       "app": {
         "generatorName": "dart",
-        "inputSpec": "openapi.json",
+        "inputSpec": "swagger/openapi.json",
         "output": "../frontend-app/api_client",
         "additionalProperties": {
           "pubName": "rekor_api",
