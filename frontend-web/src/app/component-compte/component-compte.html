@@ -10,7 +10,9 @@
     <form [formGroup]="accountForm" (ngSubmit)="save()" novalidate>
       <div class="name-fields">
         <div class="field">
-          <label for="firstName">Prénom</label>
+          <label for="firstName">
+            Prénom <span class="required-marker" aria-hidden="true">*</span>
+          </label>
           <input
             id="firstName"
             type="text"
@@ -26,7 +28,9 @@
         </div>
 
         <div class="field">
-          <label for="lastName">Nom</label>
+          <label for="lastName">
+            Nom <span class="required-marker" aria-hidden="true">*</span>
+          </label>
           <input
             id="lastName"
             type="text"
@@ -43,7 +47,29 @@
       </div>
 
       <div class="field">
-        <label for="email">E-mail</label>
+        <label for="pronoun">
+          Pronom <span class="required-marker" aria-hidden="true">*</span>
+        </label>
+        <select
+          id="pronoun"
+          formControlName="pronoun"
+          [attr.aria-invalid]="
+            accountForm.controls.pronoun.invalid && accountForm.controls.pronoun.touched
+          "
+        >
+          @for (pronoun of pronouns; track pronoun) {
+            <option [value]="pronoun">{{ pronoun }}</option>
+          }
+        </select>
+        @if (accountForm.controls.pronoun.invalid && accountForm.controls.pronoun.touched) {
+          <p class="error">Sélectionnez votre pronom.</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="email">
+          E-mail <span class="required-marker" aria-hidden="true">*</span>
+        </label>
         <input
           id="email"
           type="email"
@@ -59,7 +85,7 @@
       </div>
 
       <div class="field">
-        <label for="phone">Téléphone</label>
+        <label for="phone">Téléphone <span class="optional-label">(facultatif)</span></label>
         <input
           id="phone"
           type="tel"
@@ -72,6 +98,13 @@
         @if (accountForm.controls.phone.invalid && accountForm.controls.phone.touched) {
           <p class="error">Saisissez votre numéro de téléphone.</p>
         }
+      </div>
+
+      <div class="field">
+        <label for="birthday">
+          Date de naissance <span class="optional-label">(facultatif)</span>
+        </label>
+        <input id="birthday" type="date" formControlName="birthday" autocomplete="bday" />
       </div>
 
       @if (submitted() && accountForm.valid) {
@@ -88,7 +121,9 @@
       <h2 id="password-title">Modifier le mot de passe</h2>
       <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate>
         <div class="field">
-          <label for="currentPassword">Mot de passe actuel</label>
+          <label for="currentPassword">
+            Mot de passe actuel <span class="required-marker" aria-hidden="true">*</span>
+          </label>
           <input
             id="currentPassword"
             type="password"
@@ -108,7 +143,9 @@
         </div>
 
         <div class="field">
-          <label for="newPassword">Nouveau mot de passe</label>
+          <label for="newPassword">
+            Nouveau mot de passe <span class="required-marker" aria-hidden="true">*</span>
+          </label>
           <input
             id="newPassword"
             type="password"
@@ -126,7 +163,10 @@
         </div>
 
         <div class="field">
-          <label for="confirmPassword">Confirmer le nouveau mot de passe</label>
+          <label for="confirmPassword">
+            Confirmer le nouveau mot de passe
+            <span class="required-marker" aria-hidden="true">*</span>
+          </label>
           <input
             id="confirmPassword"
             type="password"

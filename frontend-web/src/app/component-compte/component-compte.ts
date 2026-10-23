@@ -3,10 +3,13 @@ import { Router, RouterLink } from '@angular/router';
 import {
   AbstractControl,
   FormBuilder,
+  FormControl,
   ReactiveFormsModule,
   ValidationErrors,
   Validators,
 } from '@angular/forms';
+import { RegisterInput } from '../api';
+import PronounEnum = RegisterInput.PronounEnum;
 
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   const password = control.get('newPassword')?.value;
@@ -28,12 +31,17 @@ export class ComponentCompte {
   protected readonly accountDeleted = signal(false);
 
   private readonly router = inject(Router);
+  protected readonly pronouns = Object.values(PronounEnum);
 
   protected readonly accountForm = new FormBuilder().nonNullable.group({
     firstName: ['Alex', [Validators.required]],
     lastName: ['Martin', [Validators.required]],
+    pronoun: new FormControl<RegisterInput.PronounEnum | null>(PronounEnum.Il, [
+      Validators.required,
+    ]),
     email: ['alex.martin@example.com', [Validators.required, Validators.email]],
-    phone: ['06 00 00 00 00', [Validators.required]],
+    phone: ['06 00 00 00 00'],
+    birthday: [''],
   });
 
   protected readonly passwordForm = new FormBuilder().nonNullable.group(

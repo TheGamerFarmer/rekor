@@ -64,6 +64,16 @@ h1,
   margin-bottom: 1.25rem;
 }
 
+.required-marker {
+  color: #b52e2e;
+}
+
+.optional-label {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
 label,
 legend {
   color: var(--color-text);
@@ -79,7 +89,9 @@ label {
 input[type='email'],
 input[type='password'],
 input[type='tel'],
-input[type='text'] {
+input[type='text'],
+input[type='date'],
+select {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: 0.625rem;
@@ -93,13 +105,19 @@ input[type='text'] {
   width: 100%;
 }
 
-input:focus {
+select {
+  appearance: auto;
+}
+
+input:focus,
+select:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
   outline: none;
 }
 
-input[aria-invalid='true'] {
+input[aria-invalid='true'],
+select[aria-invalid='true'] {
   border-color: #c93636;
 }
 

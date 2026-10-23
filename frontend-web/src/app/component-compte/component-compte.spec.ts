@@ -51,7 +51,7 @@ describe('ComponentCompte', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelectorAll('.field .error').length).toBe(4);
+    expect(fixture.nativeElement.querySelectorAll('.field .error').length).toBe(3);
     expect(fixture.nativeElement.textContent).not.toContain(
       'Vos informations ont été enregistrées.',
     );

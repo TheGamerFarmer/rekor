@@ -17,7 +17,9 @@
     <form [formGroup]="registrationForm" (ngSubmit)="submit()" novalidate>
       <div class="name-fields">
         <div class="field">
-          <label for="firstName">Prénom</label>
+          <label for="firstName">
+            Prénom <span class="required-marker" aria-hidden="true">*</span>
+          </label>
           <input
             id="firstName"
             type="text"
@@ -36,7 +38,9 @@
         </div>
 
         <div class="field">
-          <label for="lastName">Nom</label>
+          <label for="lastName">
+            Nom <span class="required-marker" aria-hidden="true">*</span>
+          </label>
           <input
             id="lastName"
             type="text"
@@ -55,7 +59,30 @@
       </div>
 
       <div class="field">
-        <label for="email">E-mail</label>
+        <label for="pronoun">
+          Pronom <span class="required-marker" aria-hidden="true">*</span>
+        </label>
+        <select
+          id="pronoun"
+          formControlName="pronoun"
+          [attr.aria-invalid]="
+            registrationForm.controls.pronoun.invalid && registrationForm.controls.pronoun.dirty
+          "
+        >
+          <option [ngValue]="null" disabled>Sélectionnez un pronom</option>
+          @for (pronoun of pronouns; track pronoun) {
+            <option [value]="pronoun">{{ pronoun }}</option>
+          }
+        </select>
+        @if (registrationForm.controls.pronoun.invalid && registrationForm.controls.pronoun.dirty) {
+          <p class="error">Sélectionnez votre pronom.</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="email">
+          E-mail <span class="required-marker" aria-hidden="true">*</span>
+        </label>
         <input
           id="email"
           type="email"
@@ -72,7 +99,7 @@
       </div>
 
       <div class="field">
-        <label for="phone">Téléphone</label>
+        <label for="phone">Téléphone <span class="optional-label">(facultatif)</span></label>
         <input
           id="phone"
           type="tel"
@@ -89,7 +116,16 @@
       </div>
 
       <div class="field">
-        <label for="password">Mot de passe</label>
+        <label for="birthday">
+          Date de naissance <span class="optional-label">(facultatif)</span>
+        </label>
+        <input id="birthday" type="date" formControlName="birthday" autocomplete="bday" />
+      </div>
+
+      <div class="field">
+        <label for="password">
+          Mot de passe <span class="required-marker" aria-hidden="true">*</span>
+        </label>
         <div class="password-input">
           <input
             id="password"
@@ -112,7 +148,10 @@
       </div>
 
       <div class="field">
-        <label for="confirmPassword">Confirmation du mot de passe</label>
+        <label for="confirmPassword">
+          Confirmation du mot de passe
+          <span class="required-marker" aria-hidden="true">*</span>
+        </label>
         <div class="password-input">
           <input
             id="confirmPassword"
@@ -146,28 +185,38 @@
       </div>
 
       <fieldset class="agreements">
+        <legend>Consentements <span class="required-marker" aria-hidden="true">*</span></legend>
         <label class="checkbox-field">
-          <input type="checkbox" formControlName="privacyPolicy" />
-          <span>J’ai pris connaissance de la politique de confidentialité de l’association.</span>
-        </label>
-        <label class="checkbox-field">
-          <input type="checkbox" formControlName="internalRules" />
-          <span>J’atteste avoir lu et accepté le règlement intérieur de l’association.</span>
-        </label>
-        <label class="checkbox-field">
-          <input type="checkbox" formControlName="healthData" />
+          <input type="checkbox" formControlName="privacyPolicy" required />
           <span
-            >J’accepte que mes données de santé, notamment mon certificat médical, soient collectées
-            et traitées dans le cadre de mon inscription à l’association.</span
+            >J’ai pris connaissance de la
+            <a href="/politique-confidentialite">politique de confidentialité</a> de l’association.
+            <span class="required-marker" aria-hidden="true">*</span></span
           >
         </label>
         <label class="checkbox-field">
-          <input type="checkbox" formControlName="imageRights" />
+          <input type="checkbox" formControlName="internalRules" required />
+          <span
+            >J’atteste avoir lu et accepté le
+            <a href="/reglement-interieur">règlement intérieur</a> de l’association.
+            <span class="required-marker" aria-hidden="true">*</span></span
+          >
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" formControlName="healthData" required />
+          <span
+            >J’accepte que mes données de santé, notamment mon certificat médical, soient collectées
+            et traitées dans le cadre de mon inscription à l’association.
+            <span class="required-marker" aria-hidden="true">*</span></span
+          >
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" formControlName="imageRights" required />
           <span
             >J’autorise l’association à utiliser et à diffuser les photos et vidéos sur lesquelles
             j’apparais, prises dans le cadre de ses activités, sur son site internet et ses supports
-            de communication, selon les modalités précisées dans l’autorisation de droit à
-            l’image.</span
+            de communication, selon les modalités précisées dans l’autorisation de droit à l’image.
+            <span class="required-marker" aria-hidden="true">*</span></span
           >
         </label>
       </fieldset>

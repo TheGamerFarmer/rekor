@@ -66,6 +66,16 @@ h1 {
   margin-bottom: 1.25rem;
 }
 
+.required-marker {
+  color: #b52e2e;
+}
+
+.optional-label {
+  color: #62708a;
+  font-size: 0.8rem;
+  font-weight: 400;
+}
+
 label {
   color: #26354f;
   display: block;
@@ -74,7 +84,8 @@ label {
   margin-bottom: 0.5rem;
 }
 
-input {
+input,
+select {
   background: #fff;
   border: 1px solid #cbd5e3;
   border-radius: 0.625rem;
@@ -88,13 +99,15 @@ input {
   width: 100%;
 }
 
-input:focus {
+input:focus,
+select:focus {
   border-color: #2355c4;
   box-shadow: 0 0 0 3px rgb(38 89 216 / 15%);
   outline: none;
 }
 
-input[aria-invalid='true'] {
+input[aria-invalid='true'],
+select[aria-invalid='true'] {
   border-color: #c93636;
 }
 

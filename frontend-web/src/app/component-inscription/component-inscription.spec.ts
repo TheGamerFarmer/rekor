@@ -70,6 +70,12 @@ describe('ComponentInscription', () => {
       input.value = value;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
+    const pronoun = fixture.nativeElement.querySelector(
+      '[formControlName="pronoun"]',
+    ) as HTMLSelectElement;
+    pronoun.value = 'Elle';
+    pronoun.dispatchEvent(new Event('change', { bubbles: true }));
+
     for (const name of ['privacyPolicy', 'internalRules', 'healthData', 'imageRights']) {
       const checkbox = fixture.nativeElement.querySelector(
         `[formControlName="${name}"]`,
