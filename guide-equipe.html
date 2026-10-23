@@ -307,6 +307,7 @@
   <a href="#qualite">Qualité du code</a>
   <a href="#git">Git & PR</a>
   <a href="#ci">CI (GitHub Actions)</a>
+  <a href="#tuto-pr">Tuto : ouvrir une PR</a>
   <a href="#apres-main">Après main</a>
   <div class="nav-group">
     <a href="#troubleshooting">Dépannage</a>
@@ -668,8 +669,11 @@ git switch -c feature/SAE-42-pseudo-utilisateur</pre>
   </ol>
 
   <h3>Garder sa branche à jour</h3>
+  <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:8px 0 4px;">JetBrains</p>
+  <p><code>Git</code> → <strong>Fetch</strong> — puis dans le panneau <strong>Git</strong> (bas) → onglet <strong>Log</strong> → clic droit sur <code>origin/main</code> → <strong>Merge 'origin/main' into '&lt;ta-branche&gt;'</strong></p>
+  <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:8px 0 4px;">CLI</p>
   <pre>git fetch origin &amp;&amp; git merge origin/main</pre>
-  <p>Sur un conflit dans un fichier généré (<code>openapi.json</code>, <code>api/</code>, <code>api_client/</code>) : prendre n'importe quelle version, puis relancer <code>npm run clients:generate</code>.</p>
+  <p>Sur un conflit dans un fichier généré (<code>openapi.json</code>, <code>api/</code>, <code>api_client/</code>) : accepter n'importe quelle version, puis relancer <code>npm run clients:generate</code>.</p>
 </section>
 
 <!-- ═══ CI ═══ -->
@@ -765,6 +769,238 @@ git switch -c feature/SAE-42-pseudo-utilisateur</pre>
   <div class="callout warn">
     <strong>« Re-run failed jobs »</strong> — uniquement si l'échec vient clairement de GitHub (réseau, machine indisponible). Si ça repasse « tout seul » sur un test, le test est instable : à corriger, pas à ignorer.
   </div>
+</section>
+
+<!-- ═══ TUTO PR ═══ -->
+<section id="tuto-pr">
+  <h2><span class="icon">🔁</span> Tuto : ouvrir une PR du début à la fin</h2>
+
+  <p>Ce walkthrough suit une PR complète, de la création de la branche jusqu'à la fusion. Chaque étape indique ce qui se passe côté GitHub et quoi faire si ça coince.</p>
+
+  <!-- ── ÉTAPE 1 ── -->
+  <div style="margin: 28px 0 0; border-left: 3px solid var(--accent); padding-left: 16px;">
+    <p style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 4px;">ÉTAPE 1 — Créer la branche</p>
+    <p>Toujours partir d'un <code>main</code> à jour.</p>
+    <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:12px 0 4px;">JetBrains</p>
+    <ol style="padding-left:20px;margin-bottom:12px;">
+      <li>Aller sur <code>main</code> : cliquer sur le nom de branche en <strong>bas à droite</strong> → sélectionner <code>main</code> → <strong>Checkout</strong></li>
+      <li>Mettre à jour : <code>Git</code> → <strong>Pull</strong> (ou icône flèche bleue dans la barre d'outils)</li>
+      <li>Créer la branche : recliquer sur le nom de branche en bas à droite → <strong>New Branch…</strong> → entrer le nom → <strong>Create Branch</strong></li>
+    </ol>
+    <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:12px 0 4px;">CLI</p>
+    <pre>git switch main
+git pull
+git switch -c feature/SAE-42-mon-truc</pre>
+    <p>Convention de nommage : <code>feature/&lt;ticket&gt;-&lt;description&gt;</code>, <code>fix/</code>, <code>docs/</code>, <code>chore/</code>. La clé Jira dans le nom permet de lier automatiquement la branche au ticket.</p>
+  </div>
+
+  <!-- ── ÉTAPE 2 ── -->
+  <div style="margin: 20px 0 0; border-left: 3px solid var(--accent); padding-left: 16px;">
+    <p style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 4px;">ÉTAPE 2 — Coder et tester en local</p>
+    <p>Avant de pousser, vérifier que tout passe en local — ça évite des allers-retours inutiles avec la CI.</p>
+    <pre><span class="comment"># Backend — lint + tests + couverture</span>
+cd backend &amp;&amp; npm run verify
+
+<span class="comment"># Web — lint + tests unitaires + E2E (mock et real)</span>
+cd frontend-web &amp;&amp; npm run verify
+
+<span class="comment"># App</span>
+cd frontend-app
+flutter analyze
+flutter test --coverage
+dart run tool/check_coverage.dart 80</pre>
+    <div class="callout info">
+      Si le contrat a changé (<code>backend/openapi.js</code> modifié), ne pas oublier de régénérer les clients avant de commiter :<br>
+      <code>npm run clients:generate</code> dans <code>backend/</code>
+    </div>
+  </div>
+
+  <!-- ── ÉTAPE 3 ── -->
+  <div style="margin: 20px 0 0; border-left: 3px solid var(--accent); padding-left: 16px;">
+    <p style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 4px;">ÉTAPE 3 — Commiter</p>
+    <p>Le hook <code>.githooks/pre-commit</code> formate automatiquement les fichiers stagés avant de créer le commit. Rien à faire, c'est transparent — ça fonctionne aussi bien via JetBrains que via CLI.</p>
+    <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:12px 0 4px;">JetBrains</p>
+    <ol style="padding-left:20px;margin-bottom:12px;">
+      <li>Ouvrir la fenêtre de commit : <code>Ctrl+K</code> (Win/Linux) · <code>Cmd+K</code> (Mac)</li>
+      <li>Dans le panneau <strong>Commit</strong> (à gauche ou en bas selon la disposition) : cocher les fichiers à inclure</li>
+      <li>Écrire le message dans la zone de texte</li>
+      <li>Cliquer sur <strong>Commit</strong> — ou <strong>Commit and Push…</strong> pour enchaîner directement l'étape suivante</li>
+    </ol>
+    <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:12px 0 4px;">CLI</p>
+    <pre>git add &lt;fichiers&gt;
+git commit -m "Ajoute le champ pseudo aux utilisateurs"</pre>
+    <p>Si le hook signale « <em>des modifications non stagées existent sur ce fichier</em> » : stager d'abord tout ce que l'on veut inclure, ou commiter en deux fois.</p>
+    <p>Si le hook bloque sur une erreur de syntaxe : corriger le fichier, <code>git add</code>, <code>git commit</code> à nouveau.</p>
+    <div class="callout warn">
+      Quand le contrat a changé, commiter <strong>tout ensemble</strong> dans le même commit : <code>openapi.js</code>, <code>openapi.json</code>, et les dossiers de clients générés (<code>frontend-web/src/app/api/</code>, <code>frontend-app/api_client/</code>).
+    </div>
+  </div>
+
+  <!-- ── ÉTAPE 4 ── -->
+  <div style="margin: 20px 0 0; border-left: 3px solid var(--accent); padding-left: 16px;">
+    <p style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 4px;">ÉTAPE 4 — Pousser et ouvrir la PR</p>
+    <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:12px 0 4px;">JetBrains</p>
+    <ol style="padding-left:20px;margin-bottom:12px;">
+      <li>Ouvrir la fenêtre Push : <code>Ctrl+Shift+K</code> (Win/Linux) · <code>Cmd+Shift+K</code> (Mac) — ou <code>Git</code> → <strong>Push…</strong></li>
+      <li>Vérifier que la branche distante est correcte (premier push : JetBrains propose de créer la branche sur <code>origin</code>)</li>
+      <li>Cliquer sur <strong>Push</strong></li>
+    </ol>
+    <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:12px 0 4px;">CLI</p>
+    <pre>git push -u origin feature/SAE-42-mon-truc</pre>
+
+    <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:16px 0 4px;">GitHub (navigateur)</p>
+    <p>Après le push, ouvrir le dépôt sur GitHub. Un bandeau jaune « Compare &amp; pull request » apparaît en haut — cliquer dessus. Le modèle de PR se charge automatiquement. Le remplir :</p>
+    <ul style="padding-left: 20px; margin: 8px 0;">
+      <li><strong>Titre</strong> : clé Jira + description courte, ex. <code>SAE-42 Ajoute le champ pseudo</code></li>
+      <li><strong>Description</strong> : ce que fait la PR et pourquoi (pas comment — le code l'explique)</li>
+      <li><strong>Type de changement</strong> : cocher la bonne case</li>
+      <li><strong>Checklist</strong> : cocher uniquement ce qui a vraiment été fait</li>
+      <li><strong>Capture d'écran</strong> : obligatoire si l'interface change</li>
+    </ul>
+    <p>Si la PR n'est pas prête, l'ouvrir en <strong>Draft</strong> (bouton déroulant à côté de « Create pull request »). La CI tourne quand même, mais personne ne sera assigné à la relire.</p>
+  </div>
+
+  <!-- ── ÉTAPE 5 ── -->
+  <div style="margin: 20px 0 0; border-left: 3px solid var(--accent); padding-left: 16px;">
+    <p style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 4px;">ÉTAPE 5 — Suivre la CI</p>
+    <p>Dès le push, GitHub lance tous les checks en parallèle. On les voit défiler dans l'onglet <strong>Checks</strong> de la PR (ou en bas de la page, section <em>« All checks must pass »</em>).</p>
+
+    <table>
+      <tr><th>Icône</th><th>Signification</th><th>Que faire</th></tr>
+      <tr>
+        <td>⏳ jaune</td>
+        <td>Check en cours</td>
+        <td>Attendre — en général 3–10 min selon le check</td>
+      </tr>
+      <tr>
+        <td>✅ vert</td>
+        <td>Check passé</td>
+        <td>Rien</td>
+      </tr>
+      <tr>
+        <td>❌ rouge</td>
+        <td>Check échoué</td>
+        <td>Cliquer sur <strong>Details</strong> → ouvrir l'étape rouge → lire les dernières lignes</td>
+      </tr>
+      <tr>
+        <td>⚠️ orange</td>
+        <td>Alerte CodeQL</td>
+        <td>Lire l'annotation dans le diff, corriger le code (voir section Qualité)</td>
+      </tr>
+    </table>
+
+    <p style="margin-top: 10px;"><strong>Erreurs fréquentes et leur correction rapide :</strong></p>
+    <table>
+      <tr><th>Message</th><th>Cause</th><th>Correction</th></tr>
+      <tr>
+        <td>Contract - check : « Le contrat ou les clients générés ne sont pas à jour »</td>
+        <td><code>clients:generate</code> pas lancé ou résultat pas commité</td>
+        <td><code>npm run clients:generate</code> dans <code>backend/</code>, puis commiter et pousser</td>
+      </tr>
+      <tr>
+        <td>Format - JS/TS : « Code style issues found »</td>
+        <td>Fichiers non formatés (hook pas actif ou contourné)</td>
+        <td><code>npm run format</code> dans <code>backend/</code> et <code>frontend-web/</code>, commiter et pousser</td>
+      </tr>
+      <tr>
+        <td>Format - Dart : fichier modifié détecté</td>
+        <td>Formatage non lancé ou mauvaise version de Flutter</td>
+        <td><code>dart format lib test integration_test tool</code>, vérifier Flutter 3.47.6</td>
+      </tr>
+      <tr>
+        <td>Backend - test : couverture insuffisante</td>
+        <td>Code ajouté sans tests correspondants</td>
+        <td>Ouvrir <code>backend/coverage/lcov-report/index.html</code>, écrire les tests manquants</td>
+      </tr>
+      <tr>
+        <td>E2E (mock) : « 501 Mock manquant »</td>
+        <td>Appel API non simulé dans le test</td>
+        <td>Ajouter la réponse dans <code>arrange.mock</code> du test concerné</td>
+      </tr>
+      <tr>
+        <td>Contract - check : « Breaking change detected »</td>
+        <td>Le contrat casse la compatibilité descendante</td>
+        <td>Voir section Contrat d'API §4.6 — revoir le changement ou mettre à jour tous les clients dans la même PR</td>
+      </tr>
+    </table>
+
+    <div class="callout info">
+      Chaque nouveau push sur la branche <strong>relance tous les checks</strong>. Inutile de « Re-run » manuellement — pousser un commit de correction suffit.
+    </div>
+  </div>
+
+  <!-- ── ÉTAPE 6 ── -->
+  <div style="margin: 20px 0 0; border-left: 3px solid var(--accent); padding-left: 16px;">
+    <p style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 4px;">ÉTAPE 6 — Demander la relecture</p>
+    <p>Quand tous les checks sont verts, passer la PR de Draft à <strong>Ready for review</strong> (bouton en haut à droite de la PR). Assigner un relecteur dans le panneau de droite (<em>Reviewers</em>).</p>
+    <p>Le relecteur reçoit une notification. Il peut :</p>
+    <ul style="padding-left: 20px; margin: 8px 0;">
+      <li><strong>Approuver</strong> — le code est bon, la PR peut être fusionnée</li>
+      <li><strong>Demander des changements</strong> — des remarques sont à traiter avant la fusion</li>
+      <li><strong>Commenter</strong> — remarques non bloquantes (style, suggestion)</li>
+    </ul>
+    <p>On ne peut pas approuver sa propre PR (règle GitHub).</p>
+  </div>
+
+  <!-- ── ÉTAPE 7 ── -->
+  <div style="margin: 20px 0 0; border-left: 3px solid var(--accent); padding-left: 16px;">
+    <p style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 4px;">ÉTAPE 7 — Traiter les remarques</p>
+    <p>Pour chaque remarque bloquante :</p>
+    <ol style="padding-left: 20px; margin: 8px 0;">
+      <li>Corriger le code en local</li>
+      <li>Commiter la correction (<em>le hook formate au passage</em>)</li>
+      <li>Pousser — la CI se relance automatiquement</li>
+      <li>Répondre au commentaire GitHub (<em>« Done »</em> ou explication si tu n'es pas d'accord)</li>
+      <li>Marquer la conversation comme résolue (<em>« Resolve conversation »</em>) une fois traitée</li>
+    </ol>
+    <div class="callout info">
+      <strong>Si main a avancé pendant la relecture</strong> et que GitHub signale des conflits, mettre à jour la branche :
+      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:10px 0 4px;">JetBrains</p>
+      <ol style="padding-left:20px;margin-bottom:8px;font-size:14px;">
+        <li><code>Git</code> → <strong>Fetch</strong></li>
+        <li>Dans le panneau <strong>Git</strong> (en bas) → onglet <strong>Log</strong> → clic droit sur <code>origin/main</code> → <strong>Merge 'origin/main' into '&lt;ta-branche&gt;'</strong></li>
+        <li>Résoudre les conflits dans l'éditeur de conflits intégré si nécessaire → <strong>Apply</strong></li>
+      </ol>
+      <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:8px 0 4px;">CLI</p>
+      <code>git fetch origin &amp;&amp; git merge origin/main</code><br><br>
+      Sur un conflit dans un fichier généré (<code>openapi.json</code>, <code>api/</code>, <code>api_client/</code>), accepter n'importe quelle version puis relancer <code>npm run clients:generate</code>.
+    </div>
+  </div>
+
+  <!-- ── ÉTAPE 8 ── -->
+  <div style="margin: 20px 0 0; border-left: 3px solid var(--accent); padding-left: 16px;">
+    <p style="font-size: 13px; color: var(--accent); font-weight: 700; margin-bottom: 4px;">ÉTAPE 8 — Fusionner</p>
+    <p>Quand les trois conditions sont réunies :</p>
+    <ul style="padding-left: 20px; margin: 8px 0;">
+      <li>Tous les checks obligatoires sont verts ✅</li>
+      <li>Au moins une approbation ✅</li>
+      <li>Aucun conflit avec main ✅</li>
+    </ul>
+    <p>Le bouton <strong>Merge pull request</strong> devient vert. Cliquer dessus, puis <strong>Confirm merge</strong>. La branche peut ensuite être supprimée (GitHub propose le bouton directement après la fusion).</p>
+    <div class="callout ok">
+      <strong>Après la fusion</strong>, plusieurs choses se déclenchent automatiquement : les images Docker sont reconstruites et publiées sur GHCR, la stack complète est republiée, l'APK Android et le build iOS sont attachés à une GitHub Release, et le miroir GRICAD est mis à jour. Voir la section <a href="#apres-main" style="color: var(--accent);">Après main</a> pour le détail.
+    </div>
+  </div>
+
+  <div style="margin-top: 24px; padding: 14px 16px; background: var(--bg); border-radius: var(--radius); border: 1px solid var(--border); font-size: 13.5px;">
+    <strong>En résumé :</strong>
+    <div class="flow" style="margin-top: 8px;">
+      <span class="flow-step">branche</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">code + tests</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">commit (hook formate)</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">push + PR</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">CI verte</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step">relecture</span>
+      <span class="flow-arrow">→</span>
+      <span class="flow-step" style="background:var(--ok-light); border-color:var(--ok);">merge</span>
+    </div>
+  </div>
+
 </section>
 
 <!-- ═══ APRÈS MAIN ═══ -->
@@ -947,13 +1183,54 @@ git switch -c feature/SAE-42-pseudo-utilisateur</pre>
 
 <section id="ref-git">
   <h3>Git</h3>
+
   <table>
-    <tr><th>Commande</th><th>Rôle</th></tr>
-    <tr><td><code>git config core.hooksPath .githooks</code></td><td>Activer le hook de formatage (une fois par clone)</td></tr>
-    <tr><td><code>git switch -c feature/&lt;ticket&gt;-&lt;description&gt;</code></td><td>Créer une branche</td></tr>
-    <tr><td><code>git push -u origin &lt;branche&gt;</code></td><td>Publier la branche et ouvrir la PR</td></tr>
-    <tr><td><code>git fetch origin &amp;&amp; git merge origin/main</code></td><td>Mettre à jour sa branche</td></tr>
-    <tr><td><code>git commit --no-verify</code></td><td>Contourner le hook (exceptionnellement)</td></tr>
+    <tr><th>Action</th><th>JetBrains</th><th>CLI</th></tr>
+    <tr>
+      <td>Activer le hook<br><em>(une fois par clone)</em></td>
+      <td>Terminal intégré (<code>Alt+F12</code>) :<br>coller la commande CLI</td>
+      <td><code>git config core.hooksPath .githooks</code></td>
+    </tr>
+    <tr>
+      <td>Changer de branche</td>
+      <td>Nom de branche en bas à droite → sélectionner → <strong>Checkout</strong></td>
+      <td><code>git switch &lt;branche&gt;</code></td>
+    </tr>
+    <tr>
+      <td>Créer une branche</td>
+      <td>Nom de branche en bas à droite → <strong>New Branch…</strong></td>
+      <td><code>git switch -c feature/&lt;ticket&gt;-&lt;description&gt;</code></td>
+    </tr>
+    <tr>
+      <td>Fetch</td>
+      <td><code>Git</code> → <strong>Fetch</strong></td>
+      <td><code>git fetch origin</code></td>
+    </tr>
+    <tr>
+      <td>Pull</td>
+      <td><code>Git</code> → <strong>Pull</strong> · ou flèche bleue toolbar</td>
+      <td><code>git pull</code></td>
+    </tr>
+    <tr>
+      <td>Commit</td>
+      <td><code>Ctrl+K</code> / <code>Cmd+K</code> → cocher fichiers → message → <strong>Commit</strong></td>
+      <td><code>git add &lt;fichiers&gt; &amp;&amp; git commit -m "..."</code></td>
+    </tr>
+    <tr>
+      <td>Push</td>
+      <td><code>Ctrl+Shift+K</code> / <code>Cmd+Shift+K</code> → <strong>Push</strong></td>
+      <td><code>git push -u origin &lt;branche&gt;</code></td>
+    </tr>
+    <tr>
+      <td>Merger main dans sa branche</td>
+      <td>Panneau <strong>Git</strong> (bas) → Log → clic droit <code>origin/main</code> → <strong>Merge into Current</strong></td>
+      <td><code>git merge origin/main</code></td>
+    </tr>
+    <tr>
+      <td>Contourner le hook<br><em>(exceptionnel)</em></td>
+      <td>Fenêtre Commit → menu <strong>⋮</strong> → décocher <em>Run Git hooks</em></td>
+      <td><code>git commit --no-verify</code></td>
+    </tr>
   </table>
 
   <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid var(--border); color: var(--muted); font-size: 12px;">
