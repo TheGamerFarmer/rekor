@@ -11,7 +11,7 @@ const {
   authorize,
   signAccessToken,
   verifyAccessToken,
-} = require('../controllers/auth-middleware');
+} = require('../controllers/services/auth-middleware');
 const { createHmac } = require('node:crypto');
 
 const account = {
@@ -82,16 +82,17 @@ describe('/auth', () => {
     assert.match(res.body.token, /^[\w-]+\.[\w-]+\.[\w-]+$/);
     assert.strictEqual('password' in res.body.user, false);
 
-    const me = await request(app).get('/auth/me').set('Authorization', `Bearer ${res.body.token}`);
+    const me = await request(app).get('/users/me').set('Authorization', `Bearer ${res.body.token}`);
     assert.strictEqual(me.status, 200);
-    assert.deepStrictEqual(me.body, { id: storedUser._id.toString(), role: 'Visiteur' });
+    assert.strictEqual(me.body.id, storedUser._id.toString());
+    assert.strictEqual(me.body.role, 'Visiteur');
   });
 
   it('protège les routes et refuse les tokens invalides', async () => {
-    const missing = await request(app).get('/auth/me');
+    const missing = await request(app).get('/users/me');
     assert.strictEqual(missing.status, 401);
 
-    const invalid = await request(app).get('/auth/me').set('Authorization', 'Bearer invalid');
+    const invalid = await request(app).get('/users/me').set('Authorization', 'Bearer invalid');
     assert.strictEqual(invalid.status, 401);
   });
 
