@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/home_page.dart';
 
+// Footer de l'application mobile avec lien vers Accueil, Menu et Discussions
 class AppFooter extends StatelessWidget{
   final VoidCallback onMenuTap;
   const AppFooter({super.key, required this.onMenuTap});
@@ -44,12 +45,12 @@ class AppFooter extends StatelessWidget{
           ),
           InkWell(
             onTap: () {
-              Navigator.push(
+              /*Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const MyHomePage(title: 'Accueil'),
+                  builder: (context) => const MyHomePage(title: 'Discussions'),
                 ),
-              );
+              );*/
             },
             child: const Text(
               'Discussions',

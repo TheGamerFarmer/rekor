@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../mobile_pages/home_page.dart';
 
+// Menu de l'application mobile avec la navigation vers les différentes pages
 class AppMenu extends StatelessWidget {
   final VoidCallback onClose;
 
@@ -35,7 +36,7 @@ class AppMenu extends StatelessWidget {
                 const Padding(
                   padding: EdgeInsets.all(20),
                   child: Text(
-                    'Mon menu',
+                    'Menu',
                     style: TextStyle(
                       fontSize: 28,
                       color: Colors.white,
@@ -61,6 +62,7 @@ class AppMenu extends StatelessWidget {
                 mainAxisSpacing: 45,
                 padding: const EdgeInsets.all(20),
                 children: [
+                  // Boucle pour les 9 pages dans elements
                   for (final element in elements)
                     InkWell(
                       onTap: () {
@@ -75,6 +77,86 @@ class AppMenu extends StatelessWidget {
                             ),
                           );
                         }
+                        /*if (element.$2 == 'Discussions') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MyHomePage(
+                                title: 'Discussions',
+                              ),
+                            ),
+                          );
+                        }*/
+                        /*if (element.$2 == 'Covoiturage') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MyHomePage(
+                                title: 'Covoiturage',
+                              ),
+                            ),
+                          );
+                        }*/
+                        /*if (element.$2 == 'Évènements') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MyHomePage(
+                                title: 'Évènements',
+                              ),
+                            ),
+                          );
+                        }*/
+                        /*if (element.$2 == 'Compétition') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MyHomePage(
+                                title: 'Compétition',
+                              ),
+                            ),
+                          );
+                        }*/
+                        /*if (element.$2 == 'Arbitrage') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MyHomePage(
+                                title: 'Arbitrage',
+                              ),
+                            ),
+                          );
+                        }*/
+                        /*if (element.$2 == 'Statistiques') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MyHomePage(
+                                title: 'Statistiques',
+                              ),
+                            ),
+                          );
+                        }*/
+                        /*if (element.$2 == 'News') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MyHomePage(
+                                title: 'News',
+                              ),
+                            ),
+                          );
+                        }*/
+                        /*if (element.$2 == 'Paramètres') {
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const MyHomePage(
+                                title: 'Paramètres',
+                              ),
+                            ),
+                          );
+                        }*/
                       },
                       child: Container(
                         child: Column(

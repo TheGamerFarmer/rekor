@@ -5,13 +5,11 @@ import '../widgets/app_footer.dart';
 import '../widgets/app_header.dart';
 import '../widgets/app_menu.dart';
 
+// Layout à appeler dans tout les pages contenant le header, le footer et le menu
 class MainLayout extends StatefulWidget {
   final Widget child;
 
-  const MainLayout({
-    super.key,
-    required this.child,
-  });
+  const MainLayout({super.key, required this.child,});
 
   @override
   State<MainLayout> createState() => _MyMainLayout();
