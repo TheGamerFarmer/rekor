@@ -1,0 +1,187 @@
+<app-component-banner
+  image="/img/team.jpg"
+  title="Rejoignez le club"
+  subtitle="Inscrivez-vous à l’association de volley-ball de Gières."
+/>
+
+<main class="registration-page">
+  <section class="registration-card" aria-labelledby="registration-title">
+    <header class="registration-header">
+      <h2 id="registration-title">Inscription</h2>
+      <p class="subtitle">
+        Inscrivez-vous à l’association en remplissant ce formulaire. Votre candidature sera ensuite
+        étudiée par un responsable.
+      </p>
+    </header>
+
+    <form [formGroup]="registrationForm" (ngSubmit)="submit()" novalidate>
+      <div class="name-fields">
+        <div class="field">
+          <label for="firstName">Prénom</label>
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            autocomplete="given-name"
+            [attr.aria-invalid]="
+              registrationForm.controls.firstName.invalid &&
+              registrationForm.controls.firstName.dirty
+            "
+          />
+          @if (
+            registrationForm.controls.firstName.invalid && registrationForm.controls.firstName.dirty
+          ) {
+            <p class="error">Saisissez votre prénom.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="lastName">Nom</label>
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            autocomplete="family-name"
+            [attr.aria-invalid]="
+              registrationForm.controls.lastName.invalid && registrationForm.controls.lastName.dirty
+            "
+          />
+          @if (
+            registrationForm.controls.lastName.invalid && registrationForm.controls.lastName.dirty
+          ) {
+            <p class="error">Saisissez votre nom.</p>
+          }
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          placeholder="vous@exemple.com"
+          [attr.aria-invalid]="
+            registrationForm.controls.email.invalid && registrationForm.controls.email.dirty
+          "
+        />
+        @if (registrationForm.controls.email.invalid && registrationForm.controls.email.dirty) {
+          <p class="error">Saisissez une adresse e-mail valide.</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="phone">Téléphone</label>
+        <input
+          id="phone"
+          type="tel"
+          formControlName="phone"
+          autocomplete="tel"
+          placeholder="06 00 00 00 00"
+          [attr.aria-invalid]="
+            registrationForm.controls.phone.invalid && registrationForm.controls.phone.dirty
+          "
+        />
+        @if (registrationForm.controls.phone.invalid && registrationForm.controls.phone.dirty) {
+          <p class="error">Saisissez votre numéro de téléphone.</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="password">Mot de passe</label>
+        <div class="password-input">
+          <input
+            id="password"
+            [type]="showPassword() ? 'text' : 'password'"
+            formControlName="password"
+            autocomplete="new-password"
+            [attr.aria-invalid]="
+              registrationForm.controls.password.invalid && registrationForm.controls.password.dirty
+            "
+          />
+          <button type="button" class="password-toggle" (click)="showPassword.set(!showPassword())">
+            {{ showPassword() ? 'Masquer' : 'Afficher' }}
+          </button>
+        </div>
+        @if (
+          registrationForm.controls.password.invalid && registrationForm.controls.password.dirty
+        ) {
+          <p class="error">Le mot de passe doit contenir au moins 8 caractères.</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="confirmPassword">Confirmation du mot de passe</label>
+        <div class="password-input">
+          <input
+            id="confirmPassword"
+            [type]="showConfirmation() ? 'text' : 'password'"
+            formControlName="confirmPassword"
+            autocomplete="new-password"
+            [attr.aria-invalid]="
+              registrationForm.controls.confirmPassword.invalid &&
+              registrationForm.controls.confirmPassword.dirty
+            "
+          />
+          <button
+            type="button"
+            class="password-toggle"
+            (click)="showConfirmation.set(!showConfirmation())"
+          >
+            {{ showConfirmation() ? 'Masquer' : 'Afficher' }}
+          </button>
+        </div>
+        @if (
+          registrationForm.controls.confirmPassword.invalid &&
+          registrationForm.controls.confirmPassword.dirty
+        ) {
+          <p class="error">Confirmez votre mot de passe.</p>
+        } @else if (
+          registrationForm.errors?.['passwordsMismatch'] &&
+          registrationForm.controls.confirmPassword.dirty
+        ) {
+          <p class="error">Les mots de passe ne correspondent pas.</p>
+        }
+      </div>
+
+      <fieldset class="agreements">
+        <label class="checkbox-field">
+          <input type="checkbox" formControlName="privacyPolicy" />
+          <span>J’ai pris connaissance de la politique de confidentialité de l’association.</span>
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" formControlName="internalRules" />
+          <span>J’atteste avoir lu et accepté le règlement intérieur de l’association.</span>
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" formControlName="healthData" />
+          <span
+            >J’accepte que mes données de santé, notamment mon certificat médical, soient collectées
+            et traitées dans le cadre de mon inscription à l’association.</span
+          >
+        </label>
+        <label class="checkbox-field">
+          <input type="checkbox" formControlName="imageRights" />
+          <span
+            >J’autorise l’association à utiliser et à diffuser les photos et vidéos sur lesquelles
+            j’apparais, prises dans le cadre de ses activités, sur son site internet et ses supports
+            de communication, selon les modalités précisées dans l’autorisation de droit à
+            l’image.</span
+          >
+        </label>
+      </fieldset>
+
+      @if (submitted() && registrationForm.invalid) {
+        <p class="form-message error" role="alert">
+          Veuillez compléter les champs requis et cocher les quatre cases.
+        </p>
+      }
+
+      <div class="actions">
+        <button type="button" class="secondary-button" routerLink="/">Retour à l’accueil</button>
+        <button type="submit" class="submit-button">Valider</button>
+      </div>
+    </form>
+  </section>
+</main>

@@ -1,127 +1,45 @@
-<main>
-  <section class="hero" id="accueil">
-    <app-site-header />
-
-    <div class="hero-content">
-      <p class="eyebrow">Prochain match</p>
-      <h1>Gières vs Lyon <span>10 octobre</span></h1>
-      <p class="hero-location">
-        <img class="icon icon-map" src="/icons/map.png" alt="" /> Gymnase de Gières <i></i> 18h00
-      </p>
-      <a class="outline-button pill-button" href="#rendez-vous"
-        >Découvrir le match <img class="icon icon-arrow" src="/icons/arrow.png" alt=""
-      /></a>
-    </div>
-
-    <div class="match-strip" aria-label="Informations sur le prochain match">
-      <div class="match-detail">
-        <img class="detail-icon icon-calendar" src="/icons/calendrier.png" alt="" />
-        <p><strong>Samedi 10 octobre 2026</strong><small>18h00</small></p>
-      </div>
-      <div class="match-detail">
-        <img class="detail-icon icon-map" src="/icons/map.png" alt="" />
-        <p><strong>Gymnase de Gières</strong><small>38160 Gières</small></p>
-      </div>
-      <div class="match-detail">
-        <img class="detail-icon icon-trophy" src="/icons/trophee.png" alt="" />
-        <p><strong>Match amical</strong><small>Seniors</small></p>
-      </div>
-    </div>
-  </section>
-
-  <div class="page-content">
-    <section class="club-section" id="club">
-      <div class="section-heading">
-        <h2>La vie du club</h2>
-        <p><span class="heading-mark"></span> Tout ce qui fait vibrer Gières.</p>
-      </div>
-
-      <div class="feature-grid">
-        <a class="feature-card signup-card" id="inscriptions" href="#contact">
-          <span class="line-icon" aria-hidden="true">♙<b>+</b></span>
-          <h3>Inscriptions</h3>
-          <p>Rejoignez l'équipe</p>
-          <span class="round-arrow" aria-hidden="true"
-            ><img src="/icons/arrow_circle.png" alt=""
-          /></span>
-        </a>
-        <a class="feature-card tournament-card" href="#rendez-vous">
-          <h3>Tournois</h3>
-          <span class="round-arrow" aria-hidden="true"
-            ><img src="/icons/arrow_circle.png" alt=""
-          /></span>
-        </a>
-        <a class="feature-card rules-card" id="regles" href="#contact">
-          <img class="rules-icon" src="/icons/gear.png" alt="" aria-hidden="true" />
-          <h3>Règles du jeu</h3>
-          <span class="round-arrow" aria-hidden="true"
-            ><img src="/icons/arrow_circle.png" alt=""
-          /></span>
-        </a>
-        <a class="feature-card events-card" href="#rendez-vous">
-          <h3>Événements</h3>
-          <p>Matchs, rencontres et moments du club</p>
-          <span class="round-arrow" aria-hidden="true"
-            ><img src="/icons/arrow_circle.png" alt=""
-          /></span>
-        </a>
-        <a class="feature-card about-card" href="#club">
-          <div>
-            <h3>Le club</h3>
-            <p>Découvrez notre histoire<br />et nos équipes</p>
-            <span class="round-arrow" aria-hidden="true"
-              ><img src="/icons/arrow_circle.png" alt=""
-            /></span>
-          </div>
-          <span class="volleyball-mark" aria-hidden="true">◉</span>
-        </a>
-      </div>
-    </section>
-
-    <section class="appointments" id="rendez-vous">
-      <div class="appointments-heading">
-        <div class="section-heading">
-          <h2>Les prochains rendez-vous</h2>
-          <span class="heading-mark"></span>
-        </div>
-        <a href="#rendez-vous"
-          >Voir tous les événements <img class="icon icon-arrow-blue" src="/icons/arrow.png" alt=""
-        /></a>
-      </div>
-      <div class="event-list">
-        <article class="event-card">
-          <span class="event-badge blue" aria-hidden="true"
-            ><img src="/icons/trophee.png" alt=""
-          /></span>
-          <div>
-            <span class="tag blue-tag">Match</span>
-            <h3>Match amical — Gières vs Lyon</h3>
-            <p>
-              <img class="event-icon icon-calendar" src="/icons/calendrier.png" alt="" /> Samedi 10
-              octobre <i>·</i> 18h00
-            </p>
-            <p><img class="event-icon icon-map" src="/icons/map.png" alt="" /> Gymnase de Gières</p>
-          </div>
-        </article>
-        <article class="event-card">
-          <span class="event-badge yellow" aria-hidden="true"
-            ><img src="/icons/trophee.png" alt=""
-          /></span>
-          <div>
-            <span class="tag yellow-tag">Tournoi</span>
-            <h3>Tournoi jeunes</h3>
-            <p>
-              <img class="event-icon icon-calendar" src="/icons/calendrier.png" alt="" /> Dimanche
-              18 octobre <i>·</i> 09h00
-            </p>
-            <p><img class="event-icon icon-map" src="/icons/map.png" alt="" /> Gymnase de Gières</p>
-          </div>
-        </article>
-      </div>
-    </section>
-  </div>
-
-  <app-site-footer [backendStatus]="backendStatus() ?? '…'" />
-</main>
+<header class="site-header-container">
+  <a class="brand" href="/accueil" aria-label="Rekor, accueil">
+    <img class="brand-logo" src="/logo/logo_noir.png" alt="" />
+  </a>
+  <span class="club-name">Gières Volley-ball Club</span>
+  <nav class="main-nav" aria-label="Navigation principale">
+    <a href="/#rendez-vous">Actus</a>
+    <a href="/#club">Le club</a>
+    <a href="/inscription">Inscription</a>
+    <a href="/#regles">FAQ</a>
+    <a class="outline-button login-link" href="/connexion">Connexion</a>
+  </nav>
+</header>
 
 <router-outlet />
+
+<footer class="site-footer" id="contact">
+  <p class="backend-status" data-testid="backend-status">Backend : {{ backendStatus() }}</p>
+  <div class="footer-content">
+    <div class="footer-hours">
+      <p><strong>Horaires séance</strong><br />Mardi 20h – 22h</p>
+      <p><strong>Horaires match</strong><br />Samedi 15h – 18h</p>
+    </div>
+    <div class="footer-address">
+      <p>
+        <strong>Adresse</strong><br />
+        Gymnase de la Plaine des sports <br />1 Rue des Sports,<br />38610 Gières
+      </p>
+    </div>
+    <nav class="footer-links" aria-label="Liens du site">
+      <a href="/#rendez-vous">Actus</a>
+      <a href="/#club">Le club</a>
+      <a href="/inscription">Inscription</a>
+    </nav>
+    <nav class="footer-links" aria-label="Aide et compte">
+      <a href="/#regles">FAQ</a>
+      <a href="/#contact">Contact</a>
+      <a id="connexion" href="/connexion"><strong>Connexion</strong></a>
+    </nav>
+  </div>
+  <a class="footer-brand" href="/#accueil" aria-label="Rekor, accueil">
+    <img class="footer-brand-logo" src="/logo/logo_noir.png" alt="" />
+  </a>
+  <p class="copyright">© 2026 — Ce site est propulsé par Rekor</p>
+</footer>

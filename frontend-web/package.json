@@ -9,7 +9,7 @@
     "test": "ng test",
     "lint": "ng lint",
     "e2e": "playwright test",
-    "test:all": "npm test -- --no-watch && npm run e2e",
+    "test:all": "npm run test:coverage -- --no-watch && npm run e2e",
     "verify": "npm run lint && npm run test:all",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
