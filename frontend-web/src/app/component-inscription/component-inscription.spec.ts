@@ -39,6 +39,11 @@ describe('ComponentInscription', () => {
       input.value = value;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
+    const pronoun = fixture.nativeElement.querySelector(
+      '[formControlName="pronoun"]',
+    ) as HTMLSelectElement;
+    pronoun.value = '';
+    pronoun.dispatchEvent(new Event('change', { bubbles: true }));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('.field .error').length).toBeGreaterThanOrEqual(
