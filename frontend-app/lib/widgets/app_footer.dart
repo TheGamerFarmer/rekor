@@ -19,6 +19,7 @@ class AppFooter extends StatelessWidget{
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        // Les 3 boutons (Accueil, Menu, Discussions)
         children: [
           InkWell(
             onTap: () {
@@ -51,7 +52,7 @@ class AppFooter extends StatelessWidget{
               );
             },
             child: const Text(
-              'Chat',
+              'Discussions',
               style: TextStyle(color: Colors.white),
             ),
           ),

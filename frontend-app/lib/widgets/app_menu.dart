@@ -9,18 +9,20 @@ class AppMenu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Lien entre icons et nom de page
     final elements = [
       (Icons.home, 'Accueil'),
       (Icons.chat, 'Discussions'),
       (Icons.directions_car, 'Covoiturage'),
       (Icons.calendar_month, 'Évènements'),
-      (Icons.favorite, 'Compétition'),
-      (Icons.help, 'Arbitrage'),
-      (Icons.info, 'Statistiques'),
-      (Icons.logout, 'News'),
+      (Icons.emoji_events, 'Compétition'),
+      (Icons.sports, 'Arbitrage'),
+      (Icons.bar_chart, 'Statistiques'),
+      (Icons.campaign, 'News'),
       (Icons.settings, 'Paramètres'),
     ];
 
+    // Menu
     return Container(
       color: Colors.black.withValues(alpha: 0.8),
       child: SafeArea(
@@ -62,7 +64,7 @@ class AppMenu extends StatelessWidget {
                   for (final element in elements)
                     InkWell(
                       onTap: () {
-                        // Action à définir pour chaque élément
+                        // Lien à définir pour chaque élément
                         if (element.$2 == 'Accueil') {
                           Navigator.push(
                             context,

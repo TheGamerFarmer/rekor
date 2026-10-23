@@ -2,6 +2,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import '../widgets/app_footer.dart';
+import '../widgets/app_header.dart';
 import '../widgets/app_menu.dart';
 
 class MainLayout extends StatefulWidget {
@@ -23,27 +24,6 @@ class _MyMainLayout extends State<MainLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      //backgroundColor: Colors.white,
-      appBar: AppBar(
-        title: const Text('Mon application'),
-        backgroundColor: const Color(0xFF303030),
-      ),
-
-      drawer: Drawer(
-        child: ListView(
-          children: const [
-            DrawerHeader(
-              child: Text('Menu'),
-            ),
-            ListTile(
-              title: Text('Accueil'),
-            ),
-            ListTile(
-              title: Text('Profil'),
-            ),
-          ],
-        ),
-      ),
 
       body: Stack(
         fit: StackFit.expand,
@@ -78,6 +58,14 @@ class _MyMainLayout extends State<MainLayout> {
           widget.child,
 
           Positioned(
+            top: 50,
+            left: 20,
+            right: 20,
+            child: AppHeader(
+            ),
+          ),
+
+          Positioned(
             bottom: 80,
             left: 20,
             right: 20,
@@ -89,42 +77,54 @@ class _MyMainLayout extends State<MainLayout> {
               },
             ),
           ),
-          if (menuOuvert)
-            Positioned.fill(
-              child: Stack(
-                children: [
-                  // Flou de la page derrière le menu
-                  Positioned.fill(
-                    child: GestureDetector(
-                      onTap: () {
-                        setState(() {
-                          menuOuvert = false;
-                        });
-                      },
-                      child: ClipRect(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(
-                            sigmaX: 5,
-                            sigmaY: 5,
-                          ),
-                          child: Container(
-                            color: Colors.black.withValues(alpha: 0.3),
+          Positioned.fill(
+            child: IgnorePointer(
+              ignoring: !menuOuvert,
+              child: AnimatedOpacity(
+                opacity: menuOuvert ? 1.0 : 0.0,
+                duration: const Duration(milliseconds: 300),
+                child: AnimatedScale(
+                  scale: menuOuvert ? 1.0 : 0.90,
+                  duration: const Duration(milliseconds: 300),
+                  curve: Curves.easeOutBack,
+                  child: Stack(
+                    children: [
+                      // Flou de la page derrière le menu
+                      Positioned.fill(
+                        child: GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              menuOuvert = false;
+                            });
+                          },
+                          child: ClipRect(
+                            child: BackdropFilter(
+                              filter: ImageFilter.blur(
+                                sigmaX: 5,
+                                sigmaY: 5,
+                              ),
+                              child: Container(
+                                color: Colors.black.withValues(alpha: 0.3),
+                              ),
+                            ),
                           ),
                         ),
                       ),
-                    ),
+
+                      // Le menu
+                      AppMenu(
+                        onClose: () {
+                          setState(() {
+                            menuOuvert = false;
+                          });
+                        },
+                      ),
+                    ],
                   ),
-                  // Le menu
-                  AppMenu(
-                    onClose: () {
-                      setState(() {
-                        menuOuvert = false;
-                      });
-                    },
-                  ),
-                ],
+                ),
               ),
             ),
+          ),
         ],
       ),
     );
