@@ -1,0 +1,184 @@
+<main class="account-page">
+  <section class="account-card" aria-labelledby="account-title">
+    <header class="account-header">
+      <div>
+        <h1 id="account-title">Mon compte</h1>
+        <p class="subtitle">Gérez vos informations personnelles.</p>
+      </div>
+    </header>
+
+    <form [formGroup]="accountForm" (ngSubmit)="save()" novalidate>
+      <div class="name-fields">
+        <div class="field">
+          <label for="firstName">Prénom</label>
+          <input
+            id="firstName"
+            type="text"
+            formControlName="firstName"
+            autocomplete="given-name"
+            [attr.aria-invalid]="
+              accountForm.controls.firstName.invalid && accountForm.controls.firstName.touched
+            "
+          />
+          @if (accountForm.controls.firstName.invalid && accountForm.controls.firstName.touched) {
+            <p class="error">Saisissez votre prénom.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="lastName">Nom</label>
+          <input
+            id="lastName"
+            type="text"
+            formControlName="lastName"
+            autocomplete="family-name"
+            [attr.aria-invalid]="
+              accountForm.controls.lastName.invalid && accountForm.controls.lastName.touched
+            "
+          />
+          @if (accountForm.controls.lastName.invalid && accountForm.controls.lastName.touched) {
+            <p class="error">Saisissez votre nom.</p>
+          }
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="email">E-mail</label>
+        <input
+          id="email"
+          type="email"
+          formControlName="email"
+          autocomplete="email"
+          [attr.aria-invalid]="
+            accountForm.controls.email.invalid && accountForm.controls.email.touched
+          "
+        />
+        @if (accountForm.controls.email.invalid && accountForm.controls.email.touched) {
+          <p class="error">Saisissez une adresse e-mail valide.</p>
+        }
+      </div>
+
+      <div class="field">
+        <label for="phone">Téléphone</label>
+        <input
+          id="phone"
+          type="tel"
+          formControlName="phone"
+          autocomplete="tel"
+          [attr.aria-invalid]="
+            accountForm.controls.phone.invalid && accountForm.controls.phone.touched
+          "
+        />
+        @if (accountForm.controls.phone.invalid && accountForm.controls.phone.touched) {
+          <p class="error">Saisissez votre numéro de téléphone.</p>
+        }
+      </div>
+
+      @if (submitted() && accountForm.valid) {
+        <p class="form-message" role="status">Vos informations ont été enregistrées.</p>
+      }
+
+      <div class="actions">
+        <button type="button" class="secondary-button" routerLink="/">Retour à l’accueil</button>
+        <button type="submit" class="submit-button">Enregistrer</button>
+      </div>
+    </form>
+
+    <section class="account-section" aria-labelledby="password-title">
+      <h2 id="password-title">Modifier le mot de passe</h2>
+      <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate>
+        <div class="field">
+          <label for="currentPassword">Mot de passe actuel</label>
+          <input
+            id="currentPassword"
+            type="password"
+            formControlName="currentPassword"
+            autocomplete="current-password"
+            [attr.aria-invalid]="
+              passwordForm.controls.currentPassword.invalid &&
+              passwordForm.controls.currentPassword.dirty
+            "
+          />
+          @if (
+            passwordForm.controls.currentPassword.invalid &&
+            passwordForm.controls.currentPassword.dirty
+          ) {
+            <p class="error">Saisissez votre mot de passe actuel.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="newPassword">Nouveau mot de passe</label>
+          <input
+            id="newPassword"
+            type="password"
+            formControlName="newPassword"
+            autocomplete="new-password"
+            [attr.aria-invalid]="
+              passwordForm.controls.newPassword.invalid && passwordForm.controls.newPassword.dirty
+            "
+          />
+          @if (
+            passwordForm.controls.newPassword.invalid && passwordForm.controls.newPassword.dirty
+          ) {
+            <p class="error">Le mot de passe doit contenir au moins 8 caractères.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="confirmPassword">Confirmer le nouveau mot de passe</label>
+          <input
+            id="confirmPassword"
+            type="password"
+            formControlName="confirmPassword"
+            autocomplete="new-password"
+            [attr.aria-invalid]="
+              passwordForm.controls.confirmPassword.invalid &&
+              passwordForm.controls.confirmPassword.dirty
+            "
+          />
+          @if (
+            passwordForm.controls.confirmPassword.invalid &&
+            passwordForm.controls.confirmPassword.dirty
+          ) {
+            <p class="error">Confirmez votre nouveau mot de passe.</p>
+          } @else if (
+            passwordForm.errors?.['passwordsMismatch'] &&
+            passwordForm.controls.confirmPassword.dirty
+          ) {
+            <p class="error">Les mots de passe ne correspondent pas.</p>
+          }
+        </div>
+
+        @if (passwordSubmitted() && passwordForm.valid) {
+          <p class="form-message" role="status">Votre mot de passe a été modifié.</p>
+        }
+
+        <button type="submit" class="submit-button">Modifier le mot de passe</button>
+      </form>
+    </section>
+
+    <section class="account-section account-danger" aria-labelledby="danger-title">
+      <h2 id="danger-title">Supprimer mon compte</h2>
+      <p>La suppression de votre compte est définitive et ne peut pas être annulée.</p>
+      <label class="checkbox-field">
+        <input
+          type="checkbox"
+          [checked]="deleteConfirmed()"
+          (change)="deleteConfirmed.set(!deleteConfirmed())"
+        />
+        <span>Je comprends que la suppression de mon compte est définitive.</span>
+      </label>
+      <button
+        type="button"
+        class="delete-button"
+        [disabled]="!deleteConfirmed() || accountDeleted()"
+        (click)="deleteAccount()"
+      >
+        {{ accountDeleted() ? 'Compte supprimé' : 'Supprimer mon compte' }}
+      </button>
+    </section>
+
+    <button type="button" class="logout-button" (click)="logout()">Se déconnecter</button>
+  </section>
+</main>
