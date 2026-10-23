@@ -1,6 +1,6 @@
 const path = require('node:path');
 const swaggerJsdoc = require('swagger-jsdoc');
-const { version } = require('./package.json');
+const { version } = require('../package.json');
 
 module.exports = swaggerJsdoc({
   definition: {

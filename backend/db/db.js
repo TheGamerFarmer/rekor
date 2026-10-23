@@ -42,7 +42,7 @@ async function connect({
   }
 }
 
-/** La base connectée. À utiliser dans les routes : getDb().collection('...') */
+/** La base connectée. À utiliser dans les controllers : getDb().collection('...') */
 function getDb() {
   if (!database) {
     const error = new Error("La base de données n'est pas connectée");
