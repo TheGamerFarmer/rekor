@@ -7,6 +7,14 @@
 root=$(git rev-parse --show-toplevel) || exit 1
 cd "$root" || exit 1
 
+# Bloque tout commit (y compris les merge commits) directement sur main.
+branch=$(git symbolic-ref HEAD 2>/dev/null | sed 's|refs/heads/||')
+if [ "$branch" = "main" ]; then
+  echo "pre-commit : commit direct sur 'main' interdit." >&2
+  echo "             Crée une branche et ouvre une PR." >&2
+  exit 1
+fi
+
 # Fichiers qui ont aussi des modifications NON ajoutées au commit. On ne les formate pas :
 # le `git add` final y glisserait ces modifications.
 partial=$(mktemp)
