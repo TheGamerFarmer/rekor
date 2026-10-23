@@ -5,6 +5,7 @@ on:
     paths:
       - 'backend/openapi.js'
       - 'backend/openapi.json'
+      - 'backend/swagger/openapi.json'
       - 'backend/openapitools.json'
       - 'backend/generator-ignore'
       - 'backend/scripts/**'
@@ -41,7 +42,7 @@ jobs:
         working-directory: backend
       - name: Check that the committed clients are up to date
         run: |
-          paths="backend/openapi.json frontend-web/src/app/api frontend-app/api_client"
+          paths="backend/openapi.json backend/swagger/openapi.json frontend-web/src/app/api frontend-app/api_client"
           if [ -n "$(git status --porcelain -- $paths)" ]; then
             echo "::error::Le contrat ou les clients générés ne sont pas à jour. Lance 'npm run clients:generate' dans backend/ puis commite le résultat."
             git status --short -- $paths
@@ -53,12 +54,32 @@ jobs:
           sudo mv oasdiff /usr/local/bin/oasdiff
       - name: Detect breaking changes (compared with the base branch)
         if: github.event_name == 'pull_request' && !contains(github.event.pull_request.labels.*.name, 'breaking-change')
+        working-directory: ${{ github.workspace }}
         env:
           BASE: ${{ github.base_ref }}
         run: |
-          if git cat-file -e "origin/$BASE:backend/openapi.json" 2>/dev/null; then
-            git show "origin/$BASE:backend/openapi.json" > /tmp/openapi.base.json
-            oasdiff breaking /tmp/openapi.base.json backend/openapi.json --fail-on ERR
+          if [ -f backend/openapi.json ]; then
+            current_spec="backend/openapi.json"
+            base_spec="backend/openapi.json"
+          elif [ -f backend/swagger/openapi.json ]; then
+            current_spec="backend/swagger/openapi.json"
+            base_spec="backend/swagger/openapi.json"
+          else
+            echo "::error::Contrat OpenAPI introuvable dans backend/openapi.json ou backend/swagger/openapi.json."
+            exit 1
+          fi
+
+          if ! git cat-file -e "origin/$BASE:$base_spec" 2>/dev/null; then
+            if [ "$base_spec" = "backend/openapi.json" ]; then
+              base_spec="backend/swagger/openapi.json"
+            else
+              base_spec="backend/openapi.json"
+            fi
+          fi
+
+          if git cat-file -e "origin/$BASE:$base_spec" 2>/dev/null; then
+            git show "origin/$BASE:$base_spec" > /tmp/openapi.base.json
+            oasdiff breaking /tmp/openapi.base.json "$current_spec" --fail-on ERR
           else
             echo "Pas de contrat sur la branche de base : rien à comparer."
           fi
