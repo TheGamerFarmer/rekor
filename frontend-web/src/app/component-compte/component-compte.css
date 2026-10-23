@@ -1,0 +1,246 @@
+:host {
+  display: block;
+}
+
+.account-page {
+  align-items: center;
+  background: #f4f7fb;
+  display: flex;
+  font-family: Inter, 'Segoe UI', sans-serif;
+  justify-content: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+.account-card {
+  background: #fff;
+  border: 1px solid #e3e9f2;
+  border-radius: 1.25rem;
+  box-shadow: 0 1rem 3rem rgb(28 52 84 / 10%);
+  max-width: 42rem;
+  padding: 2.5rem;
+  width: 100%;
+}
+
+.account-header {
+  align-items: center;
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.brand {
+  align-items: center;
+  background: #2355c4;
+  border-radius: 0.75rem;
+  color: #fff;
+  display: flex;
+  flex: 0 0 auto;
+  font-size: 1.5rem;
+  font-weight: 800;
+  height: 3rem;
+  justify-content: center;
+  width: 3rem;
+}
+
+h1 {
+  color: #18243a;
+  font-size: 1.75rem;
+  margin: 0 0 0.5rem;
+}
+
+.subtitle,
+.form-message {
+  color: #62708a;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.name-fields {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.field {
+  margin-bottom: 1.25rem;
+}
+
+label {
+  color: #26354f;
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+input {
+  background: #fff;
+  border: 1px solid #cbd5e3;
+  border-radius: 0.625rem;
+  box-sizing: border-box;
+  color: #18243a;
+  font: inherit;
+  padding: 0.8rem 0.9rem;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+  width: 100%;
+}
+
+input:focus {
+  border-color: #2355c4;
+  box-shadow: 0 0 0 3px rgb(38 89 216 / 15%);
+  outline: none;
+}
+
+input[aria-invalid='true'] {
+  border-color: #c93636;
+}
+
+.error {
+  color: #b52e2e;
+  font-size: 0.8rem;
+  margin: 0.4rem 0 0;
+}
+
+.form-message {
+  color: #20734a;
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+  text-align: center;
+}
+
+.account-section {
+  border-top: 1px solid #e3e9f2;
+  margin-top: 2rem;
+  padding-top: 2rem;
+}
+
+.account-section h2 {
+  color: #18243a;
+  font-size: 1.2rem;
+  margin: 0 0 1.25rem;
+}
+
+.account-danger {
+  color: #62708a;
+}
+
+.account-danger p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+}
+
+.checkbox-field {
+  align-items: flex-start;
+  display: flex;
+  font-size: 0.85rem;
+  font-weight: 400;
+  gap: 0.65rem;
+  line-height: 1.45;
+  margin-bottom: 1rem;
+}
+
+.checkbox-field input {
+  accent-color: #2355c4;
+  flex: 0 0 auto;
+  height: 1rem;
+  margin: 0.15rem 0 0;
+  width: 1rem;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.secondary-button,
+.submit-button {
+  border: 0;
+  border-radius: 1rem;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 0.85rem 1rem;
+  transition:
+    background 150ms ease,
+    transform 150ms ease;
+  width: 100%;
+}
+
+.secondary-button {
+  background: #e8edf5;
+  color: #26354f;
+}
+
+.secondary-button:hover {
+  background: #d6dfed;
+}
+
+.submit-button {
+  background: #ffd900;
+  color: black;
+}
+
+.submit-button:hover {
+  background: #2355c4;
+  color: #fff;
+}
+
+.delete-button,
+.logout-button {
+  border: 0;
+  border-radius: 1rem;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 700;
+  padding: 0.85rem 1rem;
+  width: 100%;
+}
+
+.delete-button {
+  background: #fce4e4;
+  color: #b52e2e;
+}
+
+.delete-button:hover:not(:disabled) {
+  background: #f7caca;
+}
+
+.delete-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.logout-button {
+  background: #e8edf5;
+  color: #26354f;
+  margin-top: 1.5rem;
+}
+
+.logout-button:hover {
+  background: #d6dfed;
+}
+
+.secondary-button:active,
+.submit-button:active,
+.delete-button:active,
+.logout-button:active {
+  transform: translateY(1px);
+}
+
+@media (max-width: 600px) {
+  .account-card {
+    padding: 2rem 1.25rem;
+  }
+
+  .name-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .actions {
+    flex-direction: column-reverse;
+  }
+}
