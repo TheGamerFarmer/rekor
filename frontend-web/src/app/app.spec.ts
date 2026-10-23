@@ -31,12 +31,12 @@ describe('App', () => {
     expect(fixture.componentInstance).toBeTruthy();
   });
 
-  it('should render title', async () => {
+  it('should render the club name', async () => {
     const { fixture, request } = createApp();
     request.flush({ status: 'ok' });
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, frontend-web');
+    expect(compiled.querySelector('.club-name')?.textContent).toContain('Gières Volley-ball Club');
   });
 
   it('should show the status returned by the backend', async () => {

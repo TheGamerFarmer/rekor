@@ -1,1 +1,52 @@
-/* You can add global styles to this file, and also import other style files */
+:root {
+  --color-primary: #2455c5;
+  --color-primary-hover: #1d46a5;
+  --color-primary-light: #eaf1ff;
+  --color-secondary: #ffd600;
+  --color-secondary-hover: #e6b800;
+  --color-background: #f4f7fc;
+  --color-surface: #fff;
+  --color-dark: #0b172b;
+  --color-text: #101828;
+  --color-text-muted: #5f6b7d;
+  --color-border: #e6ebf2;
+  --glass-background: rgb(255 255 255 / 75%);
+  --glass-border: rgb(255 255 255 / 65%);
+  --glass-shadow: rgb(22 59 140 / 10%);
+}
+
+html {
+  min-width: 320px;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+}
+
+.outline-button {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 10px 20px;
+  background-color: color-mix(in srgb, var(--glass-background) 20%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  color: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  text-decoration: none;
+  text-transform: uppercase;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.outline-button:hover {
+  border-color: var(--glass-border);
+  background-color: color-mix(in srgb, var(--glass-background) 35%, transparent);
+}
