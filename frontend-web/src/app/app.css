@@ -1,7 +1,10 @@
 :host {
   display: block;
-  color: var(--color-surface);
   font-family: 'DM Sans', Arial, sans-serif;
+}
+
+footer {
+  color: var(--color-surface);
 }
 
 * {
