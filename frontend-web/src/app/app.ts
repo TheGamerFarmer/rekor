@@ -5,8 +5,10 @@ import { catchError, map, of } from 'rxjs';
 import { HealthService } from './api';
 import { RouterOutlet } from '@angular/router';
 
+import { AccueilClubComponent } from './components/accueil-club-component/accueil-club-component';
+
 @Component({
-  imports: [RouterOutlet],
+  imports: [RouterOutlet, AccueilClubComponent],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',

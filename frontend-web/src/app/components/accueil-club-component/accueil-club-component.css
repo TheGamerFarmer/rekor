@@ -1,0 +1,43 @@
+section {
+  margin-left: 15%;
+  margin-right: 15%;
+}
+
+section#infos-generales {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr 1fr;
+  grid-auto-flow: column;
+}
+section#infos-generales div#adresse-container {
+  grid-column: 2;
+  grid-row: 2;
+}
+section#infos-generales div#adresse-container > div {
+  display: flex;
+  flex-direction: row;
+}
+
+section#presentation {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+
+img {
+  margin: 5%;
+  border-radius: 10px;
+  max-width: 90%;
+}
+
+section#historique {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.timeline-wrapper {
+  max-width: 1200px;
+  max-height: 500px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}

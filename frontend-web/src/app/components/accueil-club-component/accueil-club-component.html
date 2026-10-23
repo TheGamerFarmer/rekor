@@ -1,0 +1,65 @@
+<section id="infos-generales">
+  <h2>Informations générales</h2>
+  <div>
+    <h3>Horaires séance</h3>
+    <p>Mardi 18h - 20h</p>
+    <!-- Séance -->
+  </div>
+  <div>
+    <h3>Horaires match</h3>
+    <p>Samedi 15h - 18h</p>
+    <!-- Match -->
+  </div>
+  <div class="adresse-container">
+    <h3>Adresse</h3>
+    <div>
+      <mat-icon>room</mat-icon>
+      <div>
+        <p>1 Rue des Sports, 38610 Gières</p>
+        <!-- Adresse -->
+        <p>Gymnase court sur foin</p>
+      </div>
+    </div>
+  </div>
+  <div>
+    <h3>Contact :</h3>
+    <p>{{ 'E-mail : le - club\@mail.com' }}</p>
+    <p>Téléphone : +33 1 23 45 67 89</p>
+  </div>
+</section>
+<section id="presentation">
+  <div>
+    <h2>Gières Volley ball Club</h2>
+    <!-- Nom du club -->
+    <p>
+      Lowrem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+      labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+      laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+      voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
+      non proident, sunt in culpa qui officia deserunt mollit anim id est laborum!
+    </p>
+    <!-- Description du club -->
+  </div>
+  <img src="/images/jeu-volley-1.jpg" alt="Photo de volley" />
+  <img src="/images/jeu-volley-2.jpg" alt="Photo de volley" />
+  <p>
+    Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut
+    labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco
+    laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in
+    voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat
+    non proident, sunt in culpa qui officia deserunt mollit anim id est laborum!
+  </p>
+  <!-- Suite de la description du club -->
+</section>
+<section id="historique">
+  <h2>Historique</h2>
+  <div class="timeline-wrapper">
+    <ngx-timeline
+      [events]="frise"
+      [langCode]="'fr'"
+      [enableAnimation]="false"
+      [orientation]="NgxTimelineOrientation.HORIZONTAL"
+    >
+    </ngx-timeline>
+  </div>
+</section>
