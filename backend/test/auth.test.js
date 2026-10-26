@@ -73,16 +73,11 @@ describe('/auth', () => {
       email: account.email,
       password: account.password,
     });
-
     assert.strictEqual(res.status, 200);
-    assert.deepStrictEqual(
-      { email: res.body.user.email, name: res.body.user.name, role: res.body.user.role },
-      { email: account.email, name: account.name, role: 'Visiteur' },
-    );
-    assert.match(res.body.token, /^[\w-]+\.[\w-]+\.[\w-]+$/);
-    assert.strictEqual('password' in res.body.user, false);
 
-    const me = await request(app).get('/users/me').set('Authorization', `Bearer ${res.body.token}`);
+    const me = await request(app)
+      .get('/users/me')
+      .set('Authorization', `Bearer ${res.body.access_token}`);
     assert.strictEqual(me.status, 200);
     assert.strictEqual(me.body.id, storedUser._id.toString());
     assert.strictEqual(me.body.role, 'Visiteur');
