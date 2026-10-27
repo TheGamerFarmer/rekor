@@ -22,8 +22,10 @@
     "@angular/compiler": "^22.2.3",
     "@angular/core": "^22.2.3",
     "@angular/forms": "^22.2.3",
+    "@angular/material": "^22.2.4",
     "@angular/platform-browser": "^22.2.3",
     "@angular/router": "^22.2.3",
+    "@frxjs/ngx-timeline": "^22.0.1",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
   },

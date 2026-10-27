@@ -1,0 +1,75 @@
+main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 42px 28px 30px;
+}
+main h2 {
+  font-weight: bolder;
+  text-transform: uppercase;
+}
+main h3 {
+  font-weight: bolder;
+  text-transform: uppercase;
+  margin-top: 8px;
+  margin-bottom: 8px;
+}
+main p {
+  max-width: 500px;
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+section#infos-generales {
+  display: grid;
+  grid-template-columns: 10fr 9fr;
+  grid-template-rows: 2fr 3fr 3fr;
+  grid-auto-flow: column;
+  margin-top: 150px;
+}
+section#infos-generales div.adresse-container {
+  grid-column: 2;
+  grid-row: 2;
+}
+section#infos-generales div.adresse-container > div {
+  display: flex;
+  flex-direction: row;
+}
+section#infos-generales .mat-icon {
+  align-self: center;
+  margin-right: 10px;
+}
+section#infos-generales div.contact {
+  grid-column: 2;
+  grid-row: 3;
+}
+
+section#presentation {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: 1fr 1fr;
+}
+section#presentation img {
+  margin: 5%;
+  border-radius: 10px;
+  max-width: 90%;
+}
+section#presentation p.second {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+section#historique {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 50px;
+}
+section#historique .timeline-wrapper {
+  max-width: 1200px;
+  max-height: 500px;
+  overflow-x: auto;
+  overflow-y: hidden;
+}
+::ng-deep ngx-timeline .hour span {
+  display: none;
+}
