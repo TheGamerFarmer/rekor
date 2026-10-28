@@ -13,32 +13,26 @@ part of rekor_api;
 class LoginResponse {
   /// Returns a new [LoginResponse] instance.
   LoginResponse({
-    required this.token,
-    required this.user,
+    required this.accessToken,
   });
 
-  String token;
-
-  LoginUser user;
+  String accessToken;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is LoginResponse &&
-    other.token == token &&
-    other.user == user;
+    other.accessToken == accessToken;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (token.hashCode) +
-    (user.hashCode);
+    (accessToken.hashCode);
 
   @override
-  String toString() => 'LoginResponse[token=$token, user=$user]';
+  String toString() => 'LoginResponse[accessToken=$accessToken]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
-      json[r'token'] = this.token;
-      json[r'user'] = this.user;
+      json[r'access_token'] = this.accessToken;
     return json;
   }
 
@@ -53,16 +47,13 @@ class LoginResponse {
       // Note 1: the values aren't checked for validity beyond being non-null.
       // Note 2: this code is stripped in release mode!
       assert(() {
-        assert(json.containsKey(r'token'), 'Required key "LoginResponse[token]" is missing from JSON.');
-        assert(json[r'token'] != null, 'Required key "LoginResponse[token]" has a null value in JSON.');
-        assert(json.containsKey(r'user'), 'Required key "LoginResponse[user]" is missing from JSON.');
-        assert(json[r'user'] != null, 'Required key "LoginResponse[user]" has a null value in JSON.');
+        assert(json.containsKey(r'access_token'), 'Required key "LoginResponse[access_token]" is missing from JSON.');
+        assert(json[r'access_token'] != null, 'Required key "LoginResponse[access_token]" has a null value in JSON.');
         return true;
       }());
 
       return LoginResponse(
-        token: mapValueOfType<String>(json, r'token')!,
-        user: LoginUser.fromJson(json[r'user'])!,
+        accessToken: mapValueOfType<String>(json, r'access_token')!,
       );
     }
     return null;
@@ -110,8 +101,7 @@ class LoginResponse {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
-    'token',
-    'user',
+    'access_token',
   };
 }
 

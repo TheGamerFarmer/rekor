@@ -1,4 +1,4 @@
-const { getDb } = require('../db/db');
+const { getDb } = require('../../db/db');
 
 const wrapAsync = (handler) => (req, res, next) =>
   Promise.resolve(handler(req, res, next)).catch(next);
@@ -23,14 +23,14 @@ const toPublicUser = (user) => {
 };
 
 const toEssentialPublicUser = (user) => {
-  const { _id, name, firstName, email } = user;
+  const { _id, email, firstName, name } = user;
 
   return Object.fromEntries(
     Object.entries({
       id: _id.toString(),
-      name,
-      firstName,
       email,
+      firstName,
+      name,
     }).filter(([, value]) => value !== undefined),
   );
 };
