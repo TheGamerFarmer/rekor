@@ -1,0 +1,46 @@
+<section
+  class="banner"
+  [class.home-banner]="isHome()"
+  [style.background-image]="'url(' + image() + ')'"
+  [id]="isHome() ? 'accueil' : null"
+>
+  <div class="banner-content">
+    @if (isHome()) {
+      <p class="eyebrow">Prochain match</p>
+      <h1>
+        {{ title() }}
+        @if (subtitle()) {
+          <span>{{ subtitle() }}</span>
+        }
+      </h1>
+      <p class="hero-location">
+        <img class="icon icon-map" src="/icons/map.png" alt="" /> Gymnase de Gières
+        <i></i>
+        18h00
+      </p>
+      <a class="outline-button pill-button" href="#rendez-vous">
+        Découvrir le match <img class="icon icon-arrow" src="/icons/arrow.png" alt="" />
+      </a>
+
+      <div class="match-strip" aria-label="Informations sur le prochain match">
+        <div class="match-detail">
+          <img class="detail-icon icon-calendar" src="/icons/calendrier.png" alt="" />
+          <p><strong>Samedi 10 octobre 2026</strong><small>18h00</small></p>
+        </div>
+        <div class="match-detail">
+          <img class="detail-icon icon-map" src="/icons/map.png" alt="" />
+          <p><strong>Gymnase de Gières</strong><small>38160 Gières</small></p>
+        </div>
+        <div class="match-detail">
+          <img class="detail-icon icon-trophy" src="/icons/trophee.png" alt="" />
+          <p><strong>Match amical</strong><small>Seniors</small></p>
+        </div>
+      </div>
+    } @else {
+      <h1>{{ title() }}</h1>
+      @if (subtitle()) {
+        <p class="banner-subtitle">{{ subtitle() }}</p>
+      }
+    }
+  </div>
+</section>
