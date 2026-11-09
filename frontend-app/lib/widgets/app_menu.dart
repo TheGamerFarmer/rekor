@@ -158,26 +158,24 @@ class AppMenu extends StatelessWidget {
                           );
                         }*/
                       },
-                      child: Container(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              element.$1,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(
+                            element.$1,
+                            color: Colors.white,
+                            size: 35,
+                          ),
+                          const SizedBox(height: 10),
+                          Text(
+                            element.$2,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
                               color: Colors.white,
-                              size: 35,
+                              fontSize: 16,
                             ),
-                            const SizedBox(height: 10),
-                            Text(
-                              element.$2,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     ),
                 ],

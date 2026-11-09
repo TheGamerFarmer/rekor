@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 
-import 'health_status.dart';
 import 'mobile_pages/home_page.dart';
 
 void main() {
