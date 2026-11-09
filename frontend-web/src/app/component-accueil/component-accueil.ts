@@ -4,10 +4,9 @@ import { catchError, map, of } from 'rxjs';
 
 import { HealthService } from '../api';
 import { Banner } from '../component-banner/banner';
-import { Button } from '../component-button/button';
 
 @Component({
-  imports: [Banner, Button],
+  imports: [Banner],
   selector: 'app-component-accueil',
   styleUrl: './component-accueil.css',
   templateUrl: './component-accueil.html',
