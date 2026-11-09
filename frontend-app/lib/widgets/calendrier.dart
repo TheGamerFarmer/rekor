@@ -43,6 +43,12 @@ class _CalendrierState extends State<Calendrier> {
     });
   }
 
+  void _revenirAujourdhui() {
+    setState(() {
+      _mois = DateTime(DateTime.now().year, DateTime.now().month);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     // Calcul de la grille
@@ -94,15 +100,19 @@ class _CalendrierState extends State<Calendrier> {
           icon: const Icon(Icons.chevron_left, color: Colors.white),
           onPressed: () => _changerMois(-1),
         ),
-        SizedBox(
-          width: 120,
-          child: Text(
-            _nomsMois[_mois.month - 1],
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: Colors.white,
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
+        InkWell(
+          onTap: _revenirAujourdhui,
+          borderRadius: BorderRadius.circular(8),
+          child: SizedBox(
+            width: 170,
+            child: Text(
+              '${_nomsMois[_mois.month - 1]} ${_mois.year}',
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                color: Colors.white,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ),
