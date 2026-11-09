@@ -3,6 +3,7 @@ const assert = require('node:assert');
 const express = require('express');
 const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
+const { ObjectId } = require('mongodb');
 const db = require('../db/db');
 const app = require('../index');
 const createUsersRouter = require('../controllers/users');
@@ -12,6 +13,7 @@ const {
   authorize,
   signAccessToken,
   signRefreshToken,
+  hashRefreshToken,
   verifyAccessToken,
   verifyRefreshToken,
 } = require('../controllers/services/auth-middleware');
@@ -25,6 +27,20 @@ const account = {
   password: 'mot-de-passe',
   pronoun: 'Elle',
 };
+
+function signClaims(payload, secret = process.env.JWT_SECRET) {
+  const encode = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
+  const unsigned = `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode(payload)}`;
+  const signature = createHmac('sha256', secret).update(unsigned).digest('base64url');
+  return `${unsigned}.${signature}`;
+}
+
+function signRefreshClaims(payload) {
+  const secret = createHmac('sha256', process.env.JWT_SECRET)
+    .update('rekor-refresh-token-v1')
+    .digest();
+  return signClaims(payload, secret);
+}
 
 function buildMiddlewareApp() {
   const middlewareApp = express();
@@ -66,6 +82,7 @@ describe('/auth', () => {
   beforeEach(async () => {
     clearRevokedSessions();
     await db.getDb().collection('users').deleteMany({});
+    await db.getDb().collection('refresh_tokens').deleteMany({});
   });
 
   it('enregistre un compte et stocke uniquement un mot de passe haché', async () => {
@@ -127,6 +144,137 @@ describe('/auth', () => {
       .post('/auth/refresh')
       .send({ refresh_token: login.body.refresh_token });
     assert.strictEqual(replay.status, 401);
+  });
+
+  it('refuse les refresh tokens invalides ou dont les claims ne sont pas valides', async () => {
+    const invalidTokens = [
+      signRefreshClaims({
+        sub: '6ac8c78e50318b28d457048f',
+        role: 'Visiteur',
+        sid: 'session',
+        token_use: 'refresh',
+        iat: 1,
+        exp: Math.floor(Date.now() / 1000) + 60,
+      }),
+      signRefreshClaims({
+        sub: '6ac8c78e50318b28d457048f',
+        role: 'Visiteur',
+        jti: 'token',
+        token_use: 'refresh',
+        iat: 1,
+        exp: Math.floor(Date.now() / 1000) + 60,
+      }),
+      signRefreshClaims({
+        sub: '6ac8c78e50318b28d457048f',
+        role: 'Visiteur',
+        sid: 'session',
+        jti: 'token',
+        token_use: 'refresh',
+        exp: Math.floor(Date.now() / 1000) + 60,
+      }),
+    ];
+
+    for (const token of invalidTokens) {
+      assert.throws(() => verifyRefreshToken(token));
+    }
+
+    const malformedRefresh = await request(apiApp)
+      .post('/auth/refresh')
+      .send({ refresh_token: 'invalid' });
+    assert.strictEqual(malformedRefresh.status, 401);
+
+    const malformedLogout = await request(apiApp)
+      .post('/auth/logout')
+      .send({ refresh_token: 'invalid' });
+    assert.strictEqual(malformedLogout.status, 401);
+
+    const invalidSubjectToken = signRefreshToken({
+      _id: { toString: () => 'not-an-object-id' },
+      role: 'Visiteur',
+    }).token;
+    const invalidSubjectRefresh = await request(apiApp)
+      .post('/auth/refresh')
+      .send({ refresh_token: invalidSubjectToken });
+    assert.strictEqual(invalidSubjectRefresh.status, 401);
+
+    const invalidSubjectLogout = await request(apiApp)
+      .post('/auth/logout')
+      .send({ refresh_token: invalidSubjectToken });
+    assert.strictEqual(invalidSubjectLogout.status, 401);
+  });
+
+  it('refuse un refresh token sans session enregistrée en base', async () => {
+    const token = signRefreshToken({
+      _id: { toString: () => '6ac8c78e50318b28d457048f' },
+      role: 'Visiteur',
+    }).token;
+
+    const refresh = await request(apiApp).post('/auth/refresh').send({ refresh_token: token });
+    assert.strictEqual(refresh.status, 401);
+
+    const logout = await request(apiApp).post('/auth/logout').send({ refresh_token: token });
+    assert.strictEqual(logout.status, 401);
+  });
+
+  it('propage les erreurs internes de validation sur refresh et logout', async () => {
+    const previousJwtSecret = process.env.JWT_SECRET;
+    process.env.JWT_SECRET = 'short';
+
+    try {
+      const refresh = await request(apiApp)
+        .post('/auth/refresh')
+        .send({ refresh_token: 'invalid' });
+      assert.strictEqual(refresh.status, 500);
+
+      const logout = await request(apiApp).post('/auth/logout').send({ refresh_token: 'invalid' });
+      assert.strictEqual(logout.status, 500);
+    } finally {
+      process.env.JWT_SECRET = previousJwtSecret;
+    }
+  });
+
+  it('supprime une session de refresh orpheline dont le compte a disparu', async () => {
+    const userId = new ObjectId('6ac8c78e50318b28d457048f');
+    const refresh = signRefreshToken({ _id: userId, role: 'Visiteur' });
+    await db
+      .getDb()
+      .collection('refresh_tokens')
+      .insertOne({
+        _id: refresh.sessionId,
+        userId,
+        tokenHash: hashRefreshToken(refresh.token),
+        expiresAt: refresh.expiresAt,
+      });
+
+    const response = await request(apiApp)
+      .post('/auth/refresh')
+      .send({ refresh_token: refresh.token });
+    assert.strictEqual(response.status, 401);
+    assert.strictEqual(
+      await db.getDb().collection('refresh_tokens').findOne({ _id: refresh.sessionId }),
+      null,
+    );
+  });
+
+  it('refuse le renouvellement si la rotation du refresh token a échoué', async () => {
+    await request(apiApp).post('/auth/register').send(account);
+    const login = await request(apiApp).post('/auth/login').send({
+      email: account.email,
+      password: account.password,
+    });
+    const collection = db.getDb().collection('refresh_tokens');
+    const prototype = Object.getPrototypeOf(collection);
+    const originalUpdateOne = prototype.updateOne;
+    prototype.updateOne = async () => ({ matchedCount: 0 });
+
+    try {
+      const response = await request(apiApp)
+        .post('/auth/refresh')
+        .send({ refresh_token: login.body.refresh_token });
+      assert.strictEqual(response.status, 401);
+    } finally {
+      prototype.updateOne = originalUpdateOne;
+    }
   });
 
   it('refuse un refresh token utilisé comme access token', async () => {
@@ -231,6 +379,7 @@ describe('/auth', () => {
     };
     const tokens = [
       'not-a-jwt',
+      'header..signature',
       `${validHeader}.${Buffer.from('not-json').toString('base64url')}.signature`,
       sign({ alg: 'none', typ: 'JWT' }, validPayload),
       `${sign({ alg: 'HS256', typ: 'JWT' }, validPayload).slice(0, -1)}x`,
@@ -238,6 +387,7 @@ describe('/auth', () => {
       sign({ alg: 'HS256', typ: 'JWT' }, { ...validPayload, exp: 'later' }),
       sign({ alg: 'HS256', typ: 'JWT' }, { ...validPayload, exp: 1 }),
       sign({ alg: 'HS256', typ: 'JWT' }, { role: 'Visiteur', exp: validPayload.exp }),
+      sign({ alg: 'HS256', typ: 'JWT' }, { ...validPayload, token_use: 'refresh' }),
     ];
     const middlewareApp = buildMiddlewareApp();
 
@@ -246,6 +396,12 @@ describe('/auth', () => {
       const res = await request(middlewareApp).get('/me').set('Authorization', `Bearer ${token}`);
       assert.strictEqual(res.status, 401);
     }
+
+    const missingSessionId = sign(
+      { alg: 'HS256', typ: 'JWT' },
+      { ...validPayload, sid: undefined },
+    );
+    await assert.rejects(() => verifyAccessToken(missingSessionId));
   });
 
   it('transmet les erreurs de configuration JWT du middleware au gestionnaire Express', async () => {

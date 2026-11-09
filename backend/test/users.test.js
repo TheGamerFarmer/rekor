@@ -265,4 +265,21 @@ describe('/users (avec un vrai mongod)', () => {
 
     assert.strictEqual(res.status, 404);
   });
+
+  it('PUT /users/me/password renvoie 409 si le mot de passe change pendant la mise à jour', async () => {
+    const collection = db.getDb().collection('users');
+    const prototype = Object.getPrototypeOf(collection);
+    const originalUpdateOne = prototype.updateOne;
+    prototype.updateOne = async () => ({ matchedCount: 0 });
+
+    try {
+      const response = await request(app)
+        .put('/users/me/password')
+        .set('Authorization', `Bearer ${adaToken}`)
+        .send({ old_password: 'ancien-mot-de-passe', new_password: 'nouveau-mot-de-passe' });
+      assert.strictEqual(response.status, 409);
+    } finally {
+      prototype.updateOne = originalUpdateOne;
+    }
+  });
 });
