@@ -12,6 +12,7 @@ class AppFooter extends StatelessWidget{
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.65),
         border: Border.all(
           color: Colors.white,
           width: 2,
@@ -22,44 +23,67 @@ class AppFooter extends StatelessWidget{
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         // Les 3 boutons (Accueil, Menu, Discussions)
         children: [
-          InkWell(
+          //Accueil
+          _buildFooterButton(
+            label: 'Accueil',
             onTap: () {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => const MyHomePage(title: 'Accueil'),
+                  builder: (context) =>
+                  const MyHomePage(title: 'Accueil'),
                 ),
               );
             },
-            child: const Text(
-              'Accueil',
-              style: TextStyle(color: Colors.white),
-            ),
           ),
-          InkWell(
+          // Bouton Menu
+          _buildFooterButton(
+            label: 'Menu',
             onTap: onMenuTap,
-            child: const Text(
-              'Menu',
-              style: TextStyle(color: Colors.white),
-            ),
           ),
-          InkWell(
+          // Bouton Discussions
+          _buildFooterButton(
+            label: 'Discussions',
             onTap: () {
-              /*Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MyHomePage(title: 'Discussions'),
-                ),
-              );*/
+              // Navigation vers discussions à ajouter
             },
-            child: const Text(
-              'Discussions',
-              style: TextStyle(color: Colors.white),
-            ),
           ),
         ],
       ),
     );
   }
 
+}
+
+Widget _buildFooterButton({
+  required String label,
+  required VoidCallback onTap,
+}) {
+  return Semantics(
+    button: true,
+    label: label,
+    child: ExcludeSemantics(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(
+              minWidth: 48,
+              minHeight: 48,
+            ),
+            child: Center(
+              child: Text(
+                label,
+                style: const TextStyle(
+                  color: Colors.white,
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }

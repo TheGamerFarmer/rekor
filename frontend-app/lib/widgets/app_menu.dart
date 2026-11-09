@@ -45,6 +45,7 @@ class AppMenu extends StatelessWidget {
                 ),
 
                 IconButton(
+                  tooltip: 'Close',
                   onPressed: onClose,
                   icon: const Icon(
                     Icons.close,
@@ -64,9 +65,10 @@ class AppMenu extends StatelessWidget {
                 children: [
                   // Boucle pour les 9 pages dans elements
                   for (final element in elements)
-                    InkWell(
+                    Semantics(
+                      button: true,
+                      label: element.$2,
                       onTap: () {
-                        // Lien à définir pour chaque élément
                         if (element.$2 == 'Accueil') {
                           Navigator.push(
                             context,
@@ -77,105 +79,41 @@ class AppMenu extends StatelessWidget {
                             ),
                           );
                         }
-                        /*if (element.$2 == 'Discussions') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Discussions',
-                              ),
-                            ),
-                          );
-                        }*/
-                        /*if (element.$2 == 'Covoiturage') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Covoiturage',
-                              ),
-                            ),
-                          );
-                        }*/
-                        /*if (element.$2 == 'Évènements') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Évènements',
-                              ),
-                            ),
-                          );
-                        }*/
-                        /*if (element.$2 == 'Compétition') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Compétition',
-                              ),
-                            ),
-                          );
-                        }*/
-                        /*if (element.$2 == 'Arbitrage') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Arbitrage',
-                              ),
-                            ),
-                          );
-                        }*/
-                        /*if (element.$2 == 'Statistiques') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Statistiques',
-                              ),
-                            ),
-                          );
-                        }*/
-                        /*if (element.$2 == 'News') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'News',
-                              ),
-                            ),
-                          );
-                        }*/
-                        /*if (element.$2 == 'Paramètres') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Paramètres',
-                              ),
-                            ),
-                          );
-                        }*/
                       },
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            element.$1,
-                            color: Colors.white,
-                            size: 35,
+                      child: ExcludeSemantics(
+                        child: InkWell(
+                          onTap: () {
+                            if (element.$2 == 'Accueil') {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const MyHomePage(
+                                    title: 'Accueil',
+                                  ),
+                                ),
+                              );
+                            }
+                          },
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                element.$1,
+                                color: Colors.white,
+                                size: 35,
+                              ),
+                              const SizedBox(height: 10),
+                              Text(
+                                element.$2,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
+                              ),
+                            ],
                           ),
-                          const SizedBox(height: 10),
-                          Text(
-                            element.$2,
-                            textAlign: TextAlign.center,
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
+                        ),
                       ),
                     ),
                 ],

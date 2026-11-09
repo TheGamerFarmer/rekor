@@ -14,10 +14,17 @@ class MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
     return MainLayout(
-      child: const Center(
-        child: Text(
-          'Bienvenue sur la page d’accueil',
-          style: TextStyle(color: Colors.white),
+      child: Center(
+        child: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.black.withValues(alpha: 0.65),
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: const Text(
+            'Bienvenue sur la page d’accueil',
+            style: TextStyle(color: Colors.white),
+          ),
         ),
       ),
     );
