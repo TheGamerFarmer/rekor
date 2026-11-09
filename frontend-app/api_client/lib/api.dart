@@ -37,6 +37,7 @@ part 'model/error_response.dart';
 part 'model/health_response.dart';
 part 'model/login_input.dart';
 part 'model/login_response.dart';
+part 'model/refresh_token_input.dart';
 part 'model/register_input.dart';
 part 'model/update_profile_input.dart';
 part 'model/user_details.dart';
