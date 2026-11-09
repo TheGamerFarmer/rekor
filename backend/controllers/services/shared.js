@@ -4,6 +4,7 @@ const wrapAsync = (handler) => (req, res, next) =>
   Promise.resolve(handler(req, res, next)).catch(next);
 
 const usersCollection = () => getDb().collection('users');
+const refreshTokensCollection = () => getDb().collection('refresh_tokens');
 
 const toPublicUser = (user) => {
   const { _id, name, firstName, email, phoneNumber, role, birthday, pronoun } = user;
@@ -35,4 +36,10 @@ const toEssentialPublicUser = (user) => {
   );
 };
 
-module.exports = { wrapAsync, usersCollection, toPublicUser, toEssentialPublicUser };
+module.exports = {
+  wrapAsync,
+  usersCollection,
+  refreshTokensCollection,
+  toPublicUser,
+  toEssentialPublicUser,
+};

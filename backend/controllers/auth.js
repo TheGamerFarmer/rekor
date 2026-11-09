@@ -1,8 +1,26 @@
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
-const { wrapAsync, usersCollection } = require('./services/shared');
-const { signAccessToken } = require('./services/auth-middleware');
+const { ObjectId } = require('mongodb');
+const { wrapAsync, usersCollection, refreshTokensCollection } = require('./services/shared');
+const {
+  InvalidTokenError,
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+  hashRefreshToken,
+} = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
+
+async function createRefreshSession(user) {
+  const refresh = signRefreshToken(user);
+  await refreshTokensCollection().insertOne({
+    _id: refresh.sessionId,
+    userId: user._id,
+    tokenHash: hashRefreshToken(refresh.token),
+    expiresAt: refresh.expiresAt,
+  });
+  return refresh.token;
+}
 
 function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
   const router = express.Router();
@@ -21,13 +39,13 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
     '/register',
     wrapAsync(async (req, res) => {
       const { name, firstName, email, password, phoneNumber, birthday, pronoun } = req.body;
-
-      if (await usersCollection().findOne({ email: { $eq: email } }, { projection: { _id: 1 } })) {
+      const users = usersCollection();
+      if (await users.findOne({ email: { $eq: email } }, { projection: { _id: 1 } })) {
         return res.status(409).json({ message: 'Un utilisateur avec cet e-mail existe déjà' });
       }
 
       try {
-        await usersCollection().insertOne({
+        await users.insertOne({
           name,
           firstName,
           email,
@@ -59,7 +77,85 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
 
       res.json({
         access_token: signAccessToken(user),
+        refresh_token: await createRefreshSession(user),
       });
+    }),
+  );
+
+  router.post(
+    '/refresh',
+    wrapAsync(async (req, res) => {
+      let claims;
+      try {
+        claims = verifyRefreshToken(req.body.refresh_token);
+      } catch (error) {
+        if (error instanceof InvalidTokenError) {
+          return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+        }
+        throw error;
+      }
+
+      if (!ObjectId.isValid(claims.sub)) {
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      const refreshTokens = refreshTokensCollection();
+      const oldTokenHash = hashRefreshToken(req.body.refresh_token);
+      const session = await refreshTokens.findOne({
+        _id: claims.sid,
+        userId: new ObjectId(claims.sub),
+        tokenHash: oldTokenHash,
+        expiresAt: { $gt: new Date() },
+      });
+      if (!session) {
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      const user = await usersCollection().findOne({ _id: session.userId });
+      if (!user) {
+        await refreshTokens.deleteOne({ _id: session._id });
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      const refresh = signRefreshToken(user, session._id);
+      const updated = await refreshTokens.updateOne(
+        { _id: session._id, tokenHash: oldTokenHash, expiresAt: { $gt: new Date() } },
+        {
+          $set: {
+            tokenHash: hashRefreshToken(refresh.token),
+            expiresAt: refresh.expiresAt,
+          },
+        },
+      );
+      if (updated.matchedCount === 0) {
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      res.json({
+        access_token: signAccessToken(user),
+        refresh_token: refresh.token,
+      });
+    }),
+  );
+
+  router.post(
+    '/logout',
+    wrapAsync(async (req, res) => {
+      let claims;
+      try {
+        claims = verifyRefreshToken(req.body.refresh_token);
+      } catch (error) {
+        if (error instanceof InvalidTokenError) {
+          return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+        }
+        throw error;
+      }
+
+      await refreshTokensCollection().deleteOne({
+        _id: claims.sid,
+        tokenHash: hashRefreshToken(req.body.refresh_token),
+      });
+      res.status(204).end();
     }),
   );
 
