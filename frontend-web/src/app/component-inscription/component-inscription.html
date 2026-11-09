@@ -100,9 +100,13 @@
               registrationForm.controls.password.invalid && registrationForm.controls.password.dirty
             "
           />
-          <button type="button" class="password-toggle" (click)="showPassword.set(!showPassword())">
-            {{ showPassword() ? 'Masquer' : 'Afficher' }}
-          </button>
+          <app-button
+            class="password-toggle"
+            variant="text"
+            [text]="showPassword() ? 'Masquer' : 'Afficher'"
+            [ariaLabel]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
+            (click)="showPassword.set(!showPassword())"
+          ></app-button>
         </div>
         @if (
           registrationForm.controls.password.invalid && registrationForm.controls.password.dirty
@@ -124,13 +128,15 @@
               registrationForm.controls.confirmPassword.dirty
             "
           />
-          <button
-            type="button"
+          <app-button
             class="password-toggle"
+            variant="text"
+            [text]="showConfirmation() ? 'Masquer' : 'Afficher'"
+            [ariaLabel]="
+              showConfirmation() ? 'Masquer la confirmation' : 'Afficher la confirmation'
+            "
             (click)="showConfirmation.set(!showConfirmation())"
-          >
-            {{ showConfirmation() ? 'Masquer' : 'Afficher' }}
-          </button>
+          ></app-button>
         </div>
         @if (
           registrationForm.controls.confirmPassword.invalid &&
@@ -179,8 +185,13 @@
       }
 
       <div class="actions">
-        <button type="button" class="secondary-button" routerLink="/">Retour à l’accueil</button>
-        <button type="submit" class="submit-button">Valider</button>
+        <app-button
+          variant="secondary"
+          href="/"
+          [fullWidth]="true"
+          text="Retour à l’accueil"
+        ></app-button>
+        <app-button type="submit" [fullWidth]="true" text="Valider"></app-button>
       </div>
     </form>
   </section>

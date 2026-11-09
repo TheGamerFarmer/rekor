@@ -79,8 +79,13 @@
       }
 
       <div class="actions">
-        <button type="button" class="secondary-button" routerLink="/">Retour à l’accueil</button>
-        <button type="submit" class="submit-button">Enregistrer</button>
+        <app-button
+          variant="secondary"
+          href="/"
+          [fullWidth]="true"
+          text="Retour à l’accueil"
+        ></app-button>
+        <app-button type="submit" [fullWidth]="true" text="Enregistrer"></app-button>
       </div>
     </form>
 
@@ -154,7 +159,7 @@
           <p class="form-message" role="status">Votre mot de passe a été modifié.</p>
         }
 
-        <button type="submit" class="submit-button">Modifier le mot de passe</button>
+        <app-button type="submit" [fullWidth]="true" text="Modifier le mot de passe"></app-button>
       </form>
     </section>
 
@@ -169,16 +174,22 @@
         />
         <span>Je comprends que la suppression de mon compte est définitive.</span>
       </label>
-      <button
-        type="button"
+      <app-button
         class="delete-button"
+        variant="danger"
+        [fullWidth]="true"
         [disabled]="!deleteConfirmed() || accountDeleted()"
+        [text]="accountDeleted() ? 'Compte supprimé' : 'Supprimer mon compte'"
         (click)="deleteAccount()"
-      >
-        {{ accountDeleted() ? 'Compte supprimé' : 'Supprimer mon compte' }}
-      </button>
+      ></app-button>
     </section>
 
-    <button type="button" class="logout-button" (click)="logout()">Se déconnecter</button>
+    <app-button
+      class="logout-button"
+      variant="secondary"
+      [fullWidth]="true"
+      text="Se déconnecter"
+      (click)="logout()"
+    ></app-button>
   </section>
 </main>

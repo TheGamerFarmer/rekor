@@ -95,7 +95,7 @@ describe('ComponentInscription', () => {
       '#confirmPassword',
     ) as HTMLInputElement;
     const toggles = fixture.nativeElement.querySelectorAll(
-      '.password-toggle',
+      '.password-toggle button',
     ) as NodeListOf<HTMLButtonElement>;
 
     expect(password.type).toBe('password');

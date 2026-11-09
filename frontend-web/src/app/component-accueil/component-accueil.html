@@ -25,7 +25,7 @@
             ><img src="/icons/arrow_circle.png" alt=""
           /></span>
         </a>
-        <a class="feature-card tournament-card" href="#rendez-vous">
+        <a class="feature-card tournament-card" href="/evenements">
           <h3>Événements</h3>
           <span class="round-arrow" aria-hidden="true"
             ><img src="/icons/arrow_circle.png" alt=""
@@ -38,7 +38,7 @@
             ><img src="/icons/arrow_circle.png" alt=""
           /></span>
         </a>
-        <a class="feature-card events-card" href="#rendez-vous">
+        <a class="feature-card events-card" href="/evenements">
           <h3>Actualité</h3>
           <p>Matchs, rencontres et moments du club</p>
           <span class="round-arrow" aria-hidden="true"
@@ -64,9 +64,13 @@
           <h2>Les prochains rendez-vous</h2>
           <span class="heading-mark"></span>
         </div>
-        <a href="#rendez-vous"
-          >Voir tous les événements <img class="icon icon-arrow-blue" src="/icons/arrow.png" alt=""
-        /></a>
+        <app-button
+          variant="text"
+          href="/evenements"
+          [text]="'Voir tous les événements'"
+          [iconSrc]="'/icons/arrow.png'"
+          [iconVariant]="'primary'"
+        ></app-button>
       </div>
       <div class="event-list">
         <article class="event-card">

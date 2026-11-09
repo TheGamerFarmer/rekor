@@ -111,18 +111,11 @@ input[aria-invalid='true'] {
   padding-right: 5.5rem;
 }
 
-.password-toggle {
-  background: none;
-  border: 0;
-  color: var(--color-primary);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 0.5rem;
+.password-input app-button {
   position: absolute;
   right: 0.35rem;
-  top: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .agreements {
@@ -171,42 +164,8 @@ input[aria-invalid='true'] {
   gap: 1rem;
 }
 
-.secondary-button,
-.submit-button {
-  border: 0;
-  border-radius: 1rem;
-  cursor: pointer;
-  font: inherit;
-  font-weight: 700;
-  padding: 0.85rem 1rem;
-  transition:
-    background 150ms ease,
-    transform 150ms ease;
-  width: 100%;
-}
-
-.secondary-button {
-  background: var(--color-primary-light);
-  color: var(--color-text);
-}
-
-.secondary-button:hover {
-  background: var(--color-border);
-}
-
-.submit-button {
-  background: var(--color-secondary);
-  color: var(--color-text);
-}
-
-.submit-button:hover {
-  background: var(--color-primary-hover);
-  color: var(--color-surface);
-}
-
-.secondary-button:active,
-.submit-button:active {
-  transform: translateY(1px);
+.actions app-button {
+  flex: 1;
 }
 
 @media (max-width: 600px) {

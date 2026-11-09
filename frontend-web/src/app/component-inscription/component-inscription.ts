@@ -1,5 +1,4 @@
 import { Component, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import {
   AbstractControl,
   FormBuilder,
@@ -8,6 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Banner } from '../component-banner/banner';
+import { Button } from '../component-button/button';
 
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password')?.value;
@@ -17,7 +17,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 }
 
 @Component({
-  imports: [Banner, ReactiveFormsModule, RouterLink],
+  imports: [Banner, Button, ReactiveFormsModule],
   selector: 'app-component-inscription',
   styleUrl: './component-inscription.css',
   templateUrl: './component-inscription.html',

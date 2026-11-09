@@ -40,16 +40,13 @@
             autocomplete="current-password"
             placeholder="Votre mot de passe"
           />
-          <button
-            type="button"
+          <app-button
             class="password-toggle"
-            [attr.aria-label]="
-              showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'
-            "
+            variant="text"
+            [text]="showPassword() ? 'Masquer' : 'Afficher'"
+            [ariaLabel]="showPassword() ? 'Masquer le mot de passe' : 'Afficher le mot de passe'"
             (click)="showPassword.set(!showPassword())"
-          >
-            {{ showPassword() ? 'Masquer' : 'Afficher' }}
-          </button>
+          ></app-button>
         </div>
       </div>
 
@@ -58,7 +55,7 @@
         <span>Se souvenir de moi</span>
       </label>
 
-      <button class="submit-button" type="submit">Se connecter</button>
+      <app-button type="submit" [fullWidth]="true" text="Se connecter"></app-button>
 
       @if (submitted() && loginForm.valid) {
         <p class="form-message" role="status">Vos identifiants sont prêts à être envoyés.</p>

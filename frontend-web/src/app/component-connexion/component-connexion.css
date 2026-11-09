@@ -115,18 +115,11 @@ input[aria-invalid='true'] {
   padding-right: 5.5rem;
 }
 
-.password-toggle {
-  background: none;
-  border: 0;
-  color: var(--color-primary);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.8rem;
-  font-weight: 700;
-  padding: 0.5rem;
+.password-input app-button {
   position: absolute;
   right: 0.35rem;
-  top: 0.35rem;
+  top: 50%;
+  transform: translateY(-50%);
 }
 
 .remember {
@@ -147,29 +140,6 @@ input[aria-invalid='true'] {
 
 .remember span {
   font-size: 0.9rem;
-}
-
-.submit-button {
-  background: var(--color-secondary);
-  border: 0;
-  border-radius: 1rem;
-  color: var(--color-text);
-  cursor: pointer;
-  font: inherit;
-  font-weight: 700;
-  padding: 0.85rem 1rem;
-  transition:
-    background 150ms ease,
-    transform 150ms ease;
-  width: 100%;
-}
-
-.submit-button:hover {
-  background: var(--color-primary-hover);
-}
-
-.submit-button:active {
-  transform: translateY(1px);
 }
 
 .error {

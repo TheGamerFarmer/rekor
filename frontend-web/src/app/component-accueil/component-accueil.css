@@ -227,25 +227,13 @@ h2,
 .appointments-heading .heading-mark {
   margin-top: 9px;
 }
-.appointments-heading > a {
+.appointments-heading > app-button {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  color: var(--color-primary);
-  font-size: 12px;
-  font-weight: 600;
+  flex: 0 0 auto;
 }
 
-.appointments-heading > a:hover {
-  color: var(--color-primary-hover);
-}
-
-.icon-arrow-blue {
-  width: 14px;
-  height: 14px;
-  filter: brightness(0) saturate(100%) invert(23%) sepia(98%) saturate(1834%) hue-rotate(204deg)
-    brightness(91%) contrast(103%);
-}
 .event-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
