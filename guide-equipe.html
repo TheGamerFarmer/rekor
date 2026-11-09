@@ -442,7 +442,7 @@ flutter run --dart-define=API_URL=http://&lt;IP_PC&gt;:3000</pre>
 
   <div class="diagram">
 backend/openapi.js<br>
-  │  npm run clients:generate<br>
+  │  npm run clients<br>
   ├──►  backend/openapi.json        ← contrat JSON (versionné)<br>
   ├──►  frontend-web/src/app/api/   ← client TypeScript (Angular)<br>
   └──►  frontend-app/api_client/    ← client Dart (Flutter)
@@ -454,13 +454,13 @@ backend/openapi.js<br>
   <ol style="padding-left:20px; margin-bottom:12px;">
     <li>Modifie <code>backend/openapi.js</code></li>
     <li>Écris la route dans <code>backend/routes/</code> et ses tests</li>
-    <li><code>npm run clients:generate</code> dans <code>backend/</code> (Java requis)</li>
+    <li><code>npm run clients</code> dans <code>backend/</code> (Java requis)</li>
     <li>Commite <strong>tout ensemble</strong> : code + <code>openapi.json</code> + clients régénérés</li>
   </ol>
 
   <div class="callout info">
     <strong>Conflit Git sur un fichier généré ?</strong>
-    Ne pas résoudre à la main. Prendre n'importe quelle version, puis relancer <code>npm run clients:generate</code>.
+    Ne pas résoudre à la main. Prendre n'importe quelle version, puis relancer <code>npm run clients</code>.
   </div>
 
   <h3>Breaking changes</h3>
@@ -657,7 +657,7 @@ git switch -c feature/SAE-42-pseudo-utilisateur</pre>
   </div>
 
   <h3>Modèle de PR</h3>
-  <p>Le fichier <code>.github/pull_request_template.md</code> s'affiche à l'ouverture de chaque PR. Checklist : description + ticket Jira, tests passent, formatage fait, <code>clients:generate</code> si contrat modifié, label <code>breaking-change</code> si cassant, capture d'écran si l'interface change.</p>
+  <p>Le fichier <code>.github/pull_request_template.md</code> s'affiche à l'ouverture de chaque PR. Checklist : description + ticket Jira, tests passent, formatage fait, <code>npm run clients</code> si contrat modifié, label <code>breaking-change</code> si cassant, capture d'écran si l'interface change.</p>
 
   <h3>Relecture</h3>
   <ol style="padding-left:20px;">
@@ -673,7 +673,7 @@ git switch -c feature/SAE-42-pseudo-utilisateur</pre>
   <p><code>Git</code> → <strong>Fetch</strong> — puis dans le panneau <strong>Git</strong> (bas) → onglet <strong>Log</strong> → clic droit sur <code>origin/main</code> → <strong>Merge 'origin/main' into '&lt;ta-branche&gt;'</strong></p>
   <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:8px 0 4px;">CLI</p>
   <pre>git fetch origin &amp;&amp; git merge origin/main</pre>
-  <p>Sur un conflit dans un fichier généré (<code>openapi.json</code>, <code>api/</code>, <code>api_client/</code>) : accepter n'importe quelle version, puis relancer <code>npm run clients:generate</code>.</p>
+  <p>Sur un conflit dans un fichier généré (<code>openapi.json</code>, <code>api/</code>, <code>api_client/</code>) : accepter n'importe quelle version, puis relancer <code>npm run clients</code>.</p>
 </section>
 
 <!-- ═══ CI ═══ -->
@@ -760,7 +760,7 @@ git switch -c feature/SAE-42-pseudo-utilisateur</pre>
     <tr><td>E2E (mock) ou (real)</td><td><code>npx playwright test</code> dans <code>frontend-web/</code> (ajouter <code>--ui</code> pour débugger)</td></tr>
     <tr><td>App - android build</td><td><code>flutter analyze</code>, <code>flutter test --coverage</code>, <code>dart run tool/check_coverage.dart 80</code></td></tr>
     <tr><td>App - android e2e</td><td><code>flutter test integration_test</code> sur un émulateur</td></tr>
-    <tr><td>Contract - check</td><td><code>npm run clients:generate</code> dans <code>backend/</code>, puis commiter le résultat</td></tr>
+    <tr><td>Contract - check</td><td><code>npm run clients</code> dans <code>backend/</code>, puis commiter le résultat</td></tr>
     <tr><td>Format - JS/TS</td><td><code>npm run format</code> dans <code>backend/</code> et <code>frontend-web/</code></td></tr>
     <tr><td>Format - Dart</td><td><code>dart format lib test integration_test tool</code> dans <code>frontend-app/</code></td></tr>
     <tr><td>Alerte CodeQL</td><td>Lire l'alerte → corriger le code (voir section Qualité)</td></tr>
@@ -811,7 +811,7 @@ flutter test --coverage
 dart run tool/check_coverage.dart 80</pre>
     <div class="callout info">
       Si le contrat a changé (<code>backend/openapi.js</code> modifié), ne pas oublier de régénérer les clients avant de commiter :<br>
-      <code>npm run clients:generate</code> dans <code>backend/</code>
+      <code>npm run clients</code> dans <code>backend/</code>
     </div>
   </div>
 
@@ -895,7 +895,7 @@ git commit -m "Ajoute le champ pseudo aux utilisateurs"</pre>
       <tr>
         <td>Contract - check : « Le contrat ou les clients générés ne sont pas à jour »</td>
         <td><code>clients:generate</code> pas lancé ou résultat pas commité</td>
-        <td><code>npm run clients:generate</code> dans <code>backend/</code>, puis commiter et pousser</td>
+        <td><code>npm run clients</code> dans <code>backend/</code>, puis commiter et pousser</td>
       </tr>
       <tr>
         <td>Format - JS/TS : « Code style issues found »</td>
@@ -963,7 +963,7 @@ git commit -m "Ajoute le champ pseudo aux utilisateurs"</pre>
       </ol>
       <p style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:8px 0 4px;">CLI</p>
       <code>git fetch origin &amp;&amp; git merge origin/main</code><br><br>
-      Sur un conflit dans un fichier généré (<code>openapi.json</code>, <code>api/</code>, <code>api_client/</code>), accepter n'importe quelle version puis relancer <code>npm run clients:generate</code>.
+      Sur un conflit dans un fichier généré (<code>openapi.json</code>, <code>api/</code>, <code>api_client/</code>), accepter n'importe quelle version puis relancer <code>npm run clients</code>.
     </div>
   </div>
 
@@ -1069,7 +1069,7 @@ git commit -m "Ajoute le champ pseudo aux utilisateurs"</pre>
     <tr>
       <td>Contract - check rouge : « pas à jour »</td>
       <td>Fichiers générés non régénérés ou non commités</td>
-      <td><code>npm run clients:generate</code> dans <code>backend/</code>, puis commiter</td>
+      <td><code>npm run clients</code> dans <code>backend/</code>, puis commiter</td>
     </tr>
     <tr>
       <td>Format - Dart rouge alors que <code>dart format</code> a été lancé</td>
