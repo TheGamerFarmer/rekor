@@ -4,6 +4,7 @@ const { ObjectId } = require('mongodb');
 const {
   wrapAsync,
   usersCollection,
+  refreshTokensCollection,
   toPublicUser,
   toEssentialPublicUser,
 } = require('./services/shared');
@@ -83,6 +84,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
       if (result.deletedCount === 0) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
+      await refreshTokensCollection().deleteMany({ userId: new ObjectId(req.auth.sub) });
       res.status(204).end();
     }),
   );
@@ -111,6 +113,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
         return res.status(409).json({ message: 'Le mot de passe a changé, réessaie' });
       }
 
+      await refreshTokensCollection().deleteMany({ userId: currentUser._id });
       res.status(204).end();
     }),
   );
