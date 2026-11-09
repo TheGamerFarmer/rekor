@@ -101,7 +101,7 @@ void main() {
         ),
       );
 
-      await tester.tap(find.bySemanticsLabel('Accueil'));
+      await tester.tap(find.text('Accueil'));
       await tester.pumpAndSettle();
 
       expect(find.byType(MyHomePage), findsOneWidget);

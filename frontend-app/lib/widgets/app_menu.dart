@@ -62,30 +62,10 @@ class AppMenu extends StatelessWidget {
                     Semantics(
                       button: true,
                       label: element.$2,
-                      onTap: () {
-                        if (element.$2 == 'Accueil') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const MyHomePage(title: 'Accueil'),
-                            ),
-                          );
-                        }
-                      },
+                      //onTap: () => naviguerVersPage(context, element.$2),
                       child: ExcludeSemantics(
                         child: InkWell(
-                          onTap: () {
-                            if (element.$2 == 'Accueil') {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) =>
-                                      const MyHomePage(title: 'Accueil'),
-                                ),
-                              );
-                            }
-                          },
+                          onTap: () => naviguerVersPage(context, element.$2),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
@@ -109,6 +89,17 @@ class AppMenu extends StatelessWidget {
             ),
           ],
         ),
+      ),
+    );
+  }
+}
+
+void naviguerVersPage(BuildContext context, String page) {
+  if (page == 'Accueil') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MyHomePage(title: 'Accueil'),
       ),
     );
   }
