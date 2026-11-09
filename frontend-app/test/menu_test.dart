@@ -8,9 +8,7 @@ void main() {
     testWidgets('Affiche le menu', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppMenu(onClose: () {}),
-          ),
+          home: Scaffold(body: AppMenu(onClose: () {})),
         ),
       );
 
@@ -20,9 +18,7 @@ void main() {
     testWidgets('Affiche les icônes du menu', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppMenu(onClose: () {}),
-          ),
+          home: Scaffold(body: AppMenu(onClose: () {})),
         ),
       );
 
@@ -51,9 +47,7 @@ void main() {
     testWidgets('Affiche les noms du menu', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppMenu(onClose: () {}),
-          ),
+          home: Scaffold(body: AppMenu(onClose: () {})),
         ),
       );
 
@@ -98,20 +92,19 @@ void main() {
       expect(menuFerme, isTrue);
     });
 
-    testWidgets('Le clic sur Accueil permet de naviguer vers MyHomePage',
-            (tester) async {
-          await tester.pumpWidget(
-            MaterialApp(
-              home: Scaffold(
-                body: AppMenu(onClose: () {}),
-              ),
-            ),
-          );
+    testWidgets('Le clic sur Accueil permet de naviguer vers MyHomePage', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(body: AppMenu(onClose: () {})),
+        ),
+      );
 
-          await tester.tap(find.bySemanticsLabel('Accueil'));
-          await tester.pumpAndSettle();
+      await tester.tap(find.bySemanticsLabel('Accueil'));
+      await tester.pumpAndSettle();
 
-          expect(find.byType(MyHomePage), findsOneWidget);
-        });
+      expect(find.byType(MyHomePage), findsOneWidget);
+    });
   });
 }

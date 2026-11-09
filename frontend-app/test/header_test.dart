@@ -7,11 +7,7 @@ void main() {
   group('AppHeader', () {
     testWidgets('Affiche le logo et le bouton profil', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AppHeader(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: AppHeader())),
       );
 
       expect(find.byType(Image), findsOneWidget);
@@ -20,11 +16,7 @@ void main() {
 
     testWidgets('Le logo permet de naviguer vers Accueil', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AppHeader(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: AppHeader())),
       );
 
       await tester.tap(find.bySemanticsLabel('Accueil'));
@@ -35,11 +27,7 @@ void main() {
 
     testWidgets('Le bouton profil ouvre le menu', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AppHeader(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: AppHeader())),
       );
 
       await tester.tap(find.byIcon(Icons.account_circle));
@@ -51,11 +39,7 @@ void main() {
 
     testWidgets('Le choix Mon profil ferme le menu', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AppHeader(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: AppHeader())),
       );
 
       await tester.tap(find.byIcon(Icons.account_circle));
@@ -69,11 +53,7 @@ void main() {
 
     testWidgets('Le choix Déconnexion ferme le menu', (tester) async {
       await tester.pumpWidget(
-        const MaterialApp(
-          home: Scaffold(
-            body: AppHeader(),
-          ),
-        ),
+        const MaterialApp(home: Scaffold(body: AppHeader())),
       );
 
       await tester.tap(find.byIcon(Icons.account_circle));
@@ -85,5 +65,4 @@ void main() {
       expect(find.text('Déconnexion'), findsNothing);
     });
   });
-
 }

@@ -9,9 +9,7 @@ void main() {
     testWidgets('Affiche accueil', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppFooter(onMenuTap: () {},),
-          ),
+          home: Scaffold(body: AppFooter(onMenuTap: () {})),
         ),
       );
 
@@ -21,9 +19,7 @@ void main() {
     testWidgets('Affiche menu', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppFooter(onMenuTap: () {},),
-          ),
+          home: Scaffold(body: AppFooter(onMenuTap: () {})),
         ),
       );
 
@@ -33,9 +29,7 @@ void main() {
     testWidgets('Affiche discussions', (tester) async {
       await tester.pumpWidget(
         MaterialApp(
-          home: Scaffold(
-            body: AppFooter(onMenuTap: () {},),
-          ),
+          home: Scaffold(body: AppFooter(onMenuTap: () {})),
         ),
       );
 
@@ -87,21 +81,17 @@ void main() {
       expect(find.text('Covoiturage'), findsOneWidget);
     });
 
-    testWidgets('Le bouton Accueil ouvre la page d\'accueil',
-            (tester) async {
-          await tester.pumpWidget(
-            MaterialApp(
-              home: Scaffold(
-                body: AppFooter(onMenuTap: () {}),
-              ),
-            ),
-          );
+    testWidgets('Le bouton Accueil ouvre la page d\'accueil', (tester) async {
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(body: AppFooter(onMenuTap: () {})),
+        ),
+      );
 
-          await tester.tap(find.text('Accueil'));
-          await tester.pumpAndSettle();
+      await tester.tap(find.text('Accueil'));
+      await tester.pumpAndSettle();
 
-          expect(find.byType(MyHomePage), findsOneWidget);
-        });
-
+      expect(find.byType(MyHomePage), findsOneWidget);
+    });
   });
 }
