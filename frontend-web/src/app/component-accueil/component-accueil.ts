@@ -4,9 +4,10 @@ import { catchError, map, of } from 'rxjs';
 
 import { HealthService } from '../api';
 import { Banner } from '../component-banner/banner';
+import { RouterLink } from '@angular/router';
 
 @Component({
-  imports: [Banner],
+  imports: [Banner, RouterLink],
   selector: 'app-component-accueil',
   styleUrl: './component-accueil.css',
   templateUrl: './component-accueil.html',

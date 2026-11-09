@@ -32,13 +32,13 @@ part 'api/authentication_api.dart';
 part 'api/health_api.dart';
 part 'api/users_api.dart';
 
-part 'model/current_user.dart';
+part 'model/change_password_input.dart';
 part 'model/error_response.dart';
 part 'model/health_response.dart';
 part 'model/login_input.dart';
 part 'model/login_response.dart';
-part 'model/login_user.dart';
 part 'model/register_input.dart';
+part 'model/update_profile_input.dart';
 part 'model/user_details.dart';
 part 'model/user_list_item.dart';
 

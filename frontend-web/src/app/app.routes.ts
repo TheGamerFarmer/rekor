@@ -6,6 +6,7 @@ import { ComponentConnexion } from './component-connexion/component-connexion';
 import { ComponentEvenement } from './component-evenement/component-evenement';
 import { ComponentEvenementDetail } from './component-evenement-detail/component-evenement-detail';
 import { ComponentInscription } from './component-inscription/component-inscription';
+import { PresentationClubComponent } from './components/presentation-club-component/presentation-club-component';
 
 export const routes: Routes = [
   { path: '', component: ComponentAccueil },
@@ -14,5 +15,6 @@ export const routes: Routes = [
   { path: 'evenements', component: ComponentEvenement },
   { path: 'evenements/:slug', component: ComponentEvenementDetail },
   { path: 'inscription', component: ComponentInscription },
+  { path: 'presentation-club', component: PresentationClubComponent },
   { path: '**', redirectTo: '' },
 ];
