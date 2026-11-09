@@ -3,6 +3,7 @@ const assert = require('node:assert');
 const request = require('supertest');
 const app = require('../index');
 const { signAccessToken, signRefreshToken } = require('../controllers/services/auth-middleware');
+require('./helpers/redis');
 
 // Ce fichier ne connecte jamais la base : le back doit répondre 503 proprement, sans planter.
 test("GET /users renvoie 503 quand la base n'est pas connectée", async () => {

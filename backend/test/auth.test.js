@@ -16,6 +16,7 @@ const {
   verifyRefreshToken,
 } = require('../controllers/services/auth-middleware');
 const { createHmac } = require('node:crypto');
+const { clearRevokedSessions } = require('./helpers/redis');
 
 const account = {
   email: 'ada@exemple.fr',
@@ -63,6 +64,7 @@ describe('/auth', () => {
   });
 
   beforeEach(async () => {
+    clearRevokedSessions();
     await db.getDb().collection('users').deleteMany({});
   });
 
@@ -90,9 +92,10 @@ describe('/auth', () => {
     assert.strictEqual(res.status, 200);
     assert.match(res.body.access_token, /^[\w-]+\.[\w-]+\.[\w-]+$/);
     assert.match(res.body.refresh_token, /^[\w-]+\.[\w-]+\.[\w-]+$/);
-    const accessClaims = verifyAccessToken(res.body.access_token);
+    const accessClaims = await verifyAccessToken(res.body.access_token);
     const refreshClaims = verifyRefreshToken(res.body.refresh_token);
     assert.strictEqual(accessClaims.sub, storedUser._id.toString());
+    assert.strictEqual(accessClaims.sid, refreshClaims.sid);
     assert.strictEqual(accessClaims.exp - accessClaims.iat, 15 * 60);
     assert.strictEqual(refreshClaims.sub, storedUser._id.toString());
     assert.strictEqual(refreshClaims.exp - refreshClaims.iat, 30 * 24 * 60 * 60);
@@ -149,6 +152,11 @@ describe('/auth', () => {
       .post('/auth/logout')
       .send({ refresh_token: login.body.refresh_token });
     assert.strictEqual(logout.status, 204);
+
+    const protectedRequest = await request(apiApp)
+      .get('/users/me')
+      .set('Authorization', 'Bearer ' + login.body.access_token);
+    assert.strictEqual(protectedRequest.status, 401);
 
     const refreshed = await request(apiApp)
       .post('/auth/refresh')
@@ -234,7 +242,7 @@ describe('/auth', () => {
     const middlewareApp = buildMiddlewareApp();
 
     for (const token of tokens) {
-      assert.throws(() => verifyAccessToken(token));
+      await assert.rejects(() => verifyAccessToken(token));
       const res = await request(middlewareApp).get('/me').set('Authorization', `Bearer ${token}`);
       assert.strictEqual(res.status, 401);
     }

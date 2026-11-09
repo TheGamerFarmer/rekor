@@ -1,11 +1,29 @@
 const { createHash, createHmac, randomUUID, timingSafeEqual } = require('node:crypto');
+const Redis = require('ioredis');
 
 const ROLES = ['Entraineur', 'Capitaine', 'Adhérent', 'Visiteur'];
-// Validity time of the access token in second
-const TOKEN_LIFETIME_SECONDS = 15 * 60;
+
+// Validity time of the access & refresh tokens in second
+const ACCESS_TOKEN_LIFETIME_SECONDS = 15 * 60;
 const REFRESH_TOKEN_LIFETIME_SECONDS = 30 * 24 * 60 * 60;
 
 class InvalidTokenError extends Error {}
+class RevokedSessionError extends Error {}
+
+let redis;
+
+function getRedis() {
+  if (!redis) {
+    redis = new Redis(process.env.REDIS_URL, {
+      maxRetriesPerRequest: 1,
+    });
+  }
+  return redis;
+}
+
+function configureRedisClient(client) {
+  redis = client;
+}
 
 function getSecret() {
   const secret = process.env.JWT_SECRET;
@@ -21,14 +39,15 @@ function encode(value) {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
-function signAccessToken(user) {
+function signAccessToken(user, sessionId = randomUUID()) {
   const now = Math.floor(Date.now() / 1000);
   return signToken(
     {
       sub: user._id.toString(),
       role: user.role,
+      sid: sessionId,
       iat: now,
-      exp: now + TOKEN_LIFETIME_SECONDS,
+      exp: now + ACCESS_TOKEN_LIFETIME_SECONDS,
     },
     getSecret(),
   );
@@ -98,9 +117,14 @@ function verifyToken(token, secret) {
   return payload;
 }
 
-function verifyAccessToken(token) {
+async function verifyAccessToken(token) {
   const payload = verifyToken(token, getSecret());
-  if (payload.token_use === 'refresh') throw new InvalidTokenError();
+  if (payload.token_use === 'refresh' || typeof payload.sid !== 'string') {
+    throw new InvalidTokenError();
+  }
+  if (await getRedis().exists(`revoked:sid:${payload.sid}`)) {
+    throw new RevokedSessionError();
+  }
   return payload;
 }
 
@@ -125,18 +149,20 @@ function hashRefreshToken(token) {
   return createHash('sha256').update(token).digest('hex');
 }
 
-function authenticate(req, res, next) {
+async function authenticate(req, res, next) {
   const [scheme, token, extra] = (req.get('authorization') || '').split(' ');
   if (scheme !== 'Bearer' || !token || extra) {
     return res.status(401).json({ message: 'Authentification requise' });
   }
 
   try {
-    req.auth = verifyAccessToken(token);
+    req.auth = await verifyAccessToken(token);
     return next();
   } catch (error) {
     if (error instanceof InvalidTokenError) {
       return res.status(401).json({ message: 'Token invalide ou expiré' });
+    } else if (error instanceof RevokedSessionError) {
+      return res.status(401).json({ message: 'Session révoquée' });
     }
     return next(error);
   }
@@ -154,8 +180,13 @@ function authorize(...allowedRoles) {
   };
 }
 
+async function revokeSession(sessionId) {
+  await getRedis().set(`revoked:sid:${sessionId}`, '1', 'EX', ACCESS_TOKEN_LIFETIME_SECONDS);
+}
+
 module.exports = {
   InvalidTokenError,
+  RevokedSessionError,
   signAccessToken,
   signRefreshToken,
   verifyAccessToken,
@@ -163,4 +194,6 @@ module.exports = {
   hashRefreshToken,
   authenticate,
   authorize,
+  revokeSession,
+  configureRedisClient,
 };

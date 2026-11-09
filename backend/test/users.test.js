@@ -11,6 +11,7 @@ const {
   hashRefreshToken,
 } = require('../controllers/services/auth-middleware');
 const { hashPassword, verifyPassword } = require('../controllers/services/password');
+const { clearRevokedSessions } = require('./helpers/redis');
 
 const ada = {
   name: 'Lovelace',
@@ -49,6 +50,7 @@ describe('/users (avec un vrai mongod)', () => {
   });
 
   beforeEach(async () => {
+    clearRevokedSessions();
     const collection = db.getDb().collection('users');
     await collection.deleteMany({});
     adaId = new ObjectId('000000000000000000000001');

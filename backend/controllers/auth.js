@@ -8,6 +8,7 @@ const {
   signRefreshToken,
   verifyRefreshToken,
   hashRefreshToken,
+  revokeSession,
 } = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
 
@@ -19,7 +20,7 @@ async function createRefreshSession(user) {
     tokenHash: hashRefreshToken(refresh.token),
     expiresAt: refresh.expiresAt,
   });
-  return refresh.token;
+  return refresh;
 }
 
 function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
@@ -75,9 +76,10 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         return res.status(401).json({ message: 'E-mail ou mot de passe incorrect' });
       }
 
+      const session = await createRefreshSession(user);
       res.json({
-        access_token: signAccessToken(user),
-        refresh_token: await createRefreshSession(user),
+        access_token: signAccessToken(user, session.sessionId),
+        refresh_token: session.token,
       });
     }),
   );
@@ -132,7 +134,7 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
       }
 
       res.json({
-        access_token: signAccessToken(user),
+        access_token: signAccessToken(user, session._id),
         refresh_token: refresh.token,
       });
     }),
@@ -151,10 +153,24 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         throw error;
       }
 
-      await refreshTokensCollection().deleteOne({
+      if (!ObjectId.isValid(claims.sub)) {
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      const refreshTokens = refreshTokensCollection();
+      const userId = new ObjectId(claims.sub);
+      const session = await refreshTokens.findOne({
         _id: claims.sid,
+        userId,
         tokenHash: hashRefreshToken(req.body.refresh_token),
+        expiresAt: { $gt: new Date() },
       });
+      if (!session) {
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      await revokeSession(claims.sid);
+      await refreshTokens.deleteOne({ _id: claims.sid, userId });
       res.status(204).end();
     }),
   );
