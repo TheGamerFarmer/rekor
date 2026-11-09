@@ -17,9 +17,6 @@ void main() {
     await tester.pumpAndSettle();
 
     // Vérification du message de bienvenue.
-    expect(
-      find.text('Bienvenue sur la page d’accueil'),
-      findsOneWidget,
-    );
+    expect(find.text('Bienvenue sur la page d’accueil'), findsOneWidget);
   });
 }

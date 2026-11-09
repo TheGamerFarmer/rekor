@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/home_page.dart';
 
@@ -19,8 +18,7 @@ class AppHeader extends StatelessWidget {
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) =>
-                  const MyHomePage(title: 'Accueil'),
+                  builder: (context) => const MyHomePage(title: 'Accueil'),
                 ),
               );
             },
@@ -30,8 +28,7 @@ class AppHeader extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) =>
-                      const MyHomePage(title: 'Accueil'),
+                      builder: (context) => const MyHomePage(title: 'Accueil'),
                     ),
                   );
                 },
@@ -62,10 +59,7 @@ class AppHeader extends StatelessWidget {
               color: Colors.white,
               size: 40,
             ),
-            constraints: const BoxConstraints(
-              minWidth: 48,
-              minHeight: 48,
-            ),
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
             onSelected: (value) {
               if (value == 'profil') {
                 // Lien vers profil détaillé.

@@ -6,7 +6,7 @@ import '../mobile_pages/home_page.dart';
 class AppMenu extends StatelessWidget {
   final VoidCallback onClose;
 
-  const AppMenu({super.key, required this.onClose,});
+  const AppMenu({super.key, required this.onClose});
 
   @override
   Widget build(BuildContext context) {
@@ -37,20 +37,14 @@ class AppMenu extends StatelessWidget {
                   padding: EdgeInsets.all(20),
                   child: Text(
                     'Menu',
-                    style: TextStyle(
-                      fontSize: 28,
-                      color: Colors.white,
-                    ),
+                    style: TextStyle(fontSize: 28, color: Colors.white),
                   ),
                 ),
 
                 IconButton(
                   tooltip: 'Close',
                   onPressed: onClose,
-                  icon: const Icon(
-                    Icons.close,
-                    color: Colors.white,
-                  ),
+                  icon: const Icon(Icons.close, color: Colors.white),
                 ),
               ],
             ),
@@ -73,9 +67,8 @@ class AppMenu extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Accueil',
-                              ),
+                              builder: (context) =>
+                                  const MyHomePage(title: 'Accueil'),
                             ),
                           );
                         }
@@ -87,9 +80,8 @@ class AppMenu extends StatelessWidget {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const MyHomePage(
-                                    title: 'Accueil',
-                                  ),
+                                  builder: (context) =>
+                                      const MyHomePage(title: 'Accueil'),
                                 ),
                               );
                             }
@@ -97,11 +89,7 @@ class AppMenu extends StatelessWidget {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(
-                                element.$1,
-                                color: Colors.white,
-                                size: 35,
-                              ),
+                              Icon(element.$1, color: Colors.white, size: 35),
                               const SizedBox(height: 10),
                               Text(
                                 element.$2,
