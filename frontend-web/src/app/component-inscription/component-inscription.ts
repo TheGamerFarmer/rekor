@@ -32,12 +32,19 @@ export class ComponentInscription {
       lastName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.pattern(/^(?=.*\p{Lu})(?=.*[^\p{L}\p{N}\s]).*$/u),
+        ],
+      ],
       confirmPassword: ['', [Validators.required]],
       internalRules: [false, [Validators.requiredTrue]],
-      healthData: [false, [Validators.requiredTrue]],
       privacyPolicy: [false, [Validators.requiredTrue]],
-      imageRights: [false, [Validators.requiredTrue]],
+      healthData: [false],
+      imageRights: [false],
     },
     { validators: passwordsMatch },
   );

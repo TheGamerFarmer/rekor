@@ -4,44 +4,53 @@
       <h1 id="registration-title">Inscription</h1>
       <p class="subtitle">
         Inscrivez-vous à l’association en remplissant ce formulaire. Votre candidature sera ensuite
-        étudiée par un responsable.
+        étudiée par un responsable. Les champs marqués d’un astérisque (*) sont obligatoires.
       </p>
     </header>
 
     <form [formGroup]="registrationForm" (ngSubmit)="submit()" novalidate>
       <div class="name-fields">
         <div class="field">
-          <label for="firstName">Prénom</label>
+          <label for="firstName"
+            >Prénom <span class="required-marker" aria-hidden="true">*</span></label
+          >
           <input
             id="firstName"
             type="text"
             formControlName="firstName"
+            required
             autocomplete="given-name"
             [attr.aria-invalid]="
-              registrationForm.controls.firstName.invalid &&
-              registrationForm.controls.firstName.dirty
+              (submitted() || registrationForm.controls.firstName.dirty) &&
+              registrationForm.controls.firstName.invalid
             "
           />
           @if (
-            registrationForm.controls.firstName.invalid && registrationForm.controls.firstName.dirty
+            (submitted() || registrationForm.controls.firstName.dirty) &&
+            registrationForm.controls.firstName.invalid
           ) {
             <p class="error">Saisissez votre prénom.</p>
           }
         </div>
 
         <div class="field">
-          <label for="lastName">Nom</label>
+          <label for="lastName"
+            >Nom <span class="required-marker" aria-hidden="true">*</span></label
+          >
           <input
             id="lastName"
             type="text"
             formControlName="lastName"
+            required
             autocomplete="family-name"
             [attr.aria-invalid]="
-              registrationForm.controls.lastName.invalid && registrationForm.controls.lastName.dirty
+              (submitted() || registrationForm.controls.lastName.dirty) &&
+              registrationForm.controls.lastName.invalid
             "
           />
           @if (
-            registrationForm.controls.lastName.invalid && registrationForm.controls.lastName.dirty
+            (submitted() || registrationForm.controls.lastName.dirty) &&
+            registrationForm.controls.lastName.invalid
           ) {
             <p class="error">Saisissez votre nom.</p>
           }
@@ -49,73 +58,97 @@
       </div>
 
       <div class="field">
-        <label for="email">E-mail</label>
+        <label for="email">E-mail <span class="required-marker" aria-hidden="true">*</span></label>
         <input
           id="email"
           type="email"
           formControlName="email"
+          required
           autocomplete="email"
           placeholder="vous@exemple.com"
           [attr.aria-invalid]="
-            registrationForm.controls.email.invalid && registrationForm.controls.email.dirty
+            (submitted() || registrationForm.controls.email.dirty) &&
+            registrationForm.controls.email.invalid
           "
         />
-        @if (registrationForm.controls.email.invalid && registrationForm.controls.email.dirty) {
+        @if (
+          (submitted() || registrationForm.controls.email.dirty) &&
+          registrationForm.controls.email.invalid
+        ) {
           <p class="error">Saisissez une adresse e-mail valide.</p>
         }
       </div>
 
       <div class="field">
-        <label for="phone">Téléphone</label>
+        <label for="phone"
+          >Téléphone <span class="required-marker" aria-hidden="true">*</span></label
+        >
         <input
           id="phone"
           type="tel"
           formControlName="phone"
+          required
           autocomplete="tel"
           placeholder="06 00 00 00 00"
           [attr.aria-invalid]="
-            registrationForm.controls.phone.invalid && registrationForm.controls.phone.dirty
+            (submitted() || registrationForm.controls.phone.dirty) &&
+            registrationForm.controls.phone.invalid
           "
         />
-        @if (registrationForm.controls.phone.invalid && registrationForm.controls.phone.dirty) {
+        @if (
+          (submitted() || registrationForm.controls.phone.dirty) &&
+          registrationForm.controls.phone.invalid
+        ) {
           <p class="error">Saisissez votre numéro de téléphone.</p>
         }
       </div>
 
       <div class="field">
-        <label for="password">Mot de passe</label>
+        <label for="password"
+          >Mot de passe <span class="required-marker" aria-hidden="true">*</span></label
+        >
         <div class="password-input">
           <input
             id="password"
             [type]="showPassword() ? 'text' : 'password'"
             formControlName="password"
+            required
             autocomplete="new-password"
             [attr.aria-invalid]="
-              registrationForm.controls.password.invalid && registrationForm.controls.password.dirty
+              (submitted() || registrationForm.controls.password.dirty) &&
+              registrationForm.controls.password.invalid
             "
           />
           <button type="button" class="password-toggle" (click)="showPassword.set(!showPassword())">
             {{ showPassword() ? 'Masquer' : 'Afficher' }}
           </button>
         </div>
+        <p class="subtitle">Au moins 8 caractères, une majuscule et un symbole.</p>
         @if (
-          registrationForm.controls.password.invalid && registrationForm.controls.password.dirty
+          (submitted() || registrationForm.controls.password.dirty) &&
+          registrationForm.controls.password.invalid
         ) {
-          <p class="error">Le mot de passe doit contenir au moins 8 caractères.</p>
+          <p class="error">
+            Le mot de passe doit contenir au moins 8 caractères, une majuscule et un symbole.
+          </p>
         }
       </div>
 
       <div class="field">
-        <label for="confirmPassword">Confirmation du mot de passe</label>
+        <label for="confirmPassword">
+          Confirmation du mot de passe <span class="required-marker" aria-hidden="true">*</span>
+        </label>
         <div class="password-input">
           <input
             id="confirmPassword"
             [type]="showConfirmation() ? 'text' : 'password'"
             formControlName="confirmPassword"
+            required
             autocomplete="new-password"
             [attr.aria-invalid]="
-              registrationForm.controls.confirmPassword.invalid &&
-              registrationForm.controls.confirmPassword.dirty
+              (submitted() || registrationForm.controls.confirmPassword.dirty) &&
+              (registrationForm.controls.confirmPassword.invalid ||
+                registrationForm.errors?.['passwordsMismatch'])
             "
           />
           <button
@@ -127,32 +160,51 @@
           </button>
         </div>
         @if (
-          registrationForm.controls.confirmPassword.invalid &&
-          registrationForm.controls.confirmPassword.dirty
+          (submitted() || registrationForm.controls.confirmPassword.dirty) &&
+          registrationForm.controls.confirmPassword.invalid
         ) {
           <p class="error">Confirmez votre mot de passe.</p>
         } @else if (
           registrationForm.errors?.['passwordsMismatch'] &&
-          registrationForm.controls.confirmPassword.dirty
+          (submitted() || registrationForm.controls.confirmPassword.dirty)
         ) {
           <p class="error">Les mots de passe ne correspondent pas.</p>
         }
       </div>
 
       <fieldset class="agreements">
+        <legend>Consentements et autorisations</legend>
         <label class="checkbox-field">
-          <input type="checkbox" formControlName="privacyPolicy" />
-          <span>J’ai pris connaissance de la politique de confidentialité de l’association.</span>
+          <input
+            type="checkbox"
+            formControlName="privacyPolicy"
+            required
+            [class.invalid]="submitted() && registrationForm.controls.privacyPolicy.invalid"
+            [attr.aria-invalid]="submitted() && registrationForm.controls.privacyPolicy.invalid"
+          />
+          <span>
+            J’ai pris connaissance de la politique de confidentialité de l’association.
+            <span class="required-marker" aria-hidden="true">*</span>
+          </span>
         </label>
         <label class="checkbox-field">
-          <input type="checkbox" formControlName="internalRules" />
-          <span>J’atteste avoir lu et accepté le règlement intérieur de l’association.</span>
+          <input
+            type="checkbox"
+            formControlName="internalRules"
+            required
+            [class.invalid]="submitted() && registrationForm.controls.internalRules.invalid"
+            [attr.aria-invalid]="submitted() && registrationForm.controls.internalRules.invalid"
+          />
+          <span>
+            J’atteste avoir lu et accepté le règlement intérieur de l’association.
+            <span class="required-marker" aria-hidden="true">*</span>
+          </span>
         </label>
         <label class="checkbox-field">
           <input type="checkbox" formControlName="healthData" />
           <span
-            >J’accepte que mes données de santé, notamment mon certificat médical, soient collectées
-            et traitées dans le cadre de mon inscription à l’association.</span
+            >J’accepte que mon certificat médical soit collecté dans le cadre de mon inscription à
+            l’association.</span
           >
         </label>
         <label class="checkbox-field">
@@ -168,7 +220,8 @@
 
       @if (submitted() && registrationForm.invalid) {
         <p class="form-message error" role="alert">
-          Veuillez compléter les champs requis et cocher les quatre cases.
+          Veuillez compléter les champs requis et cocher la politique de confidentialité et le
+          règlement intérieur.
         </p>
       }
 

@@ -75,6 +75,10 @@ label {
   margin-bottom: 0.5rem;
 }
 
+.required-marker {
+  color: #e53935;
+}
+
 input[type='email'],
 input[type='password'],
 input[type='tel'],
@@ -86,9 +90,7 @@ input[type='text'] {
   color: #18243a;
   font: inherit;
   padding: 0.8rem 0.9rem;
-  transition:
-    border-color 150ms ease,
-    box-shadow 150ms ease;
+  transition: border-color 150ms ease;
   width: 100%;
 }
 
@@ -99,7 +101,7 @@ input:focus {
 }
 
 input[aria-invalid='true'] {
-  border-color: #c93636;
+  border-color: #e53935;
 }
 
 .password-input {
@@ -147,15 +149,38 @@ input[aria-invalid='true'] {
 }
 
 .checkbox-field input {
-  accent-color: #2355c4;
+  appearance: none;
+  background: #fff;
+  border: 1px solid #cbd5e3;
+  border-radius: 0.2rem;
   flex: 0 0 auto;
   height: 1rem;
   margin: 0.15rem 0 0;
   width: 1rem;
+  display: grid;
+  place-content: center;
+}
+
+.checkbox-field input:checked {
+  background: #2355c4;
+  border-color: #2355c4;
+}
+
+.checkbox-field input:checked::before {
+  width: 0.5rem;
+  height: 0.3rem;
+  border: solid #fff;
+  border-width: 0 0 2px 2px;
+  content: '';
+  transform: rotate(-45deg) translate(1px, -1px);
+}
+
+.checkbox-field input[aria-invalid='true'] {
+  border-color: #e53935;
 }
 
 .error {
-  color: #b52e2e;
+  color: #e53935;
   font-size: 0.8rem;
   margin: 0.4rem 0 0;
 }
