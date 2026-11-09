@@ -1,7 +1,10 @@
 require('../db/db');
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
-const { isValidObjectId } = require('mongoose');
+const {
+  isValidObjectId,
+  Types: { ObjectId },
+} = require('mongoose');
 const User = require('../db/models/user');
 const { wrapAsync, toPublicUser, toEssentialPublicUser } = require('./services/shared');
 const { authenticate } = require('./services/auth-middleware');
@@ -24,7 +27,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      const user = await User.findById(req.auth.sub);
+      const user = await User.findById(new ObjectId(req.auth.sub));
       if (!user) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -47,7 +50,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
         changes.birthday = new Date(`${birthday}T00:00:00.000Z`);
       }
 
-      const result = await User.updateOne({ _id: req.auth.sub }, { $set: changes });
+      const result = await User.updateOne({ _id: new ObjectId(req.auth.sub) }, { $set: changes });
       if (result.matchedCount === 0) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -60,7 +63,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      const result = await User.deleteOne({ _id: req.auth.sub });
+      const result = await User.deleteOne({ _id: new ObjectId(req.auth.sub) });
       if (result.deletedCount === 0) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -73,7 +76,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     authenticate,
     wrapAsync(async (req, res) => {
       const { old_password, new_password } = req.body;
-      const currentUser = await User.findById(req.auth.sub);
+      const currentUser = await User.findById(new ObjectId(req.auth.sub));
       if (!currentUser) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
