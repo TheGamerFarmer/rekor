@@ -103,7 +103,12 @@
         />
         @if (
           (submitted() || registrationForm.controls.phone.dirty) &&
-          registrationForm.controls.phone.invalid
+          registrationForm.controls.phone.hasError('maxPhoneDigits')
+        ) {
+          <p class="error">Le numéro de téléphone ne peut pas dépasser 10 chiffres.</p>
+        } @else if (
+          (submitted() || registrationForm.controls.phone.dirty) &&
+          registrationForm.controls.phone.hasError('required')
         ) {
           <p class="error">Saisissez votre numéro de téléphone.</p>
         }
@@ -120,6 +125,7 @@
             formControlName="password"
             required
             autocomplete="new-password"
+            aria-describedby="password-hint"
             [attr.aria-invalid]="
               (submitted() || registrationForm.controls.password.dirty) &&
               registrationForm.controls.password.invalid
@@ -129,15 +135,16 @@
             {{ showPassword() ? 'Masquer' : 'Afficher' }}
           </button>
         </div>
-        <p class="subtitle">Au moins 8 caractères, une majuscule et un symbole.</p>
-        @if (
-          (submitted() || registrationForm.controls.password.dirty) &&
-          registrationForm.controls.password.invalid
-        ) {
-          <p class="error">
-            Le mot de passe doit contenir au moins 8 caractères, une majuscule et un symbole.
-          </p>
-        }
+        <p
+          id="password-hint"
+          class="subtitle password-hint"
+          [class.error]="
+            (submitted() || registrationForm.controls.password.dirty) &&
+            registrationForm.controls.password.invalid
+          "
+        >
+          Au moins 8 caractères, une majuscule et un symbole.
+        </p>
       </div>
 
       <div class="field">

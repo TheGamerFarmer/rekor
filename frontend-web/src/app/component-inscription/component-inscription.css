@@ -185,6 +185,11 @@ input[aria-invalid='true'] {
   margin: 0.4rem 0 0;
 }
 
+.password-hint {
+  font-size: 0.8rem;
+  margin: 0.4rem 0 0;
+}
+
 .form-message {
   margin-bottom: 1rem;
   text-align: center;

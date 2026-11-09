@@ -16,6 +16,12 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   return password === confirmation ? null : { passwordsMismatch: true };
 }
 
+function maxPhoneDigits(control: AbstractControl): ValidationErrors | null {
+  const digitCount = String(control.value).replace(/\D/g, '').length;
+
+  return digitCount > 10 ? { maxPhoneDigits: { max: 10, actual: digitCount } } : null;
+}
+
 @Component({
   imports: [Banner, ReactiveFormsModule, RouterLink],
   selector: 'app-component-inscription',
@@ -32,7 +38,7 @@ export class ComponentInscription {
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required]],
+      phone: ['', [Validators.required, maxPhoneDigits]],
       password: [
         '',
         [
