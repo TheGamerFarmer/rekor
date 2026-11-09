@@ -1,5 +1,5 @@
 const { createHash, createHmac, randomUUID, timingSafeEqual } = require('node:crypto');
-const Redis = require('ioredis');
+const { getRedis } = require('./redisCache');
 
 const ROLES = ['Entraineur', 'Capitaine', 'Adhérent', 'Visiteur'];
 
@@ -9,21 +9,6 @@ const REFRESH_TOKEN_LIFETIME_SECONDS = 30 * 24 * 60 * 60;
 
 class InvalidTokenError extends Error {}
 class RevokedSessionError extends Error {}
-
-let redis;
-
-function getRedis() {
-  if (!redis) {
-    redis = new Redis(process.env.REDIS_URL, {
-      maxRetriesPerRequest: 1,
-    });
-  }
-  return redis;
-}
-
-function configureRedisClient(client) {
-  redis = client;
-}
 
 function getSecret() {
   const secret = process.env.JWT_SECRET;
@@ -195,5 +180,4 @@ module.exports = {
   authenticate,
   authorize,
   revokeSession,
-  configureRedisClient,
 };

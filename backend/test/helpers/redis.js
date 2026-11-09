@@ -1,4 +1,4 @@
-const { configureRedisClient } = require('../../controllers/services/auth-middleware');
+const { configureRedisClient } = require('../../controllers/services/redisCache');
 
 const revokedSessions = new Set();
 
