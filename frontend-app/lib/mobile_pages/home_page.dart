@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../health_status.dart';
 import '../layouts/main_layout.dart';
+import 'CovoituragePage.dart';
+import 'creationconvoiturage.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -61,11 +64,23 @@ class _MyHomePageState extends State<MyHomePage> {
             Text(
               '$_counter',
               //style: Theme.of(context).textTheme.headlineMedium,
-              style: TextStyle(color: Colors.white)
+              style: TextStyle(color: Colors.white),
             ),
             ElevatedButton(
               onPressed: _incrementCounter,
-              child: const Text('Ajouter 1',),
+              child: const Text('Ajouter 1'),
+            ),
+
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CovoituragePage(),
+                  ),
+                );
+              },
+              child: const Text('Covoiturage'),
             ),
           ],
         ),
