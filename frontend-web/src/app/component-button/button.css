@@ -1,0 +1,129 @@
+:host {
+  display: inline-block;
+}
+
+:host(.full-width-host) {
+  display: block;
+}
+
+.button {
+  box-sizing: border-box;
+  display: inline-flex;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 10px 20px;
+  font:
+    700 14px/1.2 'DM Sans',
+    Arial,
+    sans-serif;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.15s ease;
+}
+
+.button-small {
+  min-height: 34px;
+  padding: 8px 14px;
+  font-size: 11px;
+}
+
+.button-uppercase {
+  text-transform: uppercase;
+}
+
+.button:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 45%, transparent);
+  outline-offset: 3px;
+}
+
+.button:active {
+  transform: translateY(1px);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.button-primary {
+  color: var(--color-text);
+  background: var(--color-secondary);
+}
+
+.button-primary:hover:not(:disabled) {
+  background: var(--color-secondary-hover);
+}
+
+.button-secondary {
+  color: var(--color-text);
+  background: var(--color-primary-light);
+}
+
+.button-secondary:hover:not(:disabled) {
+  background: var(--color-border);
+}
+
+.button-outline {
+  border-color: currentColor;
+  color: inherit;
+  background: color-mix(in srgb, var(--glass-background) 20%, transparent);
+  backdrop-filter: blur(8px);
+  gap: 14px;
+}
+
+.button-outline:hover {
+  border-color: var(--color-primary-light);
+  background: color-mix(in srgb, var(--glass-background) 35%, transparent);
+}
+
+.button-danger {
+  color: #b52e2e;
+  background: #fce4e4;
+}
+
+.button-danger:hover:not(:disabled) {
+  background: #f7caca;
+}
+
+.button-text {
+  min-height: 0;
+  border: 0;
+  border-radius: 6px;
+  padding: 6px 8px;
+  color: var(--color-primary);
+  background: transparent;
+  font-size: 12px;
+}
+
+.button-text:hover {
+  background: var(--color-primary-light);
+}
+
+.full-width {
+  width: 100%;
+}
+
+.button-icon {
+  display: block;
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.button-icon-light {
+  filter: brightness(0) invert(1);
+}
+
+.button-icon-primary {
+  filter: brightness(0) saturate(100%) invert(23%) sepia(98%) saturate(1834%) hue-rotate(204deg)
+    brightness(91%) contrast(103%);
+}

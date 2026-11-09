@@ -53,14 +53,58 @@ describe('ComponentInscription', () => {
     expect(fixture.nativeElement.querySelector('[role="alert"]')).not.toBeNull();
   });
 
+  it('keeps one password hint and highlights it only while the password is invalid', () => {
+    const password = fixture.nativeElement.querySelector('#password') as HTMLInputElement;
+    const hint = fixture.nativeElement.querySelector('#password-hint') as HTMLParagraphElement;
+
+    expect(hint.textContent?.trim()).toBe('Au moins 8 caractères, une majuscule et un symbole.');
+    expect(fixture.nativeElement.querySelectorAll('#password-hint').length).toBe(1);
+    expect(hint.classList.contains('error')).toBe(false);
+
+    password.value = 'tropcourt';
+    password.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(hint.classList.contains('error')).toBe(true);
+
+    password.value = 'Motdepasse1!';
+    password.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(hint.classList.contains('error')).toBe(false);
+    expect(fixture.nativeElement.querySelectorAll('#password-hint').length).toBe(1);
+  });
+
+  it('rejects phone numbers with more than 10 digits', () => {
+    const phone = fixture.nativeElement.querySelector('#phone') as HTMLInputElement;
+
+    phone.value = '06 00 00 00 001';
+    phone.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Le numéro de téléphone ne doit pas dépasser 10 chiffres.',
+    );
+    expect(phone.getAttribute('aria-invalid')).toBe('true');
+
+    phone.value = '06 00 00 00 00';
+    phone.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Le numéro de téléphone ne doit pas dépasser 10 chiffres.',
+    );
+    expect(phone.getAttribute('aria-invalid')).toBe('false');
+  });
+
   it('submits a valid registration after accepting all agreements', async () => {
     const fields: Record<string, string> = {
       firstName: 'Ada',
       lastName: 'Lovelace',
       email: 'ada@example.com',
       phone: '0600000000',
-      password: 'motdepasse',
-      confirmPassword: 'motdepasse',
+      password: 'Motdepasse1!',
+      confirmPassword: 'Motdepasse1!',
     };
 
     for (const [name, value] of Object.entries(fields)) {
