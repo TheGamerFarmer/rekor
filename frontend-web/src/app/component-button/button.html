@@ -1,0 +1,54 @@
+@if (href(); as link) {
+  <a
+    class="button"
+    [class.button-small]="size() === 'small'"
+    [class.button-uppercase]="uppercase()"
+    [class.button-primary]="variant() === 'primary'"
+    [class.button-secondary]="variant() === 'secondary'"
+    [class.button-outline]="variant() === 'outline'"
+    [class.button-danger]="variant() === 'danger'"
+    [class.button-text]="variant() === 'text'"
+    [class.full-width]="fullWidth()"
+    [href]="link"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-current]="ariaCurrent()"
+  >
+    <span>{{ text() }}</span>
+    @if (iconSrc(); as icon) {
+      <img
+        class="button-icon"
+        [class.button-icon-light]="iconVariant() === 'light'"
+        [class.button-icon-primary]="iconVariant() === 'primary'"
+        [src]="icon"
+        alt=""
+      />
+    }
+  </a>
+} @else {
+  <button
+    class="button"
+    [class.button-small]="size() === 'small'"
+    [class.button-uppercase]="uppercase()"
+    [class.button-primary]="variant() === 'primary'"
+    [class.button-secondary]="variant() === 'secondary'"
+    [class.button-outline]="variant() === 'outline'"
+    [class.button-danger]="variant() === 'danger'"
+    [class.button-text]="variant() === 'text'"
+    [class.full-width]="fullWidth()"
+    [attr.type]="type()"
+    [attr.aria-label]="ariaLabel() || null"
+    [attr.aria-current]="ariaCurrent()"
+    [disabled]="disabled()"
+  >
+    <span>{{ text() }}</span>
+    @if (iconSrc(); as icon) {
+      <img
+        class="button-icon"
+        [class.button-icon-light]="iconVariant() === 'light'"
+        [class.button-icon-primary]="iconVariant() === 'primary'"
+        [src]="icon"
+        alt=""
+      />
+    }
+  </button>
+}
