@@ -1,8 +1,9 @@
-const { createHmac, timingSafeEqual } = require('node:crypto');
+const { createHash, createHmac, randomUUID, timingSafeEqual } = require('node:crypto');
 
 const ROLES = ['Entraineur', 'Capitaine', 'Adhérent', 'Visiteur'];
 // Validity time of the access token in second
 const TOKEN_LIFETIME_SECONDS = 15 * 60;
+const REFRESH_TOKEN_LIFETIME_SECONDS = 30 * 24 * 60 * 60;
 
 class InvalidTokenError extends Error {}
 
@@ -22,20 +23,47 @@ function encode(value) {
 
 function signAccessToken(user) {
   const now = Math.floor(Date.now() / 1000);
+  return signToken(
+    {
+      sub: user._id.toString(),
+      role: user.role,
+      iat: now,
+      exp: now + TOKEN_LIFETIME_SECONDS,
+    },
+    getSecret(),
+  );
+}
+
+function signRefreshToken(user, sessionId = randomUUID()) {
+  const now = Math.floor(Date.now() / 1000);
+  return {
+    token: signToken(
+      {
+        sub: user._id.toString(),
+        role: user.role,
+        sid: sessionId,
+        jti: randomUUID(),
+        token_use: 'refresh',
+        iat: now,
+        exp: now + REFRESH_TOKEN_LIFETIME_SECONDS,
+      },
+      getRefreshSecret(),
+    ),
+    sessionId,
+    expiresAt: new Date((now + REFRESH_TOKEN_LIFETIME_SECONDS) * 1000),
+  };
+}
+
+function signToken(payload, secret) {
   const header = encode({ alg: 'HS256', typ: 'JWT' });
-  const payload = encode({
-    sub: user._id.toString(),
-    role: user.role,
-    iat: now,
-    exp: now + TOKEN_LIFETIME_SECONDS,
-  });
-  const unsignedToken = `${header}.${payload}`;
-  const signature = createHmac('sha256', getSecret()).update(unsignedToken).digest('base64url');
+  const encodedPayload = encode(payload);
+  const unsignedToken = `${header}.${encodedPayload}`;
+  const signature = createHmac('sha256', secret).update(unsignedToken).digest('base64url');
 
   return `${unsignedToken}.${signature}`;
 }
 
-function verifyAccessToken(token) {
+function verifyToken(token, secret) {
   if (typeof token !== 'string') throw new InvalidTokenError();
   const parts = token.split('.');
   if (parts.length !== 3 || parts.some((part) => !part)) throw new InvalidTokenError();
@@ -51,7 +79,7 @@ function verifyAccessToken(token) {
 
   if (header.alg !== 'HS256' || header.typ !== 'JWT') throw new InvalidTokenError();
 
-  const expected = createHmac('sha256', getSecret()).update(`${parts[0]}.${parts[1]}`).digest();
+  const expected = createHmac('sha256', secret).update(`${parts[0]}.${parts[1]}`).digest();
   const actual = Buffer.from(parts[2], 'base64url');
   if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
     throw new InvalidTokenError();
@@ -68,6 +96,33 @@ function verifyAccessToken(token) {
   }
 
   return payload;
+}
+
+function verifyAccessToken(token) {
+  const payload = verifyToken(token, getSecret());
+  if (payload.token_use === 'refresh') throw new InvalidTokenError();
+  return payload;
+}
+
+function verifyRefreshToken(token) {
+  const payload = verifyToken(token, getRefreshSecret());
+  if (
+    payload.token_use !== 'refresh' ||
+    typeof payload.sid !== 'string' ||
+    typeof payload.jti !== 'string' ||
+    typeof payload.iat !== 'number'
+  ) {
+    throw new InvalidTokenError();
+  }
+  return payload;
+}
+
+function getRefreshSecret() {
+  return createHmac('sha256', getSecret()).update('rekor-refresh-token-v1').digest();
+}
+
+function hashRefreshToken(token) {
+  return createHash('sha256').update(token).digest('hex');
 }
 
 function authenticate(req, res, next) {
@@ -99,4 +154,13 @@ function authorize(...allowedRoles) {
   };
 }
 
-module.exports = { signAccessToken, authenticate, authorize };
+module.exports = {
+  InvalidTokenError,
+  signAccessToken,
+  signRefreshToken,
+  verifyAccessToken,
+  verifyRefreshToken,
+  hashRefreshToken,
+  authenticate,
+  authorize,
+};
