@@ -183,8 +183,8 @@ class ApiClient {
           return valueString == 'true' || valueString == '1';
         case 'DateTime':
           return value is DateTime ? value : DateTime.tryParse(value);
-        case 'CurrentUser':
-          return CurrentUser.fromJson(value);
+        case 'ChangePasswordInput':
+          return ChangePasswordInput.fromJson(value);
         case 'ErrorResponse':
           return ErrorResponse.fromJson(value);
         case 'HealthResponse':
@@ -193,10 +193,10 @@ class ApiClient {
           return LoginInput.fromJson(value);
         case 'LoginResponse':
           return LoginResponse.fromJson(value);
-        case 'LoginUser':
-          return LoginUser.fromJson(value);
         case 'RegisterInput':
           return RegisterInput.fromJson(value);
+        case 'UpdateProfileInput':
+          return UpdateProfileInput.fromJson(value);
         case 'UserDetails':
           return UserDetails.fromJson(value);
         case 'UserListItem':
