@@ -5,6 +5,7 @@ const db = require('../db/db');
 const { ensureSchema } = require('../db/schema');
 
 const EXPECTED_COLLECTIONS = [
+  'refresh_tokens',
   'user',
   'set',
   'match',

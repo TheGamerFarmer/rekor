@@ -5,12 +5,15 @@ const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const db = require('../db/db');
 const app = require('../index');
+const createUsersRouter = require('../controllers/users');
 const createAuthRouter = require('../controllers/auth');
 const {
   authenticate,
   authorize,
   signAccessToken,
+  signRefreshToken,
   verifyAccessToken,
+  verifyRefreshToken,
 } = require('../controllers/services/auth-middleware');
 const { createHmac } = require('node:crypto');
 
@@ -28,12 +31,22 @@ function buildMiddlewareApp() {
   return middlewareApp;
 }
 
+function buildApiApp() {
+  const apiApp = express();
+  apiApp.use(express.json());
+  apiApp.use('/users', createUsersRouter({ limit: 100 }));
+  apiApp.use('/auth', createAuthRouter({ limit: 100 }));
+  return apiApp;
+}
+
 describe('/auth', () => {
   let mongod;
+  let apiApp;
   const previousJwtSecret = process.env.JWT_SECRET;
 
   before(async () => {
     process.env.JWT_SECRET = 'test-secret-with-at-least-32-bytes-long';
+    apiApp = buildApiApp();
     mongod = await MongoMemoryServer.create();
     await db.connect({ uri: mongod.getUri(), dbName: 'auth-test' });
     await db.getDb().collection('users').createIndex({ email: 1 }, { unique: true });
@@ -54,7 +67,7 @@ describe('/auth', () => {
   });
 
   it('enregistre un compte et stocke uniquement un mot de passe haché', async () => {
-    const res = await request(app).post('/auth/register').send(account);
+    const res = await request(apiApp).post('/auth/register').send(account);
 
     assert.strictEqual(res.status, 201);
     assert.deepStrictEqual(res.body, {});
@@ -65,17 +78,26 @@ describe('/auth', () => {
   });
 
   it('authentifie avec le bon mot de passe sans exposer le hash', async () => {
-    const registration = await request(app).post('/auth/register').send(account);
+    const registration = await request(apiApp).post('/auth/register').send(account);
     assert.strictEqual(registration.status, 201);
     const storedUser = await db.getDb().collection('users').findOne({ email: account.email });
 
-    const res = await request(app).post('/auth/login').send({
+    const res = await request(apiApp).post('/auth/login').send({
       email: account.email,
       password: account.password,
     });
-    assert.strictEqual(res.status, 200);
 
-    const me = await request(app)
+    assert.strictEqual(res.status, 200);
+    assert.match(res.body.access_token, /^[\w-]+\.[\w-]+\.[\w-]+$/);
+    assert.match(res.body.refresh_token, /^[\w-]+\.[\w-]+\.[\w-]+$/);
+    const accessClaims = verifyAccessToken(res.body.access_token);
+    const refreshClaims = verifyRefreshToken(res.body.refresh_token);
+    assert.strictEqual(accessClaims.sub, storedUser._id.toString());
+    assert.strictEqual(accessClaims.exp - accessClaims.iat, 15 * 60);
+    assert.strictEqual(refreshClaims.sub, storedUser._id.toString());
+    assert.strictEqual(refreshClaims.exp - refreshClaims.iat, 30 * 24 * 60 * 60);
+
+    const me = await request(apiApp)
       .get('/users/me')
       .set('Authorization', `Bearer ${res.body.access_token}`);
     assert.strictEqual(me.status, 200);
@@ -83,8 +105,59 @@ describe('/auth', () => {
     assert.strictEqual(me.body.role, 'Visiteur');
   });
 
+  it('renouvelle et fait tourner le refresh token', async () => {
+    await request(apiApp).post('/auth/register').send(account);
+    const login = await request(apiApp).post('/auth/login').send({
+      email: account.email,
+      password: account.password,
+    });
+
+    const refreshed = await request(apiApp).post('/auth/refresh').send({
+      refresh_token: login.body.refresh_token,
+    });
+
+    assert.strictEqual(refreshed.status, 200);
+    assert.match(refreshed.body.access_token, /^[\w-]+\.[\w-]+\.[\w-]+$/);
+    assert.match(refreshed.body.refresh_token, /^[\w-]+\.[\w-]+\.[\w-]+$/);
+    assert.notStrictEqual(refreshed.body.refresh_token, login.body.refresh_token);
+    const replay = await request(apiApp)
+      .post('/auth/refresh')
+      .send({ refresh_token: login.body.refresh_token });
+    assert.strictEqual(replay.status, 401);
+  });
+
+  it('refuse un refresh token utilisé comme access token', async () => {
+    const refresh = signRefreshToken({
+      _id: { toString: () => '6ac8c78e50318b28d457048f' },
+      role: 'Visiteur',
+    });
+    const response = await request(buildMiddlewareApp())
+      .get('/me')
+      .set('Authorization', `Bearer ${refresh.token}`);
+
+    assert.strictEqual(response.status, 401);
+  });
+
+  it('révoque la session lors du logout', async () => {
+    await request(apiApp).post('/auth/register').send(account);
+    const login = await request(apiApp).post('/auth/login').send({
+      email: account.email,
+      password: account.password,
+    });
+
+    const logout = await request(apiApp)
+      .post('/auth/logout')
+      .send({ refresh_token: login.body.refresh_token });
+    assert.strictEqual(logout.status, 204);
+
+    const refreshed = await request(apiApp)
+      .post('/auth/refresh')
+      .send({ refresh_token: login.body.refresh_token });
+    assert.strictEqual(refreshed.status, 401);
+  });
+
   it('protège les routes et refuse les tokens invalides', async () => {
-    const missing = await request(app).get('/users/me');
+    const missing = await request(apiApp).get('/users/me');
     assert.strictEqual(missing.status, 401);
 
     const invalid = await request(app).get('/users/me').set('Authorization', 'Bearer invalid');
@@ -92,9 +165,9 @@ describe('/auth', () => {
   });
 
   it('refuse un mot de passe incorrect avec une réponse générique', async () => {
-    await request(app).post('/auth/register').send(account);
+    await request(apiApp).post('/auth/register').send(account);
 
-    const res = await request(app).post('/auth/login').send({
+    const res = await request(apiApp).post('/auth/login').send({
       email: account.email,
       password: 'incorrect',
     });
@@ -104,9 +177,9 @@ describe('/auth', () => {
   });
 
   it('refuse de créer un compte avec un e-mail déjà utilisé', async () => {
-    await request(app).post('/auth/register').send(account);
+    await request(apiApp).post('/auth/register').send(account);
 
-    const res = await request(app).post('/auth/register').send(account);
+    const res = await request(apiApp).post('/auth/register').send(account);
 
     assert.strictEqual(res.status, 409);
   });
