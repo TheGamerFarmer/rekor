@@ -105,8 +105,16 @@ h2,
 }
 .line-icon {
   position: relative;
-  font-size: 42px;
-  line-height: 1;
+  display: inline-block;
+  width: 42px;
+  height: 42px;
+}
+.line-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
 }
 .line-icon b {
   position: absolute;

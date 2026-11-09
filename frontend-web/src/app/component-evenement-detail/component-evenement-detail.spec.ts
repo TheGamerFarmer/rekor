@@ -37,6 +37,9 @@ describe('ComponentEvenementDetail', () => {
       '/img/gouter.jpg',
     );
     expect(fixture.nativeElement.querySelectorAll('.event-info dt img').length).toBe(4);
+    expect(
+      fixture.nativeElement.querySelector('.event-info dt img[src="/icons/user.png"]'),
+    ).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.event-info')?.textContent).toContain(
       'Non précisée',
     );
