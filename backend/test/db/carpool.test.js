@@ -2,91 +2,78 @@ const { describe, it, before, after, beforeEach } = require('node:test');
 const assert = require('node:assert');
 const { ObjectId } = require('mongodb');
 const { setup, teardown } = require('./helpers');
+const Carpool = require('../../db/models/carpool');
+const Carpooler = require('../../db/models/carpooler');
+const CarpoolPayment = require('../../db/models/carpool_payment');
 
 describe('collections covoiturage', () => {
-  let mongod, database;
+  let mongod;
 
   before(async () => {
     const res = await setup();
     mongod = res.mongod;
-    database = res.database;
   });
   after(() => teardown(mongod));
 
   describe('carpool', () => {
-    let col;
-    before(() => {
-      col = database.collection('carpool');
-    });
-    beforeEach(() => col.deleteMany({}));
+    beforeEach(() => Carpool.deleteMany({}));
 
-    const valid = { maxSeats: 4, electric: false, group: new ObjectId() };
+    const valid = () => ({ maxSeats: 4, electric: false, group: new ObjectId() });
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(col.insertOne({ ...valid }));
+      await assert.doesNotReject(Carpool.create(valid()));
     });
 
     for (const field of ['maxSeats', 'electric', 'group']) {
       it(`refuse sans ${field}`, async () => {
-        const doc = { ...valid };
+        const doc = valid();
         delete doc[field];
-        await assert.rejects(col.insertOne(doc), /Document failed validation/);
+        await assert.rejects(Carpool.create(doc), /ValidationError/);
       });
     }
   });
 
   describe('carpooler', () => {
-    let col;
-    before(() => {
-      col = database.collection('carpooler');
-    });
-    beforeEach(() => col.deleteMany({}));
+    beforeEach(() => Carpooler.deleteMany({}));
 
-    const valid = () => ({ user: new ObjectId(), carpool: new ObjectId(), takenSeats: 2 });
+    const valid = () => ({ carpool: new ObjectId(), takenSeats: 2 });
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(col.insertOne(valid()));
+      await assert.doesNotReject(Carpooler.create(valid()));
     });
 
-    for (const field of ['user', 'carpool', 'takenSeats']) {
+    for (const field of ['carpool', 'takenSeats']) {
       it(`refuse sans ${field}`, async () => {
         const doc = valid();
         delete doc[field];
-        await assert.rejects(col.insertOne(doc), /Document failed validation/);
+        await assert.rejects(Carpooler.create(doc), /ValidationError/);
       });
     }
 
-    it('refuse le doublon user+carpool', async () => {
-      const user = new ObjectId();
+    it('refuse le doublon created_by+carpool', async () => {
       const carpool = new ObjectId();
-      await col.insertOne({ user, carpool, takenSeats: 1 });
-      await assert.rejects(col.insertOne({ user, carpool, takenSeats: 2 }), /duplicate key/);
+      await Carpooler.create({ carpool, takenSeats: 1 });
+      await assert.rejects(Carpooler.create({ carpool, takenSeats: 2 }), /duplicate key/);
     });
   });
 
   describe('carpool_payment', () => {
-    let col;
-    before(() => {
-      col = database.collection('carpool_payment');
-    });
-    beforeEach(() => col.deleteMany({}));
+    beforeEach(() => CarpoolPayment.deleteMany({}));
 
     const valid = () => ({
-      user: new ObjectId(),
       carpool: new ObjectId(),
-      date: new Date(),
       amount: 10.5,
     });
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(col.insertOne(valid()));
+      await assert.doesNotReject(CarpoolPayment.create(valid()));
     });
 
-    for (const field of ['user', 'carpool', 'date', 'amount']) {
+    for (const field of ['carpool', 'amount']) {
       it(`refuse sans ${field}`, async () => {
         const doc = valid();
         delete doc[field];
-        await assert.rejects(col.insertOne(doc), /Document failed validation/);
+        await assert.rejects(CarpoolPayment.create(doc), /ValidationError/);
       });
     }
   });

@@ -1,6 +1,8 @@
+require('../db/db');
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
-const { wrapAsync, usersCollection } = require('./services/shared');
+const User = require('../db/models/user');
+const { wrapAsync } = require('./services/shared');
 const { signAccessToken } = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
 
@@ -22,12 +24,12 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
     wrapAsync(async (req, res) => {
       const { name, firstName, email, password, phoneNumber, birthday, pronoun } = req.body;
 
-      if (await usersCollection().findOne({ email: { $eq: email } }, { projection: { _id: 1 } })) {
+      if (await User.exists({ email })) {
         return res.status(409).json({ message: 'Un utilisateur avec cet e-mail existe déjà' });
       }
 
       try {
-        await usersCollection().insertOne({
+        await User.create({
           name,
           firstName,
           email,
@@ -51,7 +53,7 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
     '/login',
     wrapAsync(async (req, res) => {
       const { email, password } = req.body;
-      const user = await usersCollection().findOne({ email: { $eq: email } });
+      const user = await User.findOne({ email });
 
       if (!user || !(await verifyPassword(password, user.password))) {
         return res.status(401).json({ message: 'E-mail ou mot de passe incorrect' });

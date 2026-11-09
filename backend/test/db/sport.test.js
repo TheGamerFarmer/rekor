@@ -2,23 +2,28 @@ const { describe, it, before, after, beforeEach } = require('node:test');
 const assert = require('node:assert');
 const { ObjectId } = require('mongodb');
 const { setup, teardown } = require('./helpers');
+const Event = require('../../db/models/event');
+const Match = require('../../db/models/match');
+const GameSet = require('../../db/models/game_set');
+const Team = require('../../db/models/team');
+const Group = require('../../db/models/group');
+const Message = require('../../db/models/message');
+const Participant = require('../../db/models/participant');
+const GroupMember = require('../../db/models/group_member');
+const Referee = require('../../db/models/referee');
+const PlayerPosition = require('../../db/models/player_position');
 
 describe('collections sport', () => {
-  let mongod, database;
+  let mongod;
 
   before(async () => {
     const res = await setup();
     mongod = res.mongod;
-    database = res.database;
   });
   after(() => teardown(mongod));
 
   describe('event', () => {
-    let col;
-    before(() => {
-      col = database.collection('event');
-    });
-    beforeEach(() => col.deleteMany({}));
+    beforeEach(() => Event.deleteMany({}));
 
     const valid = () => ({
       date: new Date('2024-06-01'),
@@ -30,231 +35,193 @@ describe('collections sport', () => {
     });
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(col.insertOne(valid()));
+      await assert.doesNotReject(Event.create(valid()));
     });
 
     for (const field of ['date', 'place', 'type', 'name', 'description', 'group']) {
       it(`refuse sans ${field}`, async () => {
         const doc = valid();
         delete doc[field];
-        await assert.rejects(col.insertOne(doc), /Document failed validation/);
+        await assert.rejects(Event.create(doc), /ValidationError/);
       });
     }
 
     it('refuse un type invalide', async () => {
-      await assert.rejects(
-        col.insertOne({ ...valid(), type: 'Apéro' }),
-        /Document failed validation/,
-      );
+      await assert.rejects(Event.create({ ...valid(), type: 'Apéro' }), /ValidationError/);
     });
 
     it('refuse le doublon (même event complet)', async () => {
       const doc = { ...valid(), group: new ObjectId() };
-      await col.insertOne(doc);
-      await assert.rejects(col.insertOne(doc), /duplicate key/);
+      await Event.create(doc);
+      await assert.rejects(Event.create(doc), /duplicate key/);
     });
   });
 
   describe('match', () => {
-    let col;
-    before(() => {
-      col = database.collection('match');
-    });
-    beforeEach(() => col.deleteMany({}));
+    beforeEach(() => Match.deleteMany({}));
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(col.insertOne({ event: new ObjectId(), opponent: 'Équipe B' }));
+      await assert.doesNotReject(Match.create({ event: new ObjectId(), opponent: 'Équipe B' }));
     });
 
     it('refuse sans event', async () => {
-      await assert.rejects(col.insertOne({ opponent: 'Équipe B' }), /Document failed validation/);
+      await assert.rejects(Match.create({ opponent: 'Équipe B' }), /ValidationError/);
     });
 
     it('refuse sans opponent', async () => {
-      await assert.rejects(col.insertOne({ event: new ObjectId() }), /Document failed validation/);
+      await assert.rejects(Match.create({ event: new ObjectId() }), /ValidationError/);
     });
 
     it('refuse le doublon event+opponent', async () => {
       const event = new ObjectId();
-      await col.insertOne({ event, opponent: 'Équipe B' });
-      await assert.rejects(col.insertOne({ event, opponent: 'Équipe B' }), /duplicate key/);
+      await Match.create({ event, opponent: 'Équipe B' });
+      await assert.rejects(Match.create({ event, opponent: 'Équipe B' }), /duplicate key/);
     });
   });
 
   describe('set', () => {
-    let col;
-    before(() => {
-      col = database.collection('set');
-    });
-    beforeEach(() => col.deleteMany({}));
+    beforeEach(() => GameSet.deleteMany({}));
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(col.insertOne({ number: 1, match: new ObjectId() }));
+      await assert.doesNotReject(GameSet.create({ number: 1, match: new ObjectId() }));
     });
 
     it('refuse sans number', async () => {
-      await assert.rejects(col.insertOne({ match: new ObjectId() }), /Document failed validation/);
+      await assert.rejects(GameSet.create({ match: new ObjectId() }), /ValidationError/);
     });
 
     it('refuse sans match', async () => {
-      await assert.rejects(col.insertOne({ number: 1 }), /Document failed validation/);
+      await assert.rejects(GameSet.create({ number: 1 }), /ValidationError/);
     });
 
     it('refuse le doublon number+match', async () => {
       const match = new ObjectId();
-      await col.insertOne({ number: 1, match });
-      await assert.rejects(col.insertOne({ number: 1, match }), /duplicate key/);
+      await GameSet.create({ number: 1, match });
+      await assert.rejects(GameSet.create({ number: 1, match }), /duplicate key/);
     });
   });
 
   describe('team', () => {
-    let col;
-    before(() => {
-      col = database.collection('team');
-    });
-    beforeEach(() => col.deleteMany({}));
+    beforeEach(() => Team.deleteMany({}));
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(col.insertOne({ name: 'Équipe A', leader: new ObjectId() }));
+      await assert.doesNotReject(Team.create({ name: 'Équipe A', leader: new ObjectId() }));
     });
 
     it('refuse sans name', async () => {
-      await assert.rejects(col.insertOne({ leader: new ObjectId() }), /Document failed validation/);
+      await assert.rejects(Team.create({ leader: new ObjectId() }), /ValidationError/);
     });
 
     it('refuse sans leader', async () => {
-      await assert.rejects(col.insertOne({ name: 'Équipe A' }), /Document failed validation/);
+      await assert.rejects(Team.create({ name: 'Équipe A' }), /ValidationError/);
     });
 
     it('refuse le doublon name+leader', async () => {
       const leader = new ObjectId();
-      await col.insertOne({ name: 'Équipe A', leader });
-      await assert.rejects(col.insertOne({ name: 'Équipe A', leader }), /duplicate key/);
+      await Team.create({ name: 'Équipe A', leader });
+      await assert.rejects(Team.create({ name: 'Équipe A', leader }), /duplicate key/);
     });
   });
 
   describe('group', () => {
-    let col;
-    before(() => {
-      col = database.collection('group');
-    });
-    beforeEach(() => col.deleteMany({}));
+    beforeEach(() => Group.deleteMany({}));
 
     const valid = () => ({
       name: 'U18',
-      created_at: new Date('2024-01-01'),
       owner: new ObjectId(),
     });
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(col.insertOne(valid()));
+      await assert.doesNotReject(Group.create(valid()));
     });
 
-    for (const field of ['name', 'created_at', 'owner']) {
+    for (const field of ['name', 'owner']) {
       it(`refuse sans ${field}`, async () => {
         const doc = valid();
         delete doc[field];
-        await assert.rejects(col.insertOne(doc), /Document failed validation/);
+        await assert.rejects(Group.create(doc), /ValidationError/);
       });
     }
   });
 
   describe('message', () => {
-    let col;
-    before(() => {
-      col = database.collection('message');
-    });
-    beforeEach(() => col.deleteMany({}));
+    beforeEach(() => Message.deleteMany({}));
 
     const valid = () => ({
       group: new ObjectId(),
-      user: new ObjectId(),
-      date: new Date(),
       body: 'Salut !',
     });
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(col.insertOne(valid()));
+      await assert.doesNotReject(Message.create(valid()));
     });
 
-    for (const field of ['group', 'user', 'date', 'body']) {
+    for (const field of ['group', 'body']) {
       it(`refuse sans ${field}`, async () => {
         const doc = valid();
         delete doc[field];
-        await assert.rejects(col.insertOne(doc), /Document failed validation/);
+        await assert.rejects(Message.create(doc), /ValidationError/);
       });
     }
   });
 
   describe('participant', () => {
-    let col;
-    before(() => {
-      col = database.collection('participant');
-    });
-    beforeEach(() => col.deleteMany({}));
+    beforeEach(() => Participant.deleteMany({}));
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(col.insertOne({ user: new ObjectId(), event: new ObjectId() }));
+      await assert.doesNotReject(
+        Participant.create({ user: new ObjectId(), event: new ObjectId() }),
+      );
     });
 
     it('refuse le doublon user+event', async () => {
       const user = new ObjectId();
       const event = new ObjectId();
-      await col.insertOne({ user, event });
-      await assert.rejects(col.insertOne({ user, event }), /duplicate key/);
+      await Participant.create({ user, event });
+      await assert.rejects(Participant.create({ user, event }), /duplicate key/);
     });
 
     it('autorise le même user sur deux événements différents', async () => {
       const user = new ObjectId();
-      await col.insertOne({ user, event: new ObjectId() });
-      await assert.doesNotReject(col.insertOne({ user, event: new ObjectId() }));
+      await Participant.create({ user, event: new ObjectId() });
+      await assert.doesNotReject(Participant.create({ user, event: new ObjectId() }));
     });
   });
 
   describe('group_member', () => {
-    let col;
-    before(() => {
-      col = database.collection('group_member');
-    });
-    beforeEach(() => col.deleteMany({}));
+    beforeEach(() => GroupMember.deleteMany({}));
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(col.insertOne({ group: new ObjectId(), user: new ObjectId() }));
+      await assert.doesNotReject(
+        GroupMember.create({ group: new ObjectId(), user: new ObjectId() }),
+      );
     });
 
     it('refuse le doublon group+user', async () => {
       const group = new ObjectId();
       const user = new ObjectId();
-      await col.insertOne({ group, user });
-      await assert.rejects(col.insertOne({ group, user }), /duplicate key/);
+      await GroupMember.create({ group, user });
+      await assert.rejects(GroupMember.create({ group, user }), /duplicate key/);
     });
   });
 
   describe('referee', () => {
-    let col;
-    before(() => {
-      col = database.collection('referee');
-    });
-    beforeEach(() => col.deleteMany({}));
+    beforeEach(() => Referee.deleteMany({}));
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(col.insertOne({ user: new ObjectId(), match: new ObjectId() }));
+      await assert.doesNotReject(Referee.create({ user: new ObjectId(), match: new ObjectId() }));
     });
 
     it('refuse le doublon user+match', async () => {
       const user = new ObjectId();
       const match = new ObjectId();
-      await col.insertOne({ user, match });
-      await assert.rejects(col.insertOne({ user, match }), /duplicate key/);
+      await Referee.create({ user, match });
+      await assert.rejects(Referee.create({ user, match }), /duplicate key/);
     });
   });
 
   describe('player_position', () => {
-    let col;
-    before(() => {
-      col = database.collection('player_position');
-    });
-    beforeEach(() => col.deleteMany({}));
+    beforeEach(() => PlayerPosition.deleteMany({}));
 
     const valid = () => ({
       player: new ObjectId(),
@@ -265,14 +232,14 @@ describe('collections sport', () => {
     });
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(col.insertOne(valid()));
+      await assert.doesNotReject(PlayerPosition.create(valid()));
     });
 
     for (const field of ['player', 'set', 'position', 'nbOut', 'nbIn']) {
       it(`refuse sans ${field}`, async () => {
         const doc = valid();
         delete doc[field];
-        await assert.rejects(col.insertOne(doc), /Document failed validation/);
+        await assert.rejects(PlayerPosition.create(doc), /ValidationError/);
       });
     }
 
@@ -280,9 +247,9 @@ describe('collections sport', () => {
       const player = new ObjectId();
       const set = new ObjectId();
       const position = new ObjectId();
-      await col.insertOne({ player, set, position, nbOut: 1, nbIn: 0 });
+      await PlayerPosition.create({ player, set, position, nbOut: 1, nbIn: 0 });
       await assert.rejects(
-        col.insertOne({ player, set, position, nbOut: 0, nbIn: 1 }),
+        PlayerPosition.create({ player, set, position, nbOut: 0, nbIn: 1 }),
         /duplicate key/,
       );
     });
