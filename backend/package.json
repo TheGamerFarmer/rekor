@@ -9,10 +9,11 @@
     "lint": "eslint .",
     "test": "node --test",
     "openapi:export": "node scripts/export-openapi.js",
-    "clients:generate": "node scripts/generate-clients.js",
+    "clients": "node scripts/generate-clients.js",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test:coverage": "c8 node --test"
+    "test:coverage": "c8 node --test",
+    "verify": "npm run lint && npm run test:coverage"
   },
   "dependencies": {
     "@asteasolutions/zod-to-openapi": "^9.1.0",

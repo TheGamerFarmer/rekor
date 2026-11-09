@@ -4,7 +4,7 @@
 
 .login-page {
   align-items: center;
-  background: #f4f7fb;
+  background: var(--color-background);
   display: flex;
   font-family: Inter, 'Segoe UI', sans-serif;
   justify-content: center;
@@ -13,10 +13,10 @@
 }
 
 .login-card {
-  background: #fff;
-  border: 1px solid #e3e9f2;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 1.25rem;
-  box-shadow: 0 1rem 3rem rgb(28 52 84 / 10%);
+  box-shadow: 0 1rem 3rem var(--glass-shadow);
   max-width: 27rem;
   padding: 2.5rem;
   width: 100%;
@@ -24,9 +24,9 @@
 
 .brand {
   align-items: center;
-  background: #2355c4;
+  background: var(--color-primary);
   border-radius: 0.75rem;
-  color: #fff;
+  color: var(--color-surface);
   display: flex;
   font-size: 1.5rem;
   font-weight: 800;
@@ -42,7 +42,7 @@
 
 .subtitle,
 .signup-prompt {
-  color: #62708a;
+  color: var(--color-text-muted);
   line-height: 1.5;
   margin: 0;
 }
@@ -53,7 +53,7 @@
 
 label,
 .label-row {
-  color: #26354f;
+  color: var(--color-text);
   font-size: 0.9rem;
   font-weight: 600;
 }
@@ -71,7 +71,7 @@ label {
 }
 
 a {
-  color: #2355c4;
+  color: var(--color-primary);
   font-size: 0.85rem;
   font-weight: 600;
   text-decoration: none;
@@ -84,11 +84,11 @@ a:hover {
 input[type='email'],
 input[type='password'],
 input[type='text'] {
-  background: #fff;
-  border: 1px solid #cbd5e3;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 0.625rem;
   box-sizing: border-box;
-  color: #18243a;
+  color: var(--color-text);
   font: inherit;
   padding: 0.8rem 0.9rem;
   transition:
@@ -98,8 +98,8 @@ input[type='text'] {
 }
 
 input:focus {
-  border-color: #2355c4;
-  box-shadow: 0 0 0 3px rgb(38 89 216 / 15%);
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
   outline: none;
 }
 
@@ -118,7 +118,7 @@ input[aria-invalid='true'] {
 .password-toggle {
   background: none;
   border: 0;
-  color: #2355c4;
+  color: var(--color-primary);
   cursor: pointer;
   font: inherit;
   font-size: 0.8rem;
@@ -131,7 +131,7 @@ input[aria-invalid='true'] {
 
 .remember {
   align-items: center;
-  color: #62708a;
+  color: var(--color-text-muted);
   display: flex;
   font-weight: 500;
   gap: 0.55rem;
@@ -139,7 +139,7 @@ input[aria-invalid='true'] {
 }
 
 .remember input {
-  accent-color: #2355c4;
+  accent-color: var(--color-primary);
   height: 1rem;
   margin: 0;
   width: 1rem;
@@ -150,10 +150,10 @@ input[aria-invalid='true'] {
 }
 
 .submit-button {
-  background: #ffd900;
+  background: var(--color-secondary);
   border: 0;
   border-radius: 1rem;
-  color: black;
+  color: var(--color-text);
   cursor: pointer;
   font: inherit;
   font-weight: 700;
@@ -165,7 +165,7 @@ input[aria-invalid='true'] {
 }
 
 .submit-button:hover {
-  background: #2355c4;
+  background: var(--color-primary-hover);
 }
 
 .submit-button:active {
@@ -186,7 +186,7 @@ input[aria-invalid='true'] {
 }
 
 .signup-prompt {
-  border-top: 1px solid #e3e9f2;
+  border-top: 1px solid var(--color-border);
   font-size: 0.85rem;
   margin-top: 2rem;
   padding-top: 1.5rem;

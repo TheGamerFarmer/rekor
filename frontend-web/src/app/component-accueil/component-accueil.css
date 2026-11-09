@@ -1,0 +1,376 @@
+:host {
+  color-scheme: light;
+  font-family: 'DM Sans', Arial, sans-serif;
+  color: var(--color-dark);
+  background: var(--color-surface);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-optical-sizing: auto;
+  font-weight: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+h2,
+.feature-card h3 {
+  font-family: 'Barlow Condensed', Impact, sans-serif;
+  text-transform: uppercase;
+}
+.icon {
+  display: inline-block;
+  object-fit: contain;
+}
+.event-card i {
+  display: inline-block;
+  height: 3px;
+  width: 3px;
+  border-radius: 50%;
+  margin: 0 8px 3px;
+  background: currentColor;
+}
+.page-content {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 42px 28px 30px;
+}
+.club-section {
+  margin: 0 auto 32px;
+}
+.section-heading h2 {
+  margin: 0;
+  color: var(--color-dark);
+  font-size: 42px;
+  line-height: 1;
+  font-weight: 800;
+}
+.section-heading > p {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin: 12px 0 20px;
+  font-size: 14px;
+}
+.heading-mark {
+  display: inline-block;
+  width: 48px;
+  height: 5px;
+  background: linear-gradient(90deg, var(--color-secondary) 0 48%, var(--color-primary) 48%);
+}
+.feature-grid {
+  display: grid;
+  grid-template-columns: 1.1fr 1.1fr 1.1fr;
+  grid-template-rows: 250px 250px;
+  gap: 16px;
+}
+.feature-card {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 24px;
+  border-radius: 10px;
+  color: var(--color-surface);
+  background-color: var(--color-primary);
+  box-shadow: 0 2px 10px var(--glass-shadow);
+  transition: transform 0.2s ease;
+}
+.feature-card:hover {
+  transform: translateY(-3px);
+}
+.feature-card h3 {
+  margin: 0 0 4px;
+  font-size: 30px;
+  line-height: 1;
+  font-weight: 800;
+}
+.feature-card p {
+  margin: 3px 0 0;
+  font-size: 14px;
+}
+.signup-card {
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
+}
+.signup-card h3 {
+  margin-top: 20px;
+}
+.line-icon {
+  position: relative;
+  font-size: 42px;
+  line-height: 1;
+}
+.line-icon b {
+  position: absolute;
+  left: 30px;
+  top: 21px;
+  font:
+    700 15px 'DM Sans',
+    sans-serif;
+}
+.round-arrow {
+  width: 37px;
+  height: 37px;
+  display: grid;
+  place-items: center;
+  margin-top: 22px;
+  transition: transform 0.2s ease;
+}
+.round-arrow:hover {
+  transform: scale(1.15);
+}
+.round-arrow img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  filter: brightness(0) invert(1);
+}
+.rules-card .round-arrow img {
+  filter: none;
+}
+.tournament-card {
+  background:
+    linear-gradient(0deg, color-mix(in srgb, var(--color-dark) 85%, transparent), transparent 72%),
+    url('/img/volley2.jpg') center / cover,
+    var(--color-dark);
+}
+.rules-card {
+  color: var(--color-dark);
+  background: linear-gradient(135deg, var(--color-secondary-hover), var(--color-secondary));
+}
+.rules-icon {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 34px;
+  height: 34px;
+  object-fit: contain;
+}
+.rules-card h3 {
+  max-width: 190px;
+}
+.events-card {
+  grid-column: 1 / 2;
+  background:
+    linear-gradient(
+      0deg,
+      color-mix(in srgb, var(--color-dark) 84%, transparent),
+      color-mix(in srgb, var(--color-dark) 5%, transparent) 85%
+    ),
+    url('/img/volley3.jpg') center / cover,
+    var(--color-dark);
+}
+.events-card h3 {
+  font-size: 28px;
+}
+.events-card p {
+  font-size: 12px;
+}
+.events-card .round-arrow {
+  position: absolute;
+  right: 22px;
+  bottom: 20px;
+}
+.about-card {
+  grid-column: 2 / 4;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(120deg, var(--color-primary), var(--color-primary-hover));
+}
+.about-card h3 {
+  font-size: 30px;
+}
+.about-card .round-arrow {
+  margin-top: 22px;
+}
+.volleyball-mark {
+  align-self: flex-end;
+  margin: 0 -25px -50px 0;
+  color: color-mix(in srgb, var(--glass-border) 65%, transparent);
+  font-size: 245px;
+  line-height: 0.85;
+  transform: rotate(-20deg);
+}
+.appointments {
+  padding: 24px 28px;
+  border-radius: 14px;
+  background: var(--color-primary-light);
+}
+.appointments-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 18px;
+}
+.appointments-heading .section-heading h2 {
+  font-size: 36px;
+}
+.appointments-heading .heading-mark {
+  margin-top: 9px;
+}
+.appointments-heading > a {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.appointments-heading > a:hover {
+  color: var(--color-primary-hover);
+}
+
+.icon-arrow-blue {
+  width: 14px;
+  height: 14px;
+  filter: brightness(0) saturate(100%) invert(23%) sepia(98%) saturate(1834%) hue-rotate(204deg)
+    brightness(91%) contrast(103%);
+}
+.event-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+.event-card {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  padding: 16px;
+  border-radius: 11px;
+  background: color-mix(in srgb, var(--glass-background) 88%, transparent);
+}
+.event-badge {
+  display: grid;
+  place-items: center;
+  flex: 0 0 48px;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+}
+.event-badge img {
+  width: 25px;
+  height: 25px;
+  object-fit: contain;
+}
+.event-badge.blue {
+  color: var(--color-surface);
+  background: var(--color-primary);
+}
+.event-badge.yellow {
+  color: var(--color-dark);
+  background: var(--color-secondary);
+}
+.event-badge.blue img {
+  filter: brightness(0) invert(1);
+}
+.tag {
+  display: inline-block;
+  border-radius: 16px;
+  padding: 4px 13px;
+  text-transform: uppercase;
+  font-size: 9px;
+  font-weight: 700;
+}
+.blue-tag {
+  color: var(--color-surface);
+  background: var(--color-primary);
+}
+.yellow-tag {
+  color: var(--color-text);
+  background: var(--color-secondary);
+}
+.event-card h3 {
+  margin: 6px 0 8px;
+  font-size: 14px;
+}
+.event-card p {
+  margin: 5px 0 0;
+  color: var(--color-text-muted);
+  font-size: 11px;
+}
+.event-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 8px;
+  vertical-align: -2px;
+}
+@media (max-width: 720px) {
+  .page-content {
+    padding: 34px 20px 24px;
+  }
+  .section-heading h2 {
+    font-size: 36px;
+  }
+  .feature-grid {
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: 210px 210px 210px;
+    gap: 12px;
+  }
+  .feature-card {
+    padding: 17px;
+  }
+  .feature-card h3 {
+    font-size: 25px;
+  }
+  .signup-card {
+    grid-column: 1;
+  }
+  .tournament-card {
+    grid-column: 2;
+  }
+  .rules-card {
+    grid-column: 1;
+  }
+  .events-card {
+    grid-column: 2;
+  }
+  .about-card {
+    grid-column: 1 / 3;
+  }
+  .volleyball-mark {
+    font-size: 170px;
+    margin-right: -19px;
+    margin-bottom: -36px;
+  }
+  .appointments {
+    margin: 0 -10px;
+    padding: 20px 14px;
+  }
+  .appointments-heading {
+    align-items: flex-start;
+    gap: 10px;
+    flex-direction: column;
+  }
+  .appointments-heading .section-heading h2 {
+    font-size: 32px;
+  }
+  .event-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 390px) {
+  .feature-card h3 {
+    font-size: 22px;
+  }
+  .event-card {
+    gap: 11px;
+    padding: 13px;
+  }
+  .event-badge {
+    flex-basis: 40px;
+    width: 40px;
+    height: 40px;
+  }
+}

@@ -1,12 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, of } from 'rxjs';
-import { RouterLink } from '@angular/router';
 
 import { HealthService } from '../api';
+import { Banner } from '../component-banner/banner';
 
 @Component({
-  imports: [RouterLink],
+  imports: [Banner],
   selector: 'app-component-accueil',
   styleUrl: './component-accueil.css',
   templateUrl: './component-accueil.html',

@@ -8,5 +8,6 @@ import { Component, input } from '@angular/core';
 export class Banner {
   readonly image = input.required<string>();
   readonly title = input.required<string>();
-  readonly subtitle = input.required<string>();
+  readonly subtitle = input<string>();
+  readonly isHome = input(false);
 }
