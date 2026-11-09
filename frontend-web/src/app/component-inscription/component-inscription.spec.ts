@@ -83,7 +83,7 @@ describe('ComponentInscription', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain(
-      'Le numéro de téléphone ne doit pas dépasser 10 chiffres.',
+      'Le numéro de téléphone ne peut pas dépasser 10 chiffres.',
     );
     expect(phone.getAttribute('aria-invalid')).toBe('true');
 
@@ -92,7 +92,7 @@ describe('ComponentInscription', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).not.toContain(
-      'Le numéro de téléphone ne doit pas dépasser 10 chiffres.',
+      'Le numéro de téléphone ne peut pas dépasser 10 chiffres.',
     );
     expect(phone.getAttribute('aria-invalid')).toBe('false');
   });

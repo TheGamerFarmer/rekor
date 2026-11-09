@@ -12,7 +12,7 @@
           <span>{{ currentEvent.category }}</span>
         </div>
         <div class="event-body">
-          @for (paragraph of currentEvent.paragraphs; track paragraph) {
+          @for (paragraph of currentEvent.paragraphs; track $index) {
             <p>{{ paragraph }}</p>
           }
         </div>

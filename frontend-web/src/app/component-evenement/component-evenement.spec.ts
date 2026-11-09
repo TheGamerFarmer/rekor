@@ -65,7 +65,29 @@ describe('ComponentEvenement', () => {
     );
     expect(
       fixture.nativeElement
-        .querySelector('.pagination-page[aria-current="page"] button')
+        .querySelector('.pagination-page button[aria-current="page"]')
+        ?.textContent.trim(),
+    ).toBe('2');
+
+    const previousPage = fixture.nativeElement.querySelector(
+      '.pagination-previous button',
+    ) as HTMLButtonElement;
+    previousPage.click();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement
+        .querySelector('.pagination-page button[aria-current="page"]')
+        ?.textContent.trim(),
+    ).toBe('1');
+
+    const nextPage = fixture.nativeElement.querySelector(
+      '.pagination-next button',
+    ) as HTMLButtonElement;
+    nextPage.click();
+    fixture.detectChanges();
+    expect(
+      fixture.nativeElement
+        .querySelector('.pagination-page button[aria-current="page"]')
         ?.textContent.trim(),
     ).toBe('2');
 
