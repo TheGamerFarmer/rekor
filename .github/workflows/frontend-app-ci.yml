@@ -47,6 +47,20 @@ jobs:
         with:
           flutter-version: '3.47.6'
           channel: stable
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('frontend-app/pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
+      - name: Cache Gradle
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('frontend-app/android/**/*.gradle*', 'frontend-app/android/**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
       - run: flutter pub get
       - run: flutter analyze
       - run: flutter test --coverage
@@ -72,6 +86,12 @@ jobs:
         with:
           flutter-version: '3.47.6'
           channel: stable
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('frontend-app/pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
       - run: flutter pub get
       - run: flutter build ios --release --no-codesign
       - name: Zip the unsigned .app
@@ -99,6 +119,12 @@ jobs:
         with:
           flutter-version: '3.47.6'
           channel: stable
+      - name: Cache pub dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.pub-cache
+          key: pub-${{ runner.os }}-${{ hashFiles('frontend-app/pubspec.lock') }}
+          restore-keys: pub-${{ runner.os }}-
       - name: Enable KVM
         run: |
           echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
@@ -112,12 +138,34 @@ jobs:
           docker run -d --rm --name rekor-e2e-backend -p 3000:3000 rekor-backend:e2e
           for i in $(seq 1 30); do curl -sf http://localhost:3000/ > /dev/null && exit 0; sleep 1; done
           echo "Le backend ne répond pas"; docker logs rekor-e2e-backend; exit 1
+      - name: Cache AVD
+        id: avd-cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.android/avd/*
+            ~/.android/adb*
+          key: avd-api34-${{ runner.os }}
+      - name: Create AVD snapshot for caching
+        if: steps.avd-cache.outputs.cache-hit != 'true'
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: false
+          script: echo "AVD snapshot créé."
       - name: Run integration tests on Android emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 34
           arch: x86_64
           target: google_apis
+          force-avd-creation: false
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim -camera-back none
+          disable-animations: true
           working-directory: frontend-app
           script: flutter test integration_test
 

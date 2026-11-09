@@ -1084,8 +1084,9 @@ Ce que le système met en place, c'est le **cadre** : pas encore le produit. Il 
 | `npm test`                                | lancer les tests                                  |
 | `npm run test:coverage`                   | tests avec couverture et seuils                   |
 | `npm run lint`                            | analyse ESLint                                    |
+| `npm run verify`                          | analyse ESLint + test avec couverture et seuils   |
 | `npm run format` / `npm run format:check` | formater / vérifier le formatage                  |
-| `npm run clients:generate`                | régénérer le contrat et les clients (Java requis) |
+| `npm run clients`                         | régénérer le contrat et les clients (Java requis) |
 | `npm run openapi:export`                  | régénérer seulement `openapi.json`                |
 
 **Web** (dans `frontend-web/`)
