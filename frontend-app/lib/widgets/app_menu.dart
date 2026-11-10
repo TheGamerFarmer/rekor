@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/arbitrage.dart';
 
+import '../mobile_pages/groupe.dart';
 import '../mobile_pages/home_page.dart';
 
 // Menu de l'application mobile avec la navigation vers les différentes pages
@@ -71,16 +72,14 @@ class AppMenu extends StatelessWidget {
                             ),
                           );
                         }
-                        /*if (element.$2 == 'Discussions') {
+                        if (element.$2 == 'Discussions') {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Discussions',
-                              ),
+                              builder: (context) => const GroupesPage(),
                             ),
                           );
-                        }*/
+                        }
                         /*if (element.$2 == 'Covoiturage') {
                           Navigator.push(
                             context,
