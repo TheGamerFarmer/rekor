@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/arbitrage.dart';
 
-import '../mobile_pages/CovoituragePage.dart';
-import '../mobile_pages/evenementPage.dart';
+import '../mobile_pages/covoiturage_page.dart';
+import '../mobile_pages/evenement_page.dart';
 import '../mobile_pages/home_page.dart';
 
 // Menu de l'application mobile avec la navigation vers les différentes pages
@@ -109,25 +109,19 @@ void naviguerVersPage(BuildContext context, String page) {
   if (page == 'Covoiturage') {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const CovoituragePage(),
-      ),
+      MaterialPageRoute(builder: (context) => const CovoituragePage()),
     );
   }
   if (page == 'Évènements') {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const Evenementpage(),
-      ),
+      MaterialPageRoute(builder: (context) => const Evenementpage()),
     );
   }
   if (page == 'Arbitrage') {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => const Evenementpage(),
-      ),
+      MaterialPageRoute(builder: (context) => const ArbitragePage()),
     );
   }
 }
