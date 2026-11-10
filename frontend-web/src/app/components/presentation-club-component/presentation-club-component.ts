@@ -1,9 +1,10 @@
 import { Component } from '@angular/core';
 import { MatIcon } from '@angular/material/icon';
 import { NgxTimelineModule, NgxTimelineOrientation } from '@frxjs/ngx-timeline';
+import { Banner } from '../component-banner/banner';
 
 @Component({
-  imports: [MatIcon, NgxTimelineModule],
+  imports: [Banner, MatIcon, NgxTimelineModule],
   selector: 'app-presentation-club-component',
   styleUrl: './presentation-club-component.css',
   templateUrl: './presentation-club-component.html',

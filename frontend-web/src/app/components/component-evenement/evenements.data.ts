@@ -22,7 +22,7 @@ export const evenements: Evenement[] = [
     image: '/img/gouter.jpg',
     category: 'Vie du club',
     paragraphs: [
-      'Le Gières Volley-ball Club vous donne rendez-vous pour partager un goûter convivial et lancer la nouvelle saison dans la bonne humeur.',
+      'Le Gières Volley-Ball vous donne rendez-vous pour partager un goûter convivial et lancer la nouvelle saison dans la bonne humeur.',
       'Un moment chaleureux pour se retrouver et commencer l’année sportive ensemble.',
     ],
   },
@@ -31,11 +31,11 @@ export const evenements: Evenement[] = [
     date: '2026-09-08',
     dateLabel: '8 septembre',
     title: 'Les inscriptions sont ouvertes !',
-    summary: 'Rejoignez le Gières Volley-ball Club pour la nouvelle saison !',
+    summary: 'Rejoignez le Gières Volley-Ball pour la nouvelle saison !',
     image: '/img/volley_ball1.jpg',
     category: 'Inscription',
     paragraphs: [
-      'Les inscriptions pour la nouvelle saison du Gières Volley-ball Club sont ouvertes.',
+      'Les inscriptions pour la nouvelle saison du Gières Volley-Ball sont ouvertes.',
       'Envie de découvrir le volley ou de rejoindre le club ? Consultez la page d’inscription pour commencer votre démarche.',
     ],
   },
