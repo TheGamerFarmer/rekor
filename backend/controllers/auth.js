@@ -104,9 +104,9 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
       const refreshTokens = refreshTokensCollection();
       const oldTokenHash = hashRefreshToken(req.body.refresh_token);
       const session = await refreshTokens.findOne({
-        _id: claims.sid,
-        userId: new ObjectId(claims.sub),
-        tokenHash: oldTokenHash,
+        _id: { $eq: claims.sid },
+        userId: { $eq: new ObjectId(claims.sub) },
+        tokenHash: { $eq: oldTokenHash },
         expiresAt: { $gt: new Date() },
       });
       if (!session) {
@@ -160,9 +160,9 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
       const refreshTokens = refreshTokensCollection();
       const userId = new ObjectId(claims.sub);
       const session = await refreshTokens.findOne({
-        _id: claims.sid,
-        userId,
-        tokenHash: hashRefreshToken(req.body.refresh_token),
+        _id: { $eq: claims.sid },
+        userId: { $eq: userId },
+        tokenHash: { $eq: hashRefreshToken(req.body.refresh_token) },
         expiresAt: { $gt: new Date() },
       });
       if (!session) {
@@ -170,7 +170,10 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
       }
 
       await revokeSession(claims.sid);
-      await refreshTokens.deleteOne({ _id: claims.sid, userId });
+      await refreshTokens.deleteOne({
+        _id: { $eq: claims.sid },
+        userId: { $eq: userId },
+      });
       res.status(204).end();
     }),
   );
