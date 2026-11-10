@@ -54,7 +54,9 @@ describe('ComponentConnexion', () => {
 
   it('toggles password visibility', () => {
     const password = fixture.nativeElement.querySelector('#password') as HTMLInputElement;
-    const toggle = fixture.nativeElement.querySelector('.password-toggle') as HTMLButtonElement;
+    const toggle = fixture.nativeElement.querySelector(
+      '.password-toggle button',
+    ) as HTMLButtonElement;
 
     expect(password.type).toBe('password');
     toggle.click();

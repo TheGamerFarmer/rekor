@@ -1,6 +1,8 @@
 import { Component, input } from '@angular/core';
+import { Button } from '../component-button/button';
 
 @Component({
+  imports: [Button],
   selector: 'app-component-banner',
   templateUrl: './banner.html',
   styleUrl: './banner.css',

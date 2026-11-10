@@ -96,7 +96,6 @@ h1 {
 }
 
 .hero-location .icon-map,
-.pill-button .icon-arrow,
 .match-detail .icon-map,
 .match-detail .icon-calendar,
 .match-detail .icon-trophy {
@@ -119,12 +118,7 @@ h1 {
 }
 
 .pill-button {
-  gap: 16px;
-}
-
-.pill-button .icon-arrow {
-  width: 18px;
-  height: 18px;
+  display: inline-block;
 }
 
 .match-strip {

@@ -61,13 +61,13 @@ a {
   font-weight: 600;
 }
 
-.main-nav a:not(.outline-button),
+.main-nav > a,
 .footer-links a {
   position: relative;
   text-decoration: none;
 }
 
-.main-nav a:not(.outline-button) {
+.main-nav > a {
   align-self: center;
 }
 
@@ -75,7 +75,7 @@ a {
   align-self: flex-start;
 }
 
-.main-nav a:not(.outline-button)::after,
+.main-nav > a::after,
 .footer-links a::after {
   position: absolute;
   right: 0;
@@ -89,8 +89,8 @@ a {
   transition: transform 0.2s ease;
 }
 
-.main-nav a:not(.outline-button):hover::after,
-.main-nav a:not(.outline-button):focus-visible::after,
+.main-nav > a:hover::after,
+.main-nav > a:focus-visible::after,
 .footer-links a:hover::after,
 .footer-links a:focus-visible::after {
   transform: scaleX(1);

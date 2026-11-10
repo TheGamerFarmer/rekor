@@ -103,7 +103,9 @@ describe('ComponentCompte', () => {
   });
 
   it('deletes the account only after confirmation', () => {
-    const deleteButton = fixture.nativeElement.querySelector('.delete-button') as HTMLButtonElement;
+    const deleteButton = fixture.nativeElement.querySelector(
+      '.delete-button button',
+    ) as HTMLButtonElement;
     const confirmation = fixture.nativeElement.querySelector(
       'input[type="checkbox"]',
     ) as HTMLInputElement;
@@ -124,7 +126,7 @@ describe('ComponentCompte', () => {
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);
 
-    (fixture.nativeElement.querySelector('.logout-button') as HTMLButtonElement).click();
+    (fixture.nativeElement.querySelector('.logout-button button') as HTMLButtonElement).click();
     await fixture.whenStable();
 
     expect(navigateSpy).toHaveBeenCalledWith(['/accueil']);

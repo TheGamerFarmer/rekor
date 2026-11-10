@@ -1,5 +1,4 @@
 import { Component, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import {
   AbstractControl,
   FormBuilder,
@@ -8,6 +7,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { Banner } from '../component-banner/banner';
+import { Button } from '../component-button/button';
 
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password')?.value;
@@ -16,8 +16,14 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   return password === confirmation ? null : { passwordsMismatch: true };
 }
 
+function maxPhoneDigits(control: AbstractControl): ValidationErrors | null {
+  const digitCount = String(control.value).replace(/\D/g, '').length;
+
+  return digitCount > 10 ? { maxPhoneDigits: { max: 10, actual: digitCount } } : null;
+}
+
 @Component({
-  imports: [Banner, ReactiveFormsModule, RouterLink],
+  imports: [Banner, Button, ReactiveFormsModule],
   selector: 'app-component-inscription',
   styleUrl: './component-inscription.css',
   templateUrl: './component-inscription.html',
@@ -32,13 +38,20 @@ export class ComponentInscription {
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
       email: ['', [Validators.required, Validators.email]],
-      phone: ['', [Validators.required]],
-      password: ['', [Validators.required, Validators.minLength(8)]],
+      phone: ['', [Validators.required, maxPhoneDigits]],
+      password: [
+        '',
+        [
+          Validators.required,
+          Validators.minLength(8),
+          Validators.pattern(/^(?=.*\p{Lu})(?=.*[^\p{L}\p{N}\s]).*$/u),
+        ],
+      ],
       confirmPassword: ['', [Validators.required]],
       internalRules: [false, [Validators.requiredTrue]],
-      healthData: [false, [Validators.requiredTrue]],
       privacyPolicy: [false, [Validators.requiredTrue]],
-      imageRights: [false, [Validators.requiredTrue]],
+      healthData: [false],
+      imageRights: [false],
     },
     { validators: passwordsMatch },
   );

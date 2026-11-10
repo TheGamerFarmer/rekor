@@ -2,9 +2,10 @@ import { Component, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Banner } from '../component-banner/banner';
+import { Button } from '../component-button/button';
 
 @Component({
-  imports: [Banner, ReactiveFormsModule, RouterLink],
+  imports: [Banner, Button, ReactiveFormsModule, RouterLink],
   selector: 'app-component-connexion',
   styleUrl: './component-connexion.css',
   templateUrl: './component-connexion.html',

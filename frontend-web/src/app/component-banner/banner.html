@@ -18,9 +18,15 @@
         <i></i>
         18h00
       </p>
-      <a class="outline-button pill-button" href="#rendez-vous">
-        Découvrir le match <img class="icon icon-arrow" src="/icons/arrow.png" alt="" />
-      </a>
+      <app-button
+        class="pill-button"
+        variant="outline"
+        [uppercase]="true"
+        href="#rendez-vous"
+        [text]="'Découvrir le match'"
+        [iconSrc]="'/icons/arrow.png'"
+        [iconVariant]="'light'"
+      ></app-button>
 
       <div class="match-strip" aria-label="Informations sur le prochain match">
         <div class="match-detail">
