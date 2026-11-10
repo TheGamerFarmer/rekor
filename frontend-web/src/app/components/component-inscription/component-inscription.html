@@ -63,6 +63,39 @@
         </div>
       </div>
 
+      <div class="name-fields">
+        <div class="field">
+          <label for="pronoun"
+            >Pronom <span class="required-marker" aria-hidden="true">*</span></label
+          >
+          <select
+            id="pronoun"
+            formControlName="pronoun"
+            required
+            [attr.aria-invalid]="
+              (submitted() || registrationForm.controls.pronoun.dirty) &&
+              registrationForm.controls.pronoun.invalid
+            "
+          >
+            <option value="">Sélectionnez votre pronom</option>
+            @for (pronoun of pronouns; track pronoun) {
+              <option [value]="pronoun">{{ pronoun }}</option>
+            }
+          </select>
+          @if (
+            (submitted() || registrationForm.controls.pronoun.dirty) &&
+            registrationForm.controls.pronoun.invalid
+          ) {
+            <p class="error">Sélectionnez votre pronom.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="birthday">Date de naissance</label>
+          <input id="birthday" type="date" formControlName="birthday" autocomplete="bday" />
+        </div>
+      </div>
+
       <div class="field">
         <label for="email">E-mail <span class="required-marker" aria-hidden="true">*</span></label>
         <input
@@ -236,6 +269,10 @@
           >
         </label>
       </fieldset>
+
+      @if (registrationError()) {
+        <p class="form-message error" role="alert">{{ registrationError() }}</p>
+      }
 
       @if (submitted() && registrationForm.invalid) {
         <p class="form-message error" role="alert">

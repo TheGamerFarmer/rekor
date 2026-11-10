@@ -50,11 +50,6 @@
         </div>
       </div>
 
-      <label class="remember">
-        <input type="checkbox" formControlName="rememberMe" />
-        <span>Se souvenir de moi</span>
-      </label>
-
       <app-button type="submit" [fullWidth]="true" text="Se connecter"></app-button>
 
       @if (submitted() && loginForm.valid) {

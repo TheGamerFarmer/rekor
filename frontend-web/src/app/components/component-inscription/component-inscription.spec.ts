@@ -1,6 +1,8 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ComponentInscription } from './component-inscription';
 import { provideRouter } from '@angular/router';
+import { AuthenticationService } from '../../api/api/authentication.service';
+import { of } from 'rxjs';
 
 describe('ComponentInscription', () => {
   let component: ComponentInscription;
@@ -9,7 +11,13 @@ describe('ComponentInscription', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ComponentInscription],
-      providers: [provideRouter([])],
+      providers: [
+        provideRouter([]),
+        {
+          provide: AuthenticationService,
+          useValue: { register: () => of(undefined) },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ComponentInscription);

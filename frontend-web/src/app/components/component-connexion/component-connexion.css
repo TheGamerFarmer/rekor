@@ -8,8 +8,8 @@
   display: flex;
   font-family: Inter, 'Segoe UI', sans-serif;
   justify-content: center;
-  min-height: 100vh;
-  padding: 2rem 1rem;
+  min-height: 70vh;
+  padding: 1.5rem 1rem;
 }
 
 .login-card {

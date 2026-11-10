@@ -8,6 +8,7 @@ import {
   ValidationErrors,
   Validators,
 } from '@angular/forms';
+import { RegisterInput } from '../../api/model/registerInput';
 import { Button } from '../component-button/button';
 
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
@@ -30,12 +31,12 @@ export class ComponentCompte {
   protected readonly accountDeleted = signal(false);
 
   private readonly router = inject(Router);
-  protected readonly pronouns = Object.values(PronounEnum);
+  protected readonly pronouns = Object.values(RegisterInput.PronounEnum);
 
   protected readonly accountForm = new FormBuilder().nonNullable.group({
     firstName: ['Alex', [Validators.required]],
     lastName: ['Martin', [Validators.required]],
-    pronoun: new FormControl<RegisterInput.PronounEnum | null>(PronounEnum.Il, [
+    pronoun: new FormControl<RegisterInput.PronounEnum | null>(RegisterInput.PronounEnum.Il, [
       Validators.required,
     ]),
     email: ['alex.martin@example.com', [Validators.required, Validators.email]],
