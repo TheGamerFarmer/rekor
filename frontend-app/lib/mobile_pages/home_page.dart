@@ -4,6 +4,7 @@ import '../health_status.dart';
 import '../layouts/main_layout.dart';
 import 'CovoituragePage.dart';
 import 'creationconvoiturage.dart';
+import 'evenementPage.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -69,18 +70,6 @@ class _MyHomePageState extends State<MyHomePage> {
             ElevatedButton(
               onPressed: _incrementCounter,
               child: const Text('Ajouter 1'),
-            ),
-
-            ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CovoituragePage(),
-                  ),
-                );
-              },
-              child: const Text('Covoiturage'),
             ),
           ],
         ),

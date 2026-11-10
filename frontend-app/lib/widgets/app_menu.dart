@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 
+import '../mobile_pages/CovoituragePage.dart';
+import '../mobile_pages/evenementPage.dart';
 import '../mobile_pages/home_page.dart';
 
 // Menu de l'application mobile avec la navigation vers les différentes pages
 class AppMenu extends StatelessWidget {
   final VoidCallback onClose;
 
-  const AppMenu({super.key, required this.onClose,});
+  const AppMenu({super.key, required this.onClose});
 
   @override
   Widget build(BuildContext context) {
@@ -37,19 +39,13 @@ class AppMenu extends StatelessWidget {
                   padding: EdgeInsets.all(20),
                   child: Text(
                     'Menu',
-                    style: TextStyle(
-                      fontSize: 28,
-                      color: Colors.white,
-                    ),
+                    style: TextStyle(fontSize: 28, color: Colors.white),
                   ),
                 ),
 
                 IconButton(
                   onPressed: onClose,
-                  icon: const Icon(
-                    Icons.close,
-                    color: Colors.white,
-                  ),
+                  icon: const Icon(Icons.close, color: Colors.white),
                 ),
               ],
             ),
@@ -71,9 +67,8 @@ class AppMenu extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Accueil',
-                              ),
+                              builder: (context) =>
+                                  const MyHomePage(title: 'Accueil'),
                             ),
                           );
                         }
@@ -87,26 +82,22 @@ class AppMenu extends StatelessWidget {
                             ),
                           );
                         }*/
-                        /*if (element.$2 == 'Covoiturage') {
+                        if (element.$2 == 'Covoiturage') {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Covoiturage',
-                              ),
+                              builder: (context) => const CovoituragePage(),
                             ),
                           );
-                        }*/
-                        /*if (element.$2 == 'Évènements') {
+                        }
+                        if (element.$2 == 'Évènements') {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Évènements',
-                              ),
+                              builder: (context) => const Evenementpage(),
                             ),
                           );
-                        }*/
+                        }
                         /*if (element.$2 == 'Compétition') {
                           Navigator.push(
                             context,
@@ -162,11 +153,7 @@ class AppMenu extends StatelessWidget {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(
-                              element.$1,
-                              color: Colors.white,
-                              size: 35,
-                            ),
+                            Icon(element.$1, color: Colors.white, size: 35),
                             const SizedBox(height: 10),
                             Text(
                               element.$2,

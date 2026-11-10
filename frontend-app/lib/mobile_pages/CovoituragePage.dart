@@ -13,9 +13,9 @@ class CovoituragePage extends StatefulWidget {
 }
 
 class _CovoituragePageState extends State<CovoituragePage> {
-  final Color jaune = const Color(0xFFFFDA1A);
-
   // La liste des covoiturages affichés sur la page
+
+  final Color jaune = const Color(0xFFFFDA1A);
   final List<Covoiturage> _covoiturages = [];
 
   // Ouvre la page de création et attend le résultat
