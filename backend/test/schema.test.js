@@ -6,7 +6,7 @@ const { ensureSchema } = require('../db/schema');
 
 const EXPECTED_COLLECTIONS = [
   'refresh_tokens',
-  'user',
+  'users',
   'set',
   'match',
   'event',
@@ -44,7 +44,7 @@ describe('ensureSchema', () => {
     mongod = await MongoMemoryServer.create();
     await db.connect({ uri: mongod.getUri(), dbName: 'test' });
     database = db.getDb();
-    await ensureSchema(database);
+    await ensureSchema();
   });
 
   after(async () => {
@@ -61,18 +61,22 @@ describe('ensureSchema', () => {
   });
 
   it('est idempotente (peut tourner deux fois sans erreur)', async () => {
-    await assert.doesNotReject(ensureSchema(database));
+    await assert.doesNotReject(ensureSchema());
   });
 
   it('propage les erreurs inattendues de createCollection', async () => {
-    const fakeDb = {
-      createCollection: async () => {
-        const err = new Error('erreur inattendue');
-        err.codeName = 'UnexpectedError';
-        throw err;
-      },
-      collection: () => ({ createIndex: async () => {} }),
+    const mongoose = require('mongoose');
+    const firstModelName = Object.keys(mongoose.models)[0];
+    const Model = mongoose.models[firstModelName];
+    const original = Model.createCollection.bind(Model);
+    Model.createCollection = async () => {
+      throw Object.assign(new Error('disk full'), { codeName: 'DiskFull' });
     };
-    await assert.rejects(ensureSchema(fakeDb), /erreur inattendue/);
+
+    try {
+      await assert.rejects(ensureSchema(), /disk full/);
+    } finally {
+      Model.createCollection = original;
+    }
   });
 });
