@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../mobile_pages/CovoituragePage.dart';
+import '../mobile_pages/evenementPage.dart';
 import '../mobile_pages/home_page.dart';
 
 // Menu de l'application mobile avec la navigation vers les différentes pages
