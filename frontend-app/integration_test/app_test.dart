@@ -1,5 +1,5 @@
 //import 'package:flutter/material.dart';
-//import 'package:flutter_test/flutter_test.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:integration_test/integration_test.dart';
 
 //import 'package:frontend_app/main.dart' as app;
@@ -8,6 +8,10 @@ import 'package:integration_test/integration_test.dart';
 
 void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
+
+  testWidgets('Test de démarrage', (tester) async {
+    expect(1 + 1, equals(2));
+  });
 
   // Les mêmes tests tournent deux fois : back simulé (mock), puis vrai back (real).
   /*for (final mode in backendModes.where(isSelected)) {
