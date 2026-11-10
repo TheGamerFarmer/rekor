@@ -6,12 +6,13 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const db = require('../db/db');
 const app = require('../index');
 const createAuthRouter = require('../controllers/auth');
+const User = require('../db/models/user');
 const {
   authenticate,
   authorize,
   signAccessToken,
   verifyAccessToken,
-} = require('../controllers/auth-middleware');
+} = require('../controllers/services/auth-middleware');
 const { createHmac } = require('node:crypto');
 
 const account = {
@@ -64,6 +65,21 @@ describe('/auth', () => {
     assert.strictEqual(stored.password.split(':')[0].length, 32);
   });
 
+  it('enregistre un compte avec un anniversaire', async () => {
+    const res = await request(app)
+      .post('/auth/register')
+      .send({ ...account, birthday: '1990-05-15' });
+
+    assert.strictEqual(res.status, 201);
+    const stored = await db.getDb().collection('users').findOne({ email: account.email });
+    assert.strictEqual(stored.birthday.toISOString(), '1990-05-15T00:00:00.000Z');
+  });
+
+  it('verifyAccessToken lève une erreur pour un token non-string', () => {
+    assert.throws(() => verifyAccessToken(null));
+    assert.throws(() => verifyAccessToken(42));
+  });
+
   it('authentifie avec le bon mot de passe sans exposer le hash', async () => {
     const registration = await request(app).post('/auth/register').send(account);
     assert.strictEqual(registration.status, 201);
@@ -73,25 +89,21 @@ describe('/auth', () => {
       email: account.email,
       password: account.password,
     });
-
     assert.strictEqual(res.status, 200);
-    assert.deepStrictEqual(
-      { email: res.body.user.email, name: res.body.user.name, role: res.body.user.role },
-      { email: account.email, name: account.name, role: 'Visiteur' },
-    );
-    assert.match(res.body.token, /^[\w-]+\.[\w-]+\.[\w-]+$/);
-    assert.strictEqual('password' in res.body.user, false);
 
-    const me = await request(app).get('/auth/me').set('Authorization', `Bearer ${res.body.token}`);
+    const me = await request(app)
+      .get('/users/me')
+      .set('Authorization', `Bearer ${res.body.access_token}`);
     assert.strictEqual(me.status, 200);
-    assert.deepStrictEqual(me.body, { id: storedUser._id.toString(), role: 'Visiteur' });
+    assert.strictEqual(me.body.id, storedUser._id.toString());
+    assert.strictEqual(me.body.role, 'Visiteur');
   });
 
   it('protège les routes et refuse les tokens invalides', async () => {
-    const missing = await request(app).get('/auth/me');
+    const missing = await request(app).get('/users/me');
     assert.strictEqual(missing.status, 401);
 
-    const invalid = await request(app).get('/auth/me').set('Authorization', 'Bearer invalid');
+    const invalid = await request(app).get('/users/me').set('Authorization', 'Bearer invalid');
     assert.strictEqual(invalid.status, 401);
   });
 
@@ -214,10 +226,8 @@ describe('/auth', () => {
     const registrationApp = express();
     registrationApp.use(express.json());
     registrationApp.use('/auth', createAuthRouter({ limit: 100 }));
-    const collection = db.getDb().collection('users');
-    const collectionPrototype = Object.getPrototypeOf(collection);
-    const originalInsertOne = collectionPrototype.insertOne;
-    collectionPrototype.insertOne = async () => {
+    const originalSave = User.prototype.$save;
+    User.prototype.$save = async function () {
       throw Object.assign(new Error('Duplicate email'), { code: 11000 });
     };
 
@@ -227,7 +237,7 @@ describe('/auth', () => {
         .send({ ...account, email: 'concurrent@exemple.fr' });
       assert.strictEqual(res.status, 409);
     } finally {
-      collectionPrototype.insertOne = originalInsertOne;
+      User.prototype.$save = originalSave;
     }
   });
 
@@ -235,10 +245,8 @@ describe('/auth', () => {
     const registrationApp = express();
     registrationApp.use(express.json());
     registrationApp.use('/auth', createAuthRouter({ limit: 100 }));
-    const collection = db.getDb().collection('users');
-    const collectionPrototype = Object.getPrototypeOf(collection);
-    const originalInsertOne = collectionPrototype.insertOne;
-    collectionPrototype.insertOne = async () => {
+    const originalSave = User.prototype.$save;
+    User.prototype.$save = async function () {
       throw Object.assign(new Error('Database write failed'), { code: 12345 });
     };
 
@@ -249,7 +257,7 @@ describe('/auth', () => {
       assert.strictEqual(res.status, 500);
       assert.match(res.text, /Database write failed/);
     } finally {
-      collectionPrototype.insertOne = originalInsertOne;
+      User.prototype.$save = originalSave;
     }
   });
 });

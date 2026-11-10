@@ -7,14 +7,14 @@ api/users.service.ts
 configuration.ts
 encoder.ts
 index.ts
-model/currentUser.ts
+model/changePasswordInput.ts
 model/errorResponse.ts
 model/healthResponse.ts
 model/loginInput.ts
 model/loginResponse.ts
-model/loginUser.ts
 model/models.ts
 model/registerInput.ts
+model/updateProfileInput.ts
 model/userDetails.ts
 model/userListItem.ts
 param.ts

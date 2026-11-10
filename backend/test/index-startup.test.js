@@ -25,7 +25,7 @@ async function startServer(environment) {
 
   try {
     await new Promise((resolve, reject) => {
-      const timeout = setTimeout(() => reject(new Error('Le serveur n’a pas démarré')), 10_000);
+      const timeout = setTimeout(() => reject(new Error("Le serveur n'a pas démarré")), 10_000);
       child.stdout.on('data', () => {
         if (
           stdout.includes('Server running on port 0') &&
@@ -37,7 +37,7 @@ async function startServer(environment) {
       });
       child.once('close', (code) => {
         clearTimeout(timeout);
-        reject(new Error(`Le serveur s’est arrêté (${code}) : ${stderr}`));
+        reject(new Error(`Le serveur s'est arrêté (${code}) : ${stderr}`));
       });
     });
 
@@ -49,9 +49,14 @@ async function startServer(environment) {
   }
 }
 
-test('le serveur démarre sans base et s’arrête proprement sur SIGTERM', async () => {
+// Sur Windows, SIGTERM utilise TerminateProcess : le handler Node.js ne s'exécute pas
+// et le processus se termine avec { code: null, signal: 'SIGTERM' } au lieu de { code: 0, signal: null }
+const expectedSigterm =
+  process.platform === 'win32' ? { code: null, signal: 'SIGTERM' } : { code: 0, signal: null };
+
+test("le serveur démarre sans base et s'arrête proprement sur SIGTERM", async () => {
   const { result } = await startServer({});
-  assert.deepStrictEqual(result, { code: 0, signal: null });
+  assert.deepStrictEqual(result, expectedSigterm);
 });
 
 test('le démarrage se connecte à MongoDB et initialise le schéma', async () => {
@@ -62,7 +67,7 @@ test('le démarrage se connecte à MongoDB et initialise le schéma', async () =
       MONGODB_URI: mongod.getUri(),
       MONGODB_DB: 'startup-test',
     });
-    assert.deepStrictEqual(result, { code: 0, signal: null });
+    assert.deepStrictEqual(result, expectedSigterm);
     assert.match(stdout, /Connecté à MongoDB/);
   } finally {
     await mongod.stop();

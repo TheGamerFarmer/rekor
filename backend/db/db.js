@@ -1,13 +1,20 @@
-const { MongoClient } = require('mongodb');
+const mongoose = require('mongoose');
+const { auditPlugin } = require('./plugins/audit');
 
-let client;
-let database;
+mongoose.set('bufferCommands', false);
+mongoose.plugin(auditPlugin);
 
 /**
- * Se connecte à MongoDB. Par défaut, lit la configuration dans l'environnement :
- * MONGODB_URI, MONGODB_DB, MONGODB_USER, MONGODB_PASSWORD (identifiants séparés de l'URI,
- * pour ne pas avoir à encoder les caractères spéciaux d'un mot de passe).
- * Réessaie quelques fois : au premier démarrage, la base peut mettre un moment à accepter les connexions.
+ * Connects to MongoDB via Mongoose. Retries several times because on first startup
+ * the database container may not yet be ready to accept connections.
+ *
+ * @param {object}  [options]
+ * @param {string}  [options.uri]      Connection URI — defaults to `MONGODB_URI` env var.
+ * @param {string}  [options.dbName]   Database name — defaults to `MONGODB_DB` env var.
+ * @param {string}  [options.user]     Auth username — defaults to `MONGODB_USER` env var.
+ * @param {string}  [options.password] Auth password — defaults to `MONGODB_PASSWORD` env var.
+ * @param {number}  [options.retries=10]  Maximum number of connection attempts.
+ * @param {number}  [options.delayMs=2000] Delay between attempts in milliseconds.
  */
 async function connect({
   uri = process.env.MONGODB_URI,
@@ -19,43 +26,47 @@ async function connect({
 } = {}) {
   if (!uri) throw new Error('MONGODB_URI est requis pour se connecter à MongoDB');
 
-  const options = { serverSelectionTimeoutMS: 3000 };
+  const options = {
+    dbName,
+    autoIndex: false,
+    bufferCommands: false,
+    serverSelectionTimeoutMS: 3000,
+  };
   if (user) {
     options.auth = { username: user, password };
     options.authSource = 'admin';
   }
 
   for (let attempt = 1; ; attempt++) {
-    const candidate = new MongoClient(uri, options);
     try {
-      await candidate.connect();
-      const candidateDb = candidate.db(dbName);
-      await candidateDb.command({ ping: 1 });
-      client = candidate;
-      database = candidateDb;
-      return database;
+      await mongoose.connect(uri, options);
+      return;
     } catch (error) {
-      await candidate.close().catch(() => {});
+      await mongoose.disconnect().catch(() => {});
       if (attempt >= retries) throw error;
       await new Promise((resolve) => setTimeout(resolve, delayMs));
     }
   }
 }
 
-/** La base connectée. À utiliser dans les controllers : getDb().collection('...') */
+/**
+ * Returns the connected native MongoDB `Db` instance.
+ * Throws a 503 error when the database is not connected.
+ *
+ * @returns {import('mongodb').Db}
+ */
 function getDb() {
-  if (!database) {
+  if (mongoose.connection.readyState !== 1) {
     const error = new Error("La base de données n'est pas connectée");
     error.status = 503;
     throw error;
   }
-  return database;
+  return mongoose.connection.db;
 }
 
+/** Closes the Mongoose connection gracefully. */
 async function close() {
-  if (client) await client.close();
-  client = undefined;
-  database = undefined;
+  await mongoose.disconnect();
 }
 
 module.exports = { connect, getDb, close };

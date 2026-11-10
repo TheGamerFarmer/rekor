@@ -1,0 +1,127 @@
+:host {
+  display: block;
+}
+
+.event-detail {
+  display: grid;
+  max-width: 920px;
+  gap: 28px;
+  margin: 0 auto;
+  padding: 44px 28px 60px;
+  color: var(--color-dark);
+  font-family: 'DM Sans', Arial, sans-serif;
+}
+
+.event-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 270px;
+  align-items: start;
+  gap: 36px;
+}
+
+.event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text-muted);
+  font-size: 13px;
+}
+
+.event-meta span {
+  border-radius: 999px;
+  padding: 5px 12px;
+  color: var(--color-dark);
+  background: var(--color-primary-light);
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.event-body {
+  margin: 18px 0 26px;
+  color: var(--color-text-muted);
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.event-body p {
+  margin: 0 0 14px;
+}
+
+.event-info {
+  padding: 22px;
+  border: 1px solid var(--color-border);
+  border-radius: 14px;
+  background: var(--color-surface);
+  box-shadow: 0 8px 24px var(--glass-shadow);
+}
+
+.event-info h2 {
+  margin: 0 0 18px;
+  font-family: 'Barlow Condensed', Impact, sans-serif;
+  font-size: 24px;
+  line-height: 1;
+}
+
+.event-info dl {
+  display: grid;
+  gap: 16px;
+  margin: 0;
+}
+
+.event-info dl > div {
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.event-info dl > div:last-child {
+  padding-bottom: 0;
+  border-bottom: 0;
+}
+
+.event-info dt {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+  color: var(--color-text-muted);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.event-info dt img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.event-info dd {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.not-found {
+  min-height: 180px;
+  align-content: start;
+}
+
+@media (max-width: 720px) {
+  .event-detail {
+    gap: 24px;
+    padding: 32px 20px 42px;
+  }
+
+  .event-layout {
+    grid-template-columns: 1fr;
+    gap: 24px;
+  }
+}
+
+@media (max-width: 390px) {
+  .event-detail {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+}

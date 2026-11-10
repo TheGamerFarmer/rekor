@@ -28,7 +28,7 @@ void main() {
     await tester.pumpAndSettle();
 
     // On analyse la page une fois affichée, pas pendant le chargement.
-    expect(find.text('Backend : ok'), findsOneWidget);
+    expect(find.text('Bienvenue sur la page d’accueil'), findsOneWidget);
 
     // Zones tactiles assez grandes (48 dp sur Android, 44 pt sur iOS)
     await expectLater(tester, meetsGuideline(androidTapTargetGuideline));

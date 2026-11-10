@@ -372,7 +372,7 @@ Le format s'appelle **OpenAPI** : c'est un standard, compris par beaucoup d'outi
 
 ```text
 backend/openapi.js
-      │   npm run clients:generate
+      │   npm run clients
       ├──►  backend/openapi.json          le contrat, en JSON
       ├──►  frontend-web/src/app/api/    client TypeScript pour Angular
       └──►  frontend-app/api_client/     client Dart pour Flutter
@@ -408,12 +408,12 @@ Les noms des méthodes viennent des `operationId` du contrat : `createUser` donn
 
 1. Modifie `backend/openapi.js` (schémas et routes).
 2. Écris la route dans `backend/routes/` et ses tests.
-3. Dans `backend/`, lance **`npm run clients:generate`** (il faut Java).
+3. Dans `backend/`, lance **`npm run clients`** (il faut Java).
 4. Commite **tout** : le code, `openapi.json` et les clients régénérés.
 
 Le check `Contract - check` de la CI refait la génération et compare : si un fichier généré diffère de celui que tu as commité, il échoue et te dit de relancer la commande.
 
-Si tu as un **conflit Git** sur un fichier généré, ne le résous pas à la main : prends l'une ou l'autre version, puis relance `npm run clients:generate`, qui produit la bonne.
+Si tu as un **conflit Git** sur un fichier généré, ne le résous pas à la main : prends l'une ou l'autre version, puis relance `npm run clients`, qui produit la bonne.
 
 ### 4.6 Les changements qui cassent le contrat
 
@@ -762,7 +762,7 @@ git merge origin/main
 En cas de **conflit** :
 
 - sur un fichier normal, ouvre-le, choisis le bon contenu, puis `git add` et `git commit` ;
-- sur un **fichier généré** (`openapi.json`, `api/`, `api_client/`), ne résous rien à la main : prends n'importe quelle version, puis relance `npm run clients:generate`.
+- sur un **fichier généré** (`openapi.json`, `api/`, `api_client/`), ne résous rien à la main : prends n'importe quelle version, puis relance `npm run clients`.
 
 Relance les tests après la fusion : un conflit résolu sans erreur apparente peut quand même casser le code.
 
@@ -855,7 +855,7 @@ Le bouton **Re-run failed jobs** relance un job sans rien changer. À utiliser s
 | `E2E (mock)` ou `E2E (real)` | `npx playwright test` dans `frontend-web/` ; ajoute `--ui` pour suivre un test       |
 | `App - android build`        | `flutter analyze`, `flutter test --coverage`, `dart run tool/check_coverage.dart 80` |
 | `App - android e2e`          | `flutter test integration_test` sur un émulateur                                     |
-| `Contract - check`           | `npm run clients:generate` dans `backend/`, puis commiter le résultat                |
+| `Contract - check`           | `npm run clients` dans `backend/`, puis commiter le résultat                |
 | `Format - JS/TS`             | `npm run format` dans `backend/` et `frontend-web/`                                  |
 | `Format - Dart`              | `dart format lib test integration_test tool` dans `frontend-app/`                    |
 | Alerte CodeQL                | lire l'alerte dans la PR, corriger le code (voir 6.4)                                |
@@ -969,7 +969,7 @@ it("POST /users renvoie 400 si le pseudo est vide", async () => {
 **5. Régénérer le contrat et les clients**, dans `backend/` :
 
 ```powershell
-npm run clients:generate
+npm run clients
 ```
 
 Vérifie avec `git status` : `openapi.json`, le client web et le client Dart ont changé.
@@ -1024,7 +1024,7 @@ git commit -m "Ajoute le champ pseudo (facultatif) aux utilisateurs"
 | `429` en testant l'API                                     | Plus de 100 requêtes en une minute depuis la même adresse                                | Attends une minute                                                                                           |
 | `UnsupportedClassVersionError` pendant `clients:generate`  | Ta version de Java est trop ancienne (8)                                                 | Installe un JDK 17 ou plus, vérifie `java -version`                                                          |
 | `clients:generate` échoue au premier lancement             | Le générateur se télécharge la première fois : problème de réseau                        | Vérifie ta connexion, relance                                                                                |
-| `Contract - check` rouge : « pas à jour »                  | Les fichiers générés n'ont pas été régénérés ou commités                                 | `npm run clients:generate` dans `backend/`, commiter                                                         |
+| `Contract - check` rouge : « pas à jour »                  | Les fichiers générés n'ont pas été régénérés ou commités                                 | `npm run clients` dans `backend/`, commiter                                                         |
 | `Contract - check` rouge : changement cassant              | Le contrat casse l'existant                                                              | Voir 4.6 : revenir en arrière, ou ajouter le label `breaking-change` si c'est voulu                          |
 | `Format - JS/TS` rouge                                     | Des fichiers ne sont pas formatés                                                        | `npm run format` dans `backend/` et `frontend-web/`, commiter                                                |
 | `Format - Dart` rouge alors que tu as formaté              | Ta version de Flutter n'est pas la 3.47.6                                                | Aligne ta version, relance `dart format`                                                                     |

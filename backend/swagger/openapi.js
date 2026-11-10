@@ -38,12 +38,29 @@ const RegisterInput = z
   })
   .openapi('RegisterInput');
 
+const UpdateProfileInput = z
+  .object({
+    name: z.string().min(1).optional(),
+    firstName: z.string().min(1).optional(),
+    phoneNumber: z.string().optional(),
+    birthday: z.iso.date().optional(),
+    pronoun: Pronoun.optional(),
+  })
+  .openapi('UpdateProfileInput');
+
 const LoginInput = z
   .object({
     email: z.email().openapi({ example: 'ada@exemple.fr' }),
     password: z.string().min(1).openapi({ example: 'motdepasse' }),
   })
   .openapi('LoginInput');
+
+const ChangePasswordInput = z
+  .object({
+    old_password: z.string().min(1),
+    new_password: z.string().min(1),
+  })
+  .openapi('ChangePasswordInput');
 
 const UserListItem = z
   .object({
@@ -61,28 +78,11 @@ const UserDetails = UserListItem.extend({
   birthday: z.iso.datetime().optional(),
 }).openapi('UserDetails');
 
-const LoginUser = z
-  .object({
-    id: UserId,
-    email: z.email(),
-    name: z.string(),
-    role: Role,
-  })
-  .openapi('LoginUser');
-
 const LoginResponse = z
   .object({
-    token: z.string(),
-    user: LoginUser,
+    access_token: z.string(),
   })
   .openapi('LoginResponse');
-
-const CurrentUser = z
-  .object({
-    id: UserId,
-    role: Role,
-  })
-  .openapi('CurrentUser');
 
 registry.registerComponent('securitySchemes', 'BearerAuth', {
   type: 'http',
@@ -120,6 +120,79 @@ registry.registerPath({
   summary: 'Liste les utilisateurs',
   responses: {
     200: { description: 'Les utilisateurs', content: json(z.array(UserListItem)) },
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/users/me',
+  operationId: 'getMyProfile',
+  tags: ['Users'],
+  summary: 'Récupère le profil de l’utilisateur authentifié',
+  security: [{ BearerAuth: [] }],
+  responses: {
+    200: { description: 'Le profil utilisateur', content: json(UserDetails) },
+    401: failure('Authentification requise ou token invalide'),
+    404: failure('Utilisateur introuvable'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'patch',
+  path: '/users/me',
+  operationId: 'updateMyProfile',
+  tags: ['Users'],
+  summary: 'Modifie les informations du profil authentifié',
+  security: [{ BearerAuth: [] }],
+  request: { body: { required: true, content: json(UpdateProfileInput) } },
+  responses: {
+    204: { description: 'Profil modifié, sans contenu de réponse' },
+    400: failure('Requête invalide'),
+    401: failure('Authentification requise ou token invalide'),
+    404: failure('Utilisateur introuvable'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/users/me',
+  operationId: 'deleteMyProfile',
+  tags: ['Users'],
+  summary: 'Supprime le compte authentifié',
+  security: [{ BearerAuth: [] }],
+  responses: {
+    204: { description: 'Compte supprimé, sans contenu de réponse' },
+    401: failure('Authentification requise ou token invalide'),
+    404: failure('Utilisateur introuvable'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/users/me/password',
+  operationId: 'changeMyPassword',
+  tags: ['Users'],
+  summary: 'Modifie le mot de passe du compte authentifié',
+  security: [{ BearerAuth: [] }],
+  request: { body: { required: true, content: json(ChangePasswordInput) } },
+  responses: {
+    204: { description: 'Mot de passe modifié, sans contenu de réponse' },
+    400: failure('Requête invalide'),
+    401: failure('Authentification requise ou ancien mot de passe incorrect'),
+    404: failure('Utilisateur introuvable'),
+    409: failure('Le mot de passe a été modifié simultanément'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
     500: failure('Erreur interne du serveur'),
@@ -174,21 +247,6 @@ registry.registerPath({
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
     500: failure('Erreur interne ou configuration d’authentification indisponible'),
-  },
-});
-
-registry.registerPath({
-  method: 'get',
-  path: '/auth/me',
-  operationId: 'getCurrentUser',
-  tags: ['Authentication'],
-  summary: 'Récupère l’identité portée par le token',
-  security: [{ BearerAuth: [] }],
-  responses: {
-    200: { description: 'Utilisateur authentifié', content: json(CurrentUser) },
-    401: failure('Authentification requise ou token invalide'),
-    429: failure('Trop de requêtes'),
-    500: failure('Configuration d’authentification indisponible'),
   },
 });
 
