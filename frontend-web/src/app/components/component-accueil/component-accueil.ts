@@ -1,8 +1,8 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, map, of } from 'rxjs';
 
-import { HealthService } from '../api';
+import { HealthService } from '../../api';
 import { Banner } from '../component-banner/banner';
 import { RouterLink } from '@angular/router';
 
@@ -13,8 +13,6 @@ import { RouterLink } from '@angular/router';
   templateUrl: './component-accueil.html',
 })
 export class ComponentAccueil {
-  protected readonly title = signal('frontend-web');
-
   private readonly health = inject(HealthService);
 
   protected readonly backendStatus = toSignal(

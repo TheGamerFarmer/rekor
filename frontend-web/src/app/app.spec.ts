@@ -36,7 +36,7 @@ describe('App', () => {
     request.flush({ status: 'ok' });
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('.club-name')?.textContent).toContain('Gières Volley-ball Club');
+    expect(compiled.querySelector('.club-name')?.textContent).toContain('Gières Volley-Ball');
   });
 
   it('should show the status returned by the backend', async () => {

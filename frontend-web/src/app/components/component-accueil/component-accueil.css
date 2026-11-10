@@ -148,7 +148,7 @@ h2,
 .tournament-card {
   background:
     linear-gradient(0deg, color-mix(in srgb, var(--color-dark) 85%, transparent), transparent 72%),
-    url('../../../public/img/volley2.jpg') center / cover,
+    url('../../../../public/img/volley2.jpg') center / cover,
     var(--color-dark);
 }
 .rules-card {
@@ -174,7 +174,7 @@ h2,
       color-mix(in srgb, var(--color-dark) 84%, transparent),
       color-mix(in srgb, var(--color-dark) 5%, transparent) 85%
     ),
-    url('../../../public/img/volley3.jpg') center / cover,
+    url('../../../../public/img/volley3.jpg') center / cover,
     var(--color-dark);
 }
 .events-card h3 {
