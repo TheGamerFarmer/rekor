@@ -1,6 +1,7 @@
 const mongoose = require('mongoose');
 
 require('./models/user');
+require('./models/refresh-token');
 require('./models/association');
 require('./models/group');
 require('./models/team');

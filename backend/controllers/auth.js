@@ -1,9 +1,12 @@
 require('../db/db');
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
+const {
+  Types: { ObjectId },
+} = require('mongoose');
 const User = require('../db/models/user');
+const RefreshToken = require('../db/models/refresh-token');
 const { wrapAsync } = require('./services/shared');
-const { ObjectId } = require('mongodb');
 const {
   InvalidTokenError,
   signAccessToken,
@@ -16,7 +19,7 @@ const { hashPassword, verifyPassword } = require('./services/password');
 
 async function createRefreshSession(user) {
   const refresh = signRefreshToken(user);
-  await refreshTokensCollection().insertOne({
+  await RefreshToken.create({
     _id: refresh.sessionId,
     userId: user._id,
     tokenHash: hashRefreshToken(refresh.token),
@@ -103,9 +106,8 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
       }
 
-      const refreshTokens = refreshTokensCollection();
       const oldTokenHash = hashRefreshToken(req.body.refresh_token);
-      const session = await refreshTokens.findOne({
+      const session = await RefreshToken.findOne({
         _id: { $eq: claims.sid },
         userId: { $eq: new ObjectId(claims.sub) },
         tokenHash: { $eq: oldTokenHash },
@@ -115,14 +117,14 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
       }
 
-      const user = await usersCollection().findOne({ _id: session.userId });
+      const user = await User.findById(session.userId);
       if (!user) {
-        await refreshTokens.deleteOne({ _id: session._id });
+        await RefreshToken.deleteOne({ _id: session._id });
         return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
       }
 
       const refresh = signRefreshToken(user, session._id);
-      const updated = await refreshTokens.updateOne(
+      const updated = await RefreshToken.updateOne(
         { _id: session._id, tokenHash: oldTokenHash, expiresAt: { $gt: new Date() } },
         {
           $set: {
@@ -159,9 +161,8 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
       }
 
-      const refreshTokens = refreshTokensCollection();
       const userId = new ObjectId(claims.sub);
-      const session = await refreshTokens.findOne({
+      const session = await RefreshToken.findOne({
         _id: { $eq: claims.sid },
         userId: { $eq: userId },
         tokenHash: { $eq: hashRefreshToken(req.body.refresh_token) },
@@ -172,7 +173,7 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
       }
 
       await revokeSession(claims.sid);
-      await refreshTokens.deleteOne({
+      await RefreshToken.deleteOne({
         _id: { $eq: claims.sid },
         userId: { $eq: userId },
       });

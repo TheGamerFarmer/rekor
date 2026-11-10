@@ -3,6 +3,7 @@ const assert = require('node:assert');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const db = require('../db/db');
 const { ensureSchema } = require('../db/schema');
+const RefreshToken = require('../db/models/refresh-token');
 
 const EXPECTED_COLLECTIONS = [
   'refresh_tokens',
@@ -58,6 +59,14 @@ describe('ensureSchema', () => {
     for (const col of EXPECTED_COLLECTIONS) {
       assert.ok(names.includes(col), `Collection manquante : ${col}`);
     }
+  });
+
+  it('crée les index nécessaires aux refresh tokens', async () => {
+    const indexes = await RefreshToken.collection.indexes();
+
+    assert.ok(indexes.some((index) => index.key.tokenHash === 1 && index.unique));
+    assert.ok(indexes.some((index) => index.key.userId === 1));
+    assert.ok(indexes.some((index) => index.key.expiresAt === 1 && index.expireAfterSeconds === 0));
   });
 
   it('est idempotente (peut tourner deux fois sans erreur)', async () => {

@@ -9,6 +9,7 @@ const app = require('../index');
 const createUsersRouter = require('../controllers/users');
 const createAuthRouter = require('../controllers/auth');
 const User = require('../db/models/user');
+const RefreshToken = require('../db/models/refresh-token');
 const {
   authenticate,
   authorize,
@@ -89,7 +90,7 @@ describe('/auth', () => {
   beforeEach(async () => {
     clearRevokedSessions();
     await db.getDb().collection('users').deleteMany({});
-    await db.getDb().collection('refresh_tokens').deleteMany({});
+    await RefreshToken.deleteMany({});
   });
 
   it('enregistre un compte et stocke uniquement un mot de passe haché', async () => {
@@ -113,9 +114,9 @@ describe('/auth', () => {
     assert.strictEqual(stored.birthday.toISOString(), '1990-05-15T00:00:00.000Z');
   });
 
-  it('verifyAccessToken lève une erreur pour un token non-string', () => {
-    assert.throws(() => verifyAccessToken(null));
-    assert.throws(() => verifyAccessToken(42));
+  it('verifyAccessToken lève une erreur pour un token non-string', async () => {
+    await assert.rejects(() => verifyAccessToken(null));
+    await assert.rejects(() => verifyAccessToken(42));
   });
 
   it('authentifie avec le bon mot de passe sans exposer le hash', async () => {
@@ -258,24 +259,18 @@ describe('/auth', () => {
   it('supprime une session de refresh orpheline dont le compte a disparu', async () => {
     const userId = new ObjectId('6ac8c78e50318b28d457048f');
     const refresh = signRefreshToken({ _id: userId, role: 'Visiteur' });
-    await db
-      .getDb()
-      .collection('refresh_tokens')
-      .insertOne({
-        _id: refresh.sessionId,
-        userId,
-        tokenHash: hashRefreshToken(refresh.token),
-        expiresAt: refresh.expiresAt,
-      });
+    await RefreshToken.create({
+      _id: refresh.sessionId,
+      userId,
+      tokenHash: hashRefreshToken(refresh.token),
+      expiresAt: refresh.expiresAt,
+    });
 
     const response = await request(apiApp)
       .post('/auth/refresh')
       .send({ refresh_token: refresh.token });
     assert.strictEqual(response.status, 401);
-    assert.strictEqual(
-      await db.getDb().collection('refresh_tokens').findOne({ _id: refresh.sessionId }),
-      null,
-    );
+    assert.strictEqual(await RefreshToken.findById(refresh.sessionId), null);
   });
 
   it('refuse le renouvellement si la rotation du refresh token a échoué', async () => {
@@ -284,10 +279,8 @@ describe('/auth', () => {
       email: account.email,
       password: account.password,
     });
-    const collection = db.getDb().collection('refresh_tokens');
-    const prototype = Object.getPrototypeOf(collection);
-    const originalUpdateOne = prototype.updateOne;
-    prototype.updateOne = async () => ({ matchedCount: 0 });
+    const originalUpdateOne = RefreshToken.updateOne;
+    RefreshToken.updateOne = async () => ({ matchedCount: 0 });
 
     try {
       const response = await request(apiApp)
@@ -295,7 +288,7 @@ describe('/auth', () => {
         .send({ refresh_token: login.body.refresh_token });
       assert.strictEqual(response.status, 401);
     } finally {
-      prototype.updateOne = originalUpdateOne;
+      RefreshToken.updateOne = originalUpdateOne;
     }
   });
 

@@ -5,6 +5,7 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const { ObjectId } = require('mongodb');
 const db = require('../db/db');
 const app = require('../index');
+const RefreshToken = require('../db/models/refresh-token');
 const {
   signAccessToken,
   signRefreshToken,
@@ -72,15 +73,12 @@ describe('/users (avec un vrai mongod)', () => {
     adaToken = signAccessToken({ _id: adaId, role: ada.role });
     const refresh = signRefreshToken({ _id: adaId, role: ada.role });
     adaRefreshToken = refresh.token;
-    await db
-      .getDb()
-      .collection('refresh_tokens')
-      .insertOne({
-        _id: refresh.sessionId,
-        userId: adaId,
-        tokenHash: hashRefreshToken(refresh.token),
-        expiresAt: refresh.expiresAt,
-      });
+    await RefreshToken.create({
+      _id: refresh.sessionId,
+      userId: adaId,
+      tokenHash: hashRefreshToken(refresh.token),
+      expiresAt: refresh.expiresAt,
+    });
   });
 
   it('GET /users liste les profils essentiels sans données privées', async () => {
@@ -203,10 +201,7 @@ describe('/users (avec un vrai mongod)', () => {
 
     assert.strictEqual(res.status, 204);
     assert.strictEqual(await db.getDb().collection('users').findOne({ _id: adaId }), null);
-    assert.strictEqual(
-      await db.getDb().collection('refresh_tokens').findOne({ userId: adaId }),
-      null,
-    );
+    assert.strictEqual(await RefreshToken.findOne({ userId: adaId }), null);
     const refreshAfterDelete = await request(app)
       .post('/auth/refresh')
       .send({ refresh_token: adaRefreshToken });
@@ -243,10 +238,7 @@ describe('/users (avec un vrai mongod)', () => {
     const stored = await db.getDb().collection('users').findOne({ _id: adaId });
     assert.strictEqual(await verifyPassword('ancien-mot-de-passe', stored.password), false);
     assert.strictEqual(await verifyPassword('nouveau-mot-de-passe', stored.password), true);
-    assert.strictEqual(
-      await db.getDb().collection('refresh_tokens').findOne({ userId: adaId }),
-      null,
-    );
+    assert.strictEqual(await RefreshToken.findOne({ userId: adaId }), null);
     const refreshAfterPasswordChange = await request(app)
       .post('/auth/refresh')
       .send({ refresh_token: adaRefreshToken });
