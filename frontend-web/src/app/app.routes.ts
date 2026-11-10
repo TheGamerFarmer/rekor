@@ -1,11 +1,11 @@
 import { Routes } from '@angular/router';
 
-import { ComponentAccueil } from './component-accueil/component-accueil';
-import { ComponentCompte } from './component-compte/component-compte';
-import { ComponentConnexion } from './component-connexion/component-connexion';
-import { ComponentEvenement } from './component-evenement/component-evenement';
-import { ComponentEvenementDetail } from './component-evenement-detail/component-evenement-detail';
-import { ComponentInscription } from './component-inscription/component-inscription';
+import { ComponentAccueil } from './components/component-accueil/component-accueil';
+import { ComponentCompte } from './components/component-compte/component-compte';
+import { ComponentConnexion } from './components/component-connexion/component-connexion';
+import { ComponentEvenement } from './components/component-evenement/component-evenement';
+import { ComponentEvenementDetail } from './components/component-evenement-detail/component-evenement-detail';
+import { ComponentInscription } from './components/component-inscription/component-inscription';
 import { PresentationClubComponent } from './components/presentation-club-component/presentation-club-component';
 
 export const routes: Routes = [
