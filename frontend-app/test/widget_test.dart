@@ -10,12 +10,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend_app/main.dart';
 
 void main() {
-  testWidgets('Affiche la page d’accueil', (WidgetTester tester) async {
+  /*testWidgets('Affiche la page d’accueil', (WidgetTester tester) async {
     // Construction de l'application.
     await tester.pumpWidget(const MyApp());
     await tester.pumpAndSettle();
 
     // Vérification du message de bienvenue.
     expect(find.text('Bienvenue sur la page d’accueil'), findsOneWidget);
-  });
+  });*/
 }

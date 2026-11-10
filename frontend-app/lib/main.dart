@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_app/mobile_pages/login.dart';
 
 import 'mobile_pages/home_page.dart';
 
@@ -13,7 +14,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       title: 'Mon application',
-      home: MyHomePage(title: 'Accueil'),
+      //home: MyHomePage(title: 'Accueil'),
+      home: MyLoginPage(),
     );
   }
 }

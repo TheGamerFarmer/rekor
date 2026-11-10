@@ -89,6 +89,9 @@ class MyLoginPageState extends State<MyLoginPage> {
                     prefixIcon: const Icon(Icons.lock),
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
+                      tooltip: passwordVisible
+                          ? 'Masquer le mot de passe'
+                          : 'Afficher le mot de passe',
                       icon: Icon(
                         passwordVisible
                             ? Icons.visibility

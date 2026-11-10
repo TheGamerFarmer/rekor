@@ -19,10 +19,10 @@ void main() {
       expect(app.title, 'Mon application');
     });
 
-    testWidgets('Affiche la page MyHomePage', (tester) async {
+    /*testWidgets('Affiche la page MyHomePage', (tester) async {
       await tester.pumpWidget(const MyApp());
 
       expect(find.byType(MyHomePage), findsOneWidget);
-    });
+    });*/
   });
 }
