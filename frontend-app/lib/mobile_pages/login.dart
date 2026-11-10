@@ -11,11 +11,9 @@ class MyLoginPage extends StatefulWidget {
 class MyLoginPageState extends State<MyLoginPage> {
   final formKey = GlobalKey<FormState>();
 
-  final TextEditingController emailController =
-  TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
-  final TextEditingController passwordController =
-  TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
 
   bool passwordVisible = false;
 
@@ -34,8 +32,7 @@ class MyLoginPageState extends State<MyLoginPage> {
       Navigator.push(
         context,
         MaterialPageRoute(
-          builder: (context) =>
-          const MyHomePage(title: 'Accueil'),
+          builder: (context) => const MyHomePage(title: 'Accueil'),
         ),
       );
     }
@@ -53,20 +50,12 @@ class MyLoginPageState extends State<MyLoginPage> {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-
                 // Titre
-                const Icon(
-                  Icons.account_circle,
-                  size: 90,
-                  color: Colors.blue,
-                ),
+                const Icon(Icons.account_circle, size: 90, color: Colors.blue),
                 const SizedBox(height: 20),
                 const Text(
                   'Connexion',
-                  style: TextStyle(
-                    fontSize: 30,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 35),
 
@@ -101,7 +90,9 @@ class MyLoginPageState extends State<MyLoginPage> {
                     border: const OutlineInputBorder(),
                     suffixIcon: IconButton(
                       icon: Icon(
-                        passwordVisible ? Icons.visibility : Icons.visibility_off,
+                        passwordVisible
+                            ? Icons.visibility
+                            : Icons.visibility_off,
                       ),
                       onPressed: () {
                         setState(() {
@@ -141,9 +132,7 @@ class MyLoginPageState extends State<MyLoginPage> {
                   onPressed: () {
                     // Envoyer un mail pour réinitialiser le mot de passe
                   },
-                  child: const Text(
-                    'Mot de passe oublié',
-                  ),
+                  child: const Text('Mot de passe oublié'),
                 ),
               ],
             ),

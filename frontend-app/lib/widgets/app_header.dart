@@ -69,10 +69,7 @@ class AppHeader extends StatelessWidget {
                 // Appelle backend pour se déconnecter, puis
                 Navigator.push(
                   context,
-                  MaterialPageRoute(
-                    builder: (context) =>
-                    const MyLoginPage(),
-                  ),
+                  MaterialPageRoute(builder: (context) => const MyLoginPage()),
                 );
               }
             },
