@@ -1,16 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ComponentEvenement } from './component-evenement';
-import { evenements, type Evenement } from './evenements.data';
+import { ComponentActualite } from './component-actualite';
+import { actualites, type Actualite } from './actualites.data';
 
-describe('ComponentEvenement', () => {
-  let fixture: ComponentFixture<ComponentEvenement>;
+describe('ComponentActualite', () => {
+  let fixture: ComponentFixture<ComponentActualite>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ComponentEvenement],
+      imports: [ComponentActualite],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(ComponentEvenement);
+    fixture = TestBed.createComponent(ComponentActualite);
     fixture.detectChanges();
   });
 
@@ -18,19 +18,15 @@ describe('ComponentEvenement', () => {
     const cards = fixture.nativeElement.querySelectorAll('.news-card');
     const links = fixture.nativeElement.querySelectorAll('.news-link a');
 
-    expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain(
-      'Actualités et événements',
-    );
-    expect(cards.length).toBe(3);
-    expect(fixture.nativeElement.textContent).toContain('Goûter organisé');
-    expect(fixture.nativeElement.textContent).toContain('Les inscriptions');
-    expect(fixture.nativeElement.textContent).toContain('Le club part');
+    expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain('Actualités');
+    expect(cards.length).toBe(2);
+    expect(fixture.nativeElement.textContent).toContain('Nouvelle règle de jeu');
+    expect(fixture.nativeElement.textContent).toContain('Collecte solidaire');
     expect(Array.from(links, (link: Element) => link.getAttribute('href'))).toEqual([
-      '/evenements/gouter-du-club',
-      '/evenements/inscriptions-ouvertes',
-      '/evenements/vacances-dete',
+      '/actualites/nouvelle-regle-de-jeu',
+      '/actualites/collecte-solidaire-du-club',
     ]);
-    expect(cards[0].getAttribute('style')).toContain('/img/gouter.jpg');
+    expect(cards[0].getAttribute('style')).toContain('/images/volley7.jpg');
     expect(fixture.nativeElement.querySelector('.pagination')?.textContent).toContain('1');
     expect(
       (fixture.nativeElement.querySelector('.pagination-previous button') as HTMLButtonElement)
@@ -39,19 +35,19 @@ describe('ComponentEvenement', () => {
     expect(
       (fixture.nativeElement.querySelector('.pagination-next button') as HTMLButtonElement)
         .disabled,
-    ).toBe(true);
+    ).toBe(false);
   });
 
-  it('shows at most five events and navigates between pages', () => {
-    const additionalEvents: Evenement[] = Array.from({ length: 9 }, (_, index) => ({
-      ...evenements[0],
+  it('shows at most two actualités and navigates between pages', () => {
+    const additionalActualites: Actualite[] = Array.from({ length: 9 }, (_, index) => ({
+      ...actualites[0],
       slug: `actualite-${index + 1}`,
       title: `Actualité ${index + 1}`,
     }));
-    fixture.componentRef.setInput('events', [...evenements, ...additionalEvents]);
+    fixture.componentRef.setInput('actualites', [...actualites, ...additionalActualites]);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelectorAll('.news-card').length).toBe(5);
+    expect(fixture.nativeElement.querySelectorAll('.news-card').length).toBe(2);
 
     const pageTwo = fixture.nativeElement.querySelector(
       '.pagination-page:nth-child(2) button',
@@ -59,9 +55,9 @@ describe('ComponentEvenement', () => {
     pageTwo.click();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelectorAll('.news-card').length).toBe(5);
+    expect(fixture.nativeElement.querySelectorAll('.news-card').length).toBe(2);
     expect(fixture.nativeElement.querySelector('.news-card h2')?.textContent).toContain(
-      'Actualité 3',
+      'Les inscriptions',
     );
     expect(
       fixture.nativeElement
@@ -91,12 +87,17 @@ describe('ComponentEvenement', () => {
         ?.textContent.trim(),
     ).toBe('2');
 
-    const lastPage = fixture.nativeElement.querySelector(
-      '.pagination-pages app-button:last-child button',
+    let nextPageButton = fixture.nativeElement.querySelector(
+      '.pagination-next button',
     ) as HTMLButtonElement;
-    lastPage.click();
-    fixture.detectChanges();
+    while (!nextPageButton.disabled) {
+      nextPageButton.click();
+      fixture.detectChanges();
+      nextPageButton = fixture.nativeElement.querySelector(
+        '.pagination-next button',
+      ) as HTMLButtonElement;
+    }
 
-    expect(fixture.nativeElement.querySelectorAll('.news-card').length).toBe(2);
+    expect(fixture.nativeElement.querySelectorAll('.news-card').length).toBe(1);
   });
 });

@@ -2,7 +2,7 @@
   display: block;
 }
 
-.events-page {
+.actualites-page {
   max-width: 1120px;
   margin: 0 auto;
   padding: 42px 28px 56px;
@@ -116,7 +116,7 @@
 }
 
 @media (max-width: 720px) {
-  .events-page {
+  .actualites-page {
     padding: 34px 20px 36px;
   }
 
@@ -177,7 +177,7 @@
 }
 
 @media (max-width: 390px) {
-  .events-page {
+  .actualites-page {
     padding-right: 16px;
     padding-left: 16px;
   }

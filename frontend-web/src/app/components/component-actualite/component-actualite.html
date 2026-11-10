@@ -1,26 +1,25 @@
 <app-component-banner
-  image="/img/volley4.jpg"
-  title="Actualités et événements"
+  image="/images/volley2.jpg"
+  title="Actualités"
   subtitle="Les nouvelles et les rendez-vous qui font vivre le Gières Volley-Ball."
 />
 
-<main class="events-page">
+<main class="actualites-page">
   <section class="news-list" aria-label="Actualités du club">
-    @for (event of visibleEvents(); track event.slug) {
+    @for (actualite of visibleActualites(); track actualite.slug) {
       <article
         class="news-card"
-        [class.news-card-registration]="event.slug === 'inscriptions-ouvertes'"
-        [style.background-image]="'url(' + event.image + ')'"
+        [class.news-card-registration]="actualite.slug === 'inscriptions-ouvertes'"
+        [style.background-image]="'url(' + actualite.image + ')'"
       >
         <div class="news-content">
-          <time [attr.datetime]="event.date">{{ event.dateLabel }}</time>
-          <h2>{{ event.title }}</h2>
-          <p>{{ event.summary }}</p>
+          <h2>{{ actualite.title }}</h2>
+          <p>{{ actualite.summary }}</p>
         </div>
         <app-button
           class="news-link"
           variant="outline"
-          [href]="'/evenements/' + event.slug"
+          [href]="'/actualites/' + actualite.slug"
           text="Lire l’actualité"
           [iconSrc]="'/icons/arrow.png'"
           [iconVariant]="'light'"

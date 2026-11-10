@@ -11,6 +11,7 @@ import {
 import { RegisterInput } from '../../api/model/registerInput';
 import { Button } from '../component-button/button';
 
+/** Ensures that the new password confirmation matches the new password. */
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   const password = control.get('newPassword')?.value;
   const confirmation = control.get('confirmPassword')?.value;
@@ -53,6 +54,7 @@ export class ComponentCompte {
     { validators: passwordsMatch },
   );
 
+  /** Marks the account form as submitted and reveals invalid fields. */
   protected save(): void {
     this.submitted.set(true);
 
@@ -61,6 +63,7 @@ export class ComponentCompte {
     }
   }
 
+  /** Marks the password form as submitted and reveals invalid fields. */
   protected changePassword(): void {
     this.passwordSubmitted.set(true);
 
@@ -69,6 +72,7 @@ export class ComponentCompte {
     }
   }
 
+  /** Deletes the account only after the user confirms the action. */
   protected deleteAccount(): void {
     if (!this.deleteConfirmed()) {
       return;
@@ -77,6 +81,7 @@ export class ComponentCompte {
     this.accountDeleted.set(true);
   }
 
+  /** Returns the user to the home page. */
   protected logout(): void {
     void this.router.navigate(['/accueil']);
   }

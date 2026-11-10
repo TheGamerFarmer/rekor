@@ -1,21 +1,21 @@
 import { Component, computed, input, signal } from '@angular/core';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
-import { evenements, type Evenement } from './evenements.data';
+import { actualites, type Actualite } from './actualites.data';
 
-const PAGE_SIZE = 5;
+const PAGE_SIZE = 2;
 
 @Component({
   imports: [Banner, Button],
-  selector: 'app-component-evenement',
-  templateUrl: './component-evenement.html',
-  styleUrl: './component-evenement.css',
+  selector: 'app-component-actualite',
+  templateUrl: './component-actualite.html',
+  styleUrl: './component-actualite.css',
 })
-export class ComponentEvenement {
-  protected readonly events = input<readonly Evenement[]>(evenements);
+export class ComponentActualite {
+  protected readonly actualites = input<readonly Actualite[]>(actualites);
   protected readonly currentPage = signal(1);
   protected readonly pageCount = computed(() =>
-    Math.max(1, Math.ceil(this.events().length / PAGE_SIZE)),
+    Math.max(1, Math.ceil(this.actualites().length / PAGE_SIZE)),
   );
   protected readonly activePage = computed(() => Math.min(this.currentPage(), this.pageCount()));
   protected readonly visiblePages = computed(() => {
@@ -25,11 +25,12 @@ export class ComponentEvenement {
 
     return Array.from({ length: end - start + 1 }, (_, index) => start + index);
   });
-  protected readonly visibleEvents = computed(() => {
+  protected readonly visibleActualites = computed(() => {
     const start = (this.activePage() - 1) * PAGE_SIZE;
-    return this.events().slice(start, start + PAGE_SIZE);
+    return this.actualites().slice(start, start + PAGE_SIZE);
   });
 
+  /** Moves to a valid page and keeps pagination inside its available range. */
   protected goToPage(page: number): void {
     this.currentPage.set(Math.max(1, Math.min(page, this.pageCount())));
   }

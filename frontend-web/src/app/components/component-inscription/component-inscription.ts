@@ -13,6 +13,7 @@ import { RegisterInput } from '../../api/model/registerInput';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
 
+/** Ensures that the password confirmation matches the original password. */
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password')?.value;
   const confirmation = control.get('confirmPassword')?.value;
@@ -20,6 +21,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   return password === confirmation ? null : { passwordsMismatch: true };
 }
 
+/** Rejects phone numbers containing more than ten digits. */
 function maxPhoneDigits(control: AbstractControl): ValidationErrors | null {
   const digitCount = String(control.value).replace(/\D/g, '').length;
   return digitCount > 10 ? { maxPhoneDigits: { max: 10, actual: digitCount } } : null;
@@ -69,6 +71,7 @@ export class ComponentInscription {
     { validators: passwordsMatch },
   );
 
+  /** Validates the form and submits the registration to the backend. */
   protected submit(): void {
     this.submitted.set(true);
     this.registrationError.set(null);

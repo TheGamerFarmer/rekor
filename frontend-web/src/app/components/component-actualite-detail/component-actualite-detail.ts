@@ -3,20 +3,20 @@ import { ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
-import { evenements } from '../component-evenement/evenements.data';
+import { actualites } from '../component-actualite/actualites.data';
 
 @Component({
   imports: [Banner, Button],
-  selector: 'app-component-evenement-detail',
-  templateUrl: './component-evenement-detail.html',
-  styleUrl: './component-evenement-detail.css',
+  selector: 'app-component-actualite-detail',
+  templateUrl: './component-actualite-detail.html',
+  styleUrl: './component-actualite-detail.css',
 })
-export class ComponentEvenementDetail {
+export class ComponentActualiteDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly params = toSignal(this.route.paramMap);
 
-  protected readonly event = computed(() => {
+  protected readonly actualite = computed(() => {
     const slug = this.params()?.get('slug');
-    return evenements.find((event) => event.slug === slug);
+    return actualites.find((actualite) => actualite.slug === slug);
   });
 }
