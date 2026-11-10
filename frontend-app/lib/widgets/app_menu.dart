@@ -105,4 +105,20 @@ void naviguerVersPage(BuildContext context, String page) {
       ),
     );
   }
+  if (page == 'Covoiturage') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CovoituragePage(),
+      ),
+    );
+  }
+  if (page == 'Évènements') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const Evenementpage(),
+      ),
+    );
+  }
 }
