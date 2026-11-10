@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/home_page.dart';
+import 'package:frontend_app/mobile_pages/login.dart';
 
 class AppHeader extends StatelessWidget {
   const AppHeader({super.key});
@@ -65,6 +66,14 @@ class AppHeader extends StatelessWidget {
                 // Lien vers profil détaillé.
               } else if (value == 'deconnexion') {
                 // Déconnexion.
+                // Appelle backend pour se déconnecter, puis
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                    const MyLoginPage(),
+                  ),
+                );
               }
             },
             itemBuilder: (context) => [
