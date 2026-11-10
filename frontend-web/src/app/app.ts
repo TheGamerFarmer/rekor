@@ -1,13 +1,13 @@
 import { Component, inject } from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { RouterLink, RouterOutlet } from '@angular/router';
+import { RouterOutlet } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
 
 import { HealthService } from './api';
 import { Button } from './components/component-button/button';
 
 @Component({
-  imports: [Button, RouterLink, RouterOutlet],
+  imports: [Button, RouterOutlet],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
