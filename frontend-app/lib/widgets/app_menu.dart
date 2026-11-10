@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_app/mobile_pages/arbitrage.dart';
 
 import '../mobile_pages/CovoituragePage.dart';
 import '../mobile_pages/evenementPage.dart';
@@ -114,6 +115,14 @@ void naviguerVersPage(BuildContext context, String page) {
     );
   }
   if (page == 'Évènements') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const Evenementpage(),
+      ),
+    );
+  }
+  if (page == 'Arbitrage') {
     Navigator.push(
       context,
       MaterialPageRoute(
