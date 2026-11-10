@@ -6,6 +6,7 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const db = require('../db/db');
 const app = require('../index');
 const createAuthRouter = require('../controllers/auth');
+const User = require('../db/models/user');
 const {
   authenticate,
   authorize,
@@ -62,6 +63,21 @@ describe('/auth', () => {
     const stored = await db.getDb().collection('users').findOne({ email: account.email });
     assert.notStrictEqual(stored.password, account.password);
     assert.strictEqual(stored.password.split(':')[0].length, 32);
+  });
+
+  it('enregistre un compte avec un anniversaire', async () => {
+    const res = await request(app)
+      .post('/auth/register')
+      .send({ ...account, birthday: '1990-05-15' });
+
+    assert.strictEqual(res.status, 201);
+    const stored = await db.getDb().collection('users').findOne({ email: account.email });
+    assert.strictEqual(stored.birthday.toISOString(), '1990-05-15T00:00:00.000Z');
+  });
+
+  it('verifyAccessToken lève une erreur pour un token non-string', () => {
+    assert.throws(() => verifyAccessToken(null));
+    assert.throws(() => verifyAccessToken(42));
   });
 
   it('authentifie avec le bon mot de passe sans exposer le hash', async () => {
@@ -210,10 +226,8 @@ describe('/auth', () => {
     const registrationApp = express();
     registrationApp.use(express.json());
     registrationApp.use('/auth', createAuthRouter({ limit: 100 }));
-    const collection = db.getDb().collection('users');
-    const collectionPrototype = Object.getPrototypeOf(collection);
-    const originalInsertOne = collectionPrototype.insertOne;
-    collectionPrototype.insertOne = async () => {
+    const originalSave = User.prototype.$save;
+    User.prototype.$save = async function () {
       throw Object.assign(new Error('Duplicate email'), { code: 11000 });
     };
 
@@ -223,7 +237,7 @@ describe('/auth', () => {
         .send({ ...account, email: 'concurrent@exemple.fr' });
       assert.strictEqual(res.status, 409);
     } finally {
-      collectionPrototype.insertOne = originalInsertOne;
+      User.prototype.$save = originalSave;
     }
   });
 
@@ -231,10 +245,8 @@ describe('/auth', () => {
     const registrationApp = express();
     registrationApp.use(express.json());
     registrationApp.use('/auth', createAuthRouter({ limit: 100 }));
-    const collection = db.getDb().collection('users');
-    const collectionPrototype = Object.getPrototypeOf(collection);
-    const originalInsertOne = collectionPrototype.insertOne;
-    collectionPrototype.insertOne = async () => {
+    const originalSave = User.prototype.$save;
+    User.prototype.$save = async function () {
       throw Object.assign(new Error('Database write failed'), { code: 12345 });
     };
 
@@ -245,7 +257,7 @@ describe('/auth', () => {
       assert.strictEqual(res.status, 500);
       assert.match(res.text, /Database write failed/);
     } finally {
-      collectionPrototype.insertOne = originalInsertOne;
+      User.prototype.$save = originalSave;
     }
   });
 });

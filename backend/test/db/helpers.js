@@ -5,9 +5,8 @@ const { ensureSchema } = require('../../db/schema');
 async function setup() {
   const mongod = await MongoMemoryServer.create();
   await db.connect({ uri: mongod.getUri(), dbName: 'test' });
-  const database = db.getDb();
-  await ensureSchema(database);
-  return { mongod, database };
+  await ensureSchema();
+  return { mongod };
 }
 
 async function teardown(mongod) {

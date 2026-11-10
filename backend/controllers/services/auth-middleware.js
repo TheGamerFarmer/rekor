@@ -1,7 +1,9 @@
 const { createHmac, timingSafeEqual } = require('node:crypto');
+const { userContext } = require('../../db/plugins/audit');
+const { USER_ROLES } = require('../../db/enums');
 
-const ROLES = ['Entraineur', 'Capitaine', 'Adhérent', 'Visiteur'];
-// Validity time of the access token in second
+const ROLES = USER_ROLES;
+/** Validity duration of access tokens, in seconds. */
 const TOKEN_LIFETIME_SECONDS = 15 * 60;
 
 class InvalidTokenError extends Error {}
@@ -20,6 +22,12 @@ function encode(value) {
   return Buffer.from(JSON.stringify(value)).toString('base64url');
 }
 
+/**
+ * Signs and returns a JWT access token for the given user.
+ *
+ * @param {{ _id: { toString(): string }, role: string }} user
+ * @returns {string} Signed JWT
+ */
 function signAccessToken(user) {
   const now = Math.floor(Date.now() / 1000);
   const header = encode({ alg: 'HS256', typ: 'JWT' });
@@ -35,6 +43,14 @@ function signAccessToken(user) {
   return `${unsignedToken}.${signature}`;
 }
 
+/**
+ * Verifies a JWT access token and returns its decoded payload.
+ * Throws `InvalidTokenError` if the token is not a string, is malformed,
+ * has an invalid signature, uses an unsupported algorithm, or has expired.
+ *
+ * @param {unknown} token
+ * @returns {{ sub: string, role: string, iat: number, exp: number }}
+ */
 function verifyAccessToken(token) {
   if (typeof token !== 'string') throw new InvalidTokenError();
   const parts = token.split('.');
@@ -70,6 +86,11 @@ function verifyAccessToken(token) {
   return payload;
 }
 
+/**
+ * Express middleware. Extracts and validates the Bearer token from the `Authorization` header.
+ * Sets `req.auth` to the token payload and stores the user ID in the async request context.
+ * Responds with 401 if the header is missing, malformed, or the token is invalid.
+ */
 function authenticate(req, res, next) {
   const [scheme, token, extra] = (req.get('authorization') || '').split(' ');
   if (scheme !== 'Bearer' || !token || extra) {
@@ -78,6 +99,8 @@ function authenticate(req, res, next) {
 
   try {
     req.auth = verifyAccessToken(token);
+    const store = userContext.getStore();
+    if (store) store.userId = req.auth.sub;
     return next();
   } catch (error) {
     if (error instanceof InvalidTokenError) {
@@ -87,6 +110,13 @@ function authenticate(req, res, next) {
   }
 }
 
+/**
+ * Returns an Express middleware that checks whether the authenticated user holds one of
+ * the allowed roles. Must be placed after {@link authenticate}.
+ * Responds with 401 if not authenticated, 403 if the role is not in `allowedRoles`.
+ *
+ * @param {...string} allowedRoles
+ */
 function authorize(...allowedRoles) {
   return (req, res, next) => {
     if (!req.auth) {
@@ -99,4 +129,4 @@ function authorize(...allowedRoles) {
   };
 }
 
-module.exports = { signAccessToken, authenticate, authorize };
+module.exports = { signAccessToken, verifyAccessToken, authenticate, authorize };

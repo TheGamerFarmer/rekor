@@ -231,4 +231,59 @@ describe('/users (avec un vrai mongod)', () => {
 
     assert.strictEqual(res.status, 404);
   });
+
+  it('PUT /users/me/password renvoie 409 si le mot de passe a changé entre-temps', async () => {
+    const User = require('../db/models/user');
+    const original = User.updateOne.bind(User);
+    User.updateOne = async () => ({ matchedCount: 0 });
+
+    try {
+      const res = await request(app)
+        .put('/users/me/password')
+        .set('Authorization', `Bearer ${adaToken}`)
+        .send({ old_password: 'ancien-mot-de-passe', new_password: 'nouveau-mot-de-passe' });
+      assert.strictEqual(res.status, 409);
+    } finally {
+      User.updateOne = original;
+    }
+  });
+
+  it('verifyPassword retourne false pour un hash non-string', async () => {
+    assert.strictEqual(await verifyPassword('password', null), false);
+    assert.strictEqual(await verifyPassword('password', 42), false);
+  });
+
+  it('verifyPassword retourne false pour un hash mal forme', async () => {
+    assert.strictEqual(await verifyPassword('password', 'pas-un-hash-valide'), false);
+    assert.strictEqual(await verifyPassword('password', 'aaaa:bbbb'), false);
+  });
+
+  it('GET /users renvoie 500 et loggue pour une erreur interne sans status', async () => {
+    const User = require('../db/models/user');
+    const original = User.find.bind(User);
+    User.find = () => {
+      throw new Error('internal error without status');
+    };
+
+    try {
+      const res = await request(app).get('/users');
+      assert.strictEqual(res.status, 500);
+    } finally {
+      User.find = original;
+    }
+  });
+
+  it("le gestionnaire d'erreur ignore les reponses deja envoyees", () => {
+    const { handleError } = require('../index');
+    const mockRes = {
+      headersSent: true,
+      status() {
+        throw new Error('status ne doit pas etre appele');
+      },
+      json() {
+        throw new Error('json ne doit pas etre appele');
+      },
+    };
+    handleError(new Error('already sent'), {}, mockRes, () => {});
+  });
 });
