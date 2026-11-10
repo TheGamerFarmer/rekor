@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend_app/api/api_client.dart';
 import 'package:frontend_app/main.dart';
-import 'package:frontend_app/mobile_pages/home_page.dart';
+//import 'package:frontend_app/mobile_pages/home_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 

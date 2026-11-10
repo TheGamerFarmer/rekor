@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/login.dart';
 
-import 'mobile_pages/home_page.dart';
+//import 'mobile_pages/home_page.dart';
 
 void main() {
   runApp(const MyApp());

@@ -31,11 +31,8 @@ void main() {
       expect(find.text('Mot de passe'), findsOneWidget);
 
       final vis = find.byIcon(Icons.visibility);
-      final vis_off = find.byIcon(Icons.visibility_off);
-      expect(
-        vis.evaluate().isNotEmpty || vis_off.evaluate().isNotEmpty,
-        isTrue,
-      );
+      final visOff = find.byIcon(Icons.visibility_off);
+      expect(vis.evaluate().isNotEmpty || visOff.evaluate().isNotEmpty, isTrue);
     });
 
     testWidgets('Affiche le bouton Se connecter', (tester) async {

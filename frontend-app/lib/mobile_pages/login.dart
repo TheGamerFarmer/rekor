@@ -24,7 +24,7 @@ class MyLoginPageState extends State<MyLoginPage> {
     super.dispose();
   }
 
-  void Login() {
+  void login() {
     if (formKey.currentState!.validate()) {
       // Appelle backend pour se connecter
 
@@ -121,7 +121,7 @@ class MyLoginPageState extends State<MyLoginPage> {
                   width: double.infinity,
                   height: 50,
                   child: ElevatedButton(
-                    onPressed: Login,
+                    onPressed: login,
                     child: const Text(
                       'Se connecter',
                       style: TextStyle(fontSize: 18),
