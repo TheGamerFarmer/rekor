@@ -19,6 +19,7 @@ const {
 } = require('../controllers/services/auth-middleware');
 const { createHmac } = require('node:crypto');
 const { clearRevokedSessions } = require('./helpers/redis');
+const RateLimit = require('express-rate-limit');
 
 const account = {
   email: 'ada@exemple.fr',
@@ -44,6 +45,11 @@ function signRefreshClaims(payload) {
 
 function buildMiddlewareApp() {
   const middlewareApp = express();
+  let limiter = RateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 20, // max 20 requests per windowMs
+  });
+  middlewareApp.use(limiter);
   middlewareApp.get('/me', authenticate, (req, res) => res.json(req.auth));
   return middlewareApp;
 }
