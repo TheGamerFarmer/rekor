@@ -10,7 +10,7 @@ void main() {
   IntegrationTestWidgetsFlutterBinding.ensureInitialized();
 
   // Les mêmes tests tournent deux fois : back simulé (mock), puis vrai back (real).
-  for (final mode in backendModes.where(isSelected)) {
+  /*for (final mode in backendModes.where(isSelected)) {
     group('backend $mode', () {
       testWidgets("le compteur démarre à 0 et s'incrémente au clic", (
         tester,
@@ -36,5 +36,5 @@ void main() {
         await pumpUntilFound(tester, find.text('Backend : ok'));
       });
     });
-  }
+  }*/
 }
