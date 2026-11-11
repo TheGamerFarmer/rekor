@@ -5,11 +5,11 @@ import { Banner } from '../component-banner/banner';
 
 @Component({
   imports: [Banner, MatIcon, NgxTimelineModule],
-  selector: 'app-presentation-club-component',
-  styleUrl: './presentation-club-component.css',
-  templateUrl: './presentation-club-component.html',
+  selector: 'app-component-club',
+  styleUrl: './component-club.css',
+  templateUrl: './component-club.html',
 })
-export class PresentationClubComponent {
+export class ComponentClub {
   frise: { description: string; timestamp: Date }[] = [
     {
       timestamp: new Date(1969, 4, 1),

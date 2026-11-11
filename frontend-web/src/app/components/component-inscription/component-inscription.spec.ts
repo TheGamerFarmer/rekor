@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ComponentInscription } from './component-inscription';
 import { Router } from '@angular/router';
-import { AuthenticationService } from '../../api/api/authentication.service';
+import { InscriptionService } from '../../services/inscription.service';
 import { of, throwError } from 'rxjs';
 
 describe('ComponentInscription', () => {
@@ -16,7 +16,7 @@ describe('ComponentInscription', () => {
       providers: [
         { provide: Router, useValue: { navigate: vi.fn() } },
         {
-          provide: AuthenticationService,
+          provide: InscriptionService,
           useValue: { register },
         },
       ],

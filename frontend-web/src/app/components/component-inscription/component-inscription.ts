@@ -8,10 +8,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { AuthenticationService } from '../../api/api/authentication.service';
 import { RegisterInput } from '../../api/model/registerInput';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
+import { InscriptionService } from '../../services/inscription.service';
 
 /** Ensures that the password confirmation matches the original password. */
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
@@ -40,7 +40,7 @@ export class ComponentInscription {
   protected readonly registrationError = signal<string | null>(null);
   protected readonly pronouns = Object.values(RegisterInput.PronounEnum);
 
-  private readonly authenticationService = inject(AuthenticationService);
+  private readonly inscriptionService = inject(InscriptionService);
   private readonly router = inject(Router);
 
   protected readonly registrationForm = new FormBuilder().nonNullable.group(
@@ -71,7 +71,7 @@ export class ComponentInscription {
     { validators: passwordsMatch },
   );
 
-  /** Validates the form and submits the registration to the backend. */
+  /** Validates the form and delegates registration to the inscription service. */
   protected submit(): void {
     this.submitted.set(true);
     this.registrationError.set(null);
@@ -86,15 +86,15 @@ export class ComponentInscription {
       return;
     }
 
-    this.authenticationService
+    this.inscriptionService
       .register({
-        name: values.lastName,
         firstName: values.firstName,
+        lastName: values.lastName,
         email: values.email,
         password: values.password,
         pronoun: values.pronoun,
-        phoneNumber: values.phone,
-        ...(values.birthday ? { birthday: values.birthday } : {}),
+        phone: values.phone,
+        birthday: values.birthday,
       })
       .subscribe({
         next: () => void this.router.navigate(['/connexion']),

@@ -42,7 +42,7 @@ describe('ComponentActualite', () => {
     const additionalActualites: Actualite[] = Array.from({ length: 9 }, (_, index) => ({
       ...actualites[0],
       slug: `actualite-${index + 1}`,
-      title: `Actualité ${index + 1}`,
+      titre: `Actualité ${index + 1}`,
     }));
     fixture.componentRef.setInput('actualites', [...actualites, ...additionalActualites]);
     fixture.detectChanges();

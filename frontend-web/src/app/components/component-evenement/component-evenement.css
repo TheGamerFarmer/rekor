@@ -1,0 +1,144 @@
+:host {
+  display: block;
+}
+
+.events-page {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 42px 28px 56px;
+  color: var(--color-dark);
+  font-family: 'DM Sans', Arial, sans-serif;
+}
+
+.page-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 26px;
+}
+
+.event-filters {
+  display: flex;
+  gap: 8px;
+}
+
+.event-type {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.event-list {
+  display: grid;
+  gap: 16px;
+}
+
+.event-card {
+  display: grid;
+  grid-template-columns: 76px 1fr auto;
+  align-items: center;
+  gap: 24px;
+  padding: 22px;
+  border: 1px solid color-mix(in srgb, var(--color-dark) 12%, transparent);
+  border-radius: 12px;
+  background: var(--color-surface);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--color-dark) 8%, transparent);
+}
+
+.event-date {
+  display: grid;
+  place-items: center;
+  padding: 10px 6px;
+  border-radius: 8px;
+  background: var(--color-secondary);
+  color: var(--color-dark);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.event-date strong {
+  font-family: 'Barlow Condensed', Impact, sans-serif;
+  font-size: 34px;
+  line-height: 0.9;
+}
+
+.event-date span {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.event-content h2 {
+  margin: 10px 0 0;
+  font-family: 'Barlow Condensed', Impact, sans-serif;
+  font-size: 28px;
+  text-transform: uppercase;
+}
+
+.event-content p {
+  margin: 6px 0 10px;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.event-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  font-size: 13px;
+}
+
+.event-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.event-meta img {
+  width: 16px;
+  height: 16px;
+  object-fit: contain;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  margin-top: 28px;
+  font-size: 13px;
+}
+
+.empty-state {
+  padding: 30px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-dark) 5%, transparent);
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .events-page {
+    padding: 34px 20px 36px;
+  }
+
+  .page-heading {
+    align-items: stretch;
+    flex-wrap: wrap;
+  }
+
+  .event-filters {
+    flex-wrap: wrap;
+  }
+
+  .event-card {
+    grid-template-columns: 58px 1fr;
+    gap: 14px;
+    padding: 16px;
+  }
+
+  .event-card app-button {
+    grid-column: 2;
+  }
+}
