@@ -15,30 +15,37 @@ class LoginInput {
   LoginInput({
     required this.email,
     required this.password,
+    required this.associationName,
   });
 
   String email;
 
   String password;
 
+  /// Nom de l’association
+  String associationName;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is LoginInput &&
     other.email == email &&
-    other.password == password;
+    other.password == password &&
+    other.associationName == associationName;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (email.hashCode) +
-    (password.hashCode);
+    (password.hashCode) +
+    (associationName.hashCode);
 
   @override
-  String toString() => 'LoginInput[email=$email, password=$password]';
+  String toString() => 'LoginInput[email=$email, password=$password, associationName=$associationName]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'email'] = this.email;
       json[r'password'] = this.password;
+      json[r'associationName'] = this.associationName;
     return json;
   }
 
@@ -57,12 +64,15 @@ class LoginInput {
         assert(json[r'email'] != null, 'Required key "LoginInput[email]" has a null value in JSON.');
         assert(json.containsKey(r'password'), 'Required key "LoginInput[password]" is missing from JSON.');
         assert(json[r'password'] != null, 'Required key "LoginInput[password]" has a null value in JSON.');
+        assert(json.containsKey(r'associationName'), 'Required key "LoginInput[associationName]" is missing from JSON.');
+        assert(json[r'associationName'] != null, 'Required key "LoginInput[associationName]" has a null value in JSON.');
         return true;
       }());
 
       return LoginInput(
         email: mapValueOfType<String>(json, r'email')!,
         password: mapValueOfType<String>(json, r'password')!,
+        associationName: mapValueOfType<String>(json, r'associationName')!,
       );
     }
     return null;
@@ -112,6 +122,7 @@ class LoginInput {
   static const requiredKeys = <String>{
     'email',
     'password',
+    'associationName',
   };
 }
 

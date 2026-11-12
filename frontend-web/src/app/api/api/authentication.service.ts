@@ -44,7 +44,7 @@ export class AuthenticationService extends BaseService {
     }
 
     /**
-     * Vérifie les identifiants et renvoie un access token et un refresh token
+     * Authentifie l’utilisateur dans l’association indiquée et renvoie les tokens
      * @endpoint post /auth/login
      * @param loginInput 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -242,7 +242,7 @@ export class AuthenticationService extends BaseService {
     }
 
     /**
-     * Crée un compte utilisateur (rôle Visiteur attribué par le serveur)
+     * Crée un compte Visiteur et l’inscrit dans l’association indiquée
      * @endpoint post /auth/register
      * @param registerInput 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
