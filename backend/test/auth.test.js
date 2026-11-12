@@ -3,17 +3,25 @@ const assert = require('node:assert');
 const express = require('express');
 const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
+const { ObjectId } = require('mongodb');
 const db = require('../db/db');
 const app = require('../index');
+const createUsersRouter = require('../controllers/users');
 const createAuthRouter = require('../controllers/auth');
 const User = require('../db/models/user');
+const RefreshToken = require('../db/models/refresh-token');
 const {
   authenticate,
   authorize,
   signAccessToken,
+  signRefreshToken,
+  hashRefreshToken,
   verifyAccessToken,
+  verifyRefreshToken,
 } = require('../controllers/services/auth-middleware');
 const { createHmac } = require('node:crypto');
+const { clearRevokedSessions } = require('./helpers/redis');
+const RateLimit = require('express-rate-limit');
 
 const account = {
   email: 'ada@exemple.fr',
@@ -23,18 +31,47 @@ const account = {
   pronoun: 'Elle',
 };
 
+function signClaims(payload, secret = process.env.JWT_SECRET) {
+  const encode = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
+  const unsigned = `${encode({ alg: 'HS256', typ: 'JWT' })}.${encode(payload)}`;
+  const signature = createHmac('sha256', secret).update(unsigned).digest('base64url');
+  return `${unsigned}.${signature}`;
+}
+
+function signRefreshClaims(payload) {
+  const secret = createHmac('sha256', process.env.JWT_SECRET)
+    .update('rekor-refresh-token-v1')
+    .digest();
+  return signClaims(payload, secret);
+}
+
 function buildMiddlewareApp() {
   const middlewareApp = express();
+  let limiter = RateLimit({
+    windowMs: 5 * 60 * 1000, // 5 minutes
+    max: 20, // max 20 requests per windowMs
+  });
+  middlewareApp.use(limiter);
   middlewareApp.get('/me', authenticate, (req, res) => res.json(req.auth));
   return middlewareApp;
 }
 
+function buildApiApp() {
+  const apiApp = express();
+  apiApp.use(express.json());
+  apiApp.use('/users', createUsersRouter({ limit: 100 }));
+  apiApp.use('/auth', createAuthRouter({ limit: 100 }));
+  return apiApp;
+}
+
 describe('/auth', () => {
   let mongod;
+  let apiApp;
   const previousJwtSecret = process.env.JWT_SECRET;
 
   before(async () => {
     process.env.JWT_SECRET = 'test-secret-with-at-least-32-bytes-long';
+    apiApp = buildApiApp();
     mongod = await MongoMemoryServer.create();
     await db.connect({ uri: mongod.getUri(), dbName: 'auth-test' });
     await db.getDb().collection('users').createIndex({ email: 1 }, { unique: true });
@@ -51,11 +88,13 @@ describe('/auth', () => {
   });
 
   beforeEach(async () => {
+    clearRevokedSessions();
     await db.getDb().collection('users').deleteMany({});
+    await RefreshToken.deleteMany({});
   });
 
   it('enregistre un compte et stocke uniquement un mot de passe haché', async () => {
-    const res = await request(app).post('/auth/register').send(account);
+    const res = await request(apiApp).post('/auth/register').send(account);
 
     assert.strictEqual(res.status, 201);
     assert.deepStrictEqual(res.body, {});
@@ -75,23 +114,33 @@ describe('/auth', () => {
     assert.strictEqual(stored.birthday.toISOString(), '1990-05-15T00:00:00.000Z');
   });
 
-  it('verifyAccessToken lève une erreur pour un token non-string', () => {
-    assert.throws(() => verifyAccessToken(null));
-    assert.throws(() => verifyAccessToken(42));
+  it('verifyAccessToken lève une erreur pour un token non-string', async () => {
+    await assert.rejects(() => verifyAccessToken(null));
+    await assert.rejects(() => verifyAccessToken(42));
   });
 
   it('authentifie avec le bon mot de passe sans exposer le hash', async () => {
-    const registration = await request(app).post('/auth/register').send(account);
+    const registration = await request(apiApp).post('/auth/register').send(account);
     assert.strictEqual(registration.status, 201);
     const storedUser = await db.getDb().collection('users').findOne({ email: account.email });
 
-    const res = await request(app).post('/auth/login').send({
+    const res = await request(apiApp).post('/auth/login').send({
       email: account.email,
       password: account.password,
     });
-    assert.strictEqual(res.status, 200);
 
-    const me = await request(app)
+    assert.strictEqual(res.status, 200);
+    assert.match(res.body.access_token, /^[\w-]+\.[\w-]+\.[\w-]+$/);
+    assert.match(res.body.refresh_token, /^[\w-]+\.[\w-]+\.[\w-]+$/);
+    const accessClaims = await verifyAccessToken(res.body.access_token);
+    const refreshClaims = verifyRefreshToken(res.body.refresh_token);
+    assert.strictEqual(accessClaims.sub, storedUser._id.toString());
+    assert.strictEqual(accessClaims.sid, refreshClaims.sid);
+    assert.strictEqual(accessClaims.exp - accessClaims.iat, 15 * 60);
+    assert.strictEqual(refreshClaims.sub, storedUser._id.toString());
+    assert.strictEqual(refreshClaims.exp - refreshClaims.iat, 30 * 24 * 60 * 60);
+
+    const me = await request(apiApp)
       .get('/users/me')
       .set('Authorization', `Bearer ${res.body.access_token}`);
     assert.strictEqual(me.status, 200);
@@ -99,8 +148,187 @@ describe('/auth', () => {
     assert.strictEqual(me.body.role, 'Visiteur');
   });
 
+  it('renouvelle et fait tourner le refresh token', async () => {
+    await request(apiApp).post('/auth/register').send(account);
+    const login = await request(apiApp).post('/auth/login').send({
+      email: account.email,
+      password: account.password,
+    });
+
+    const refreshed = await request(apiApp).post('/auth/refresh').send({
+      refresh_token: login.body.refresh_token,
+    });
+
+    assert.strictEqual(refreshed.status, 200);
+    assert.match(refreshed.body.access_token, /^[\w-]+\.[\w-]+\.[\w-]+$/);
+    assert.match(refreshed.body.refresh_token, /^[\w-]+\.[\w-]+\.[\w-]+$/);
+    assert.notStrictEqual(refreshed.body.refresh_token, login.body.refresh_token);
+    const replay = await request(apiApp)
+      .post('/auth/refresh')
+      .send({ refresh_token: login.body.refresh_token });
+    assert.strictEqual(replay.status, 401);
+  });
+
+  it('refuse les refresh tokens invalides ou dont les claims ne sont pas valides', async () => {
+    const invalidTokens = [
+      signRefreshClaims({
+        sub: '6ac8c78e50318b28d457048f',
+        role: 'Visiteur',
+        sid: 'session',
+        token_use: 'refresh',
+        iat: 1,
+        exp: Math.floor(Date.now() / 1000) + 60,
+      }),
+      signRefreshClaims({
+        sub: '6ac8c78e50318b28d457048f',
+        role: 'Visiteur',
+        jti: 'token',
+        token_use: 'refresh',
+        iat: 1,
+        exp: Math.floor(Date.now() / 1000) + 60,
+      }),
+      signRefreshClaims({
+        sub: '6ac8c78e50318b28d457048f',
+        role: 'Visiteur',
+        sid: 'session',
+        jti: 'token',
+        token_use: 'refresh',
+        exp: Math.floor(Date.now() / 1000) + 60,
+      }),
+    ];
+
+    for (const token of invalidTokens) {
+      assert.throws(() => verifyRefreshToken(token));
+    }
+
+    const malformedRefresh = await request(apiApp)
+      .post('/auth/refresh')
+      .send({ refresh_token: 'invalid' });
+    assert.strictEqual(malformedRefresh.status, 401);
+
+    const malformedLogout = await request(apiApp)
+      .post('/auth/logout')
+      .send({ refresh_token: 'invalid' });
+    assert.strictEqual(malformedLogout.status, 401);
+
+    const invalidSubjectToken = signRefreshToken({
+      _id: { toString: () => 'not-an-object-id' },
+      role: 'Visiteur',
+    }).token;
+    const invalidSubjectRefresh = await request(apiApp)
+      .post('/auth/refresh')
+      .send({ refresh_token: invalidSubjectToken });
+    assert.strictEqual(invalidSubjectRefresh.status, 401);
+
+    const invalidSubjectLogout = await request(apiApp)
+      .post('/auth/logout')
+      .send({ refresh_token: invalidSubjectToken });
+    assert.strictEqual(invalidSubjectLogout.status, 401);
+  });
+
+  it('refuse un refresh token sans session enregistrée en base', async () => {
+    const token = signRefreshToken({
+      _id: { toString: () => '6ac8c78e50318b28d457048f' },
+      role: 'Visiteur',
+    }).token;
+
+    const refresh = await request(apiApp).post('/auth/refresh').send({ refresh_token: token });
+    assert.strictEqual(refresh.status, 401);
+
+    const logout = await request(apiApp).post('/auth/logout').send({ refresh_token: token });
+    assert.strictEqual(logout.status, 401);
+  });
+
+  it('propage les erreurs internes de validation sur refresh et logout', async () => {
+    const previousJwtSecret = process.env.JWT_SECRET;
+    process.env.JWT_SECRET = 'short';
+
+    try {
+      const refresh = await request(apiApp)
+        .post('/auth/refresh')
+        .send({ refresh_token: 'invalid' });
+      assert.strictEqual(refresh.status, 500);
+
+      const logout = await request(apiApp).post('/auth/logout').send({ refresh_token: 'invalid' });
+      assert.strictEqual(logout.status, 500);
+    } finally {
+      process.env.JWT_SECRET = previousJwtSecret;
+    }
+  });
+
+  it('supprime une session de refresh orpheline dont le compte a disparu', async () => {
+    const userId = new ObjectId('6ac8c78e50318b28d457048f');
+    const refresh = signRefreshToken({ _id: userId, role: 'Visiteur' });
+    await RefreshToken.create({
+      _id: refresh.sessionId,
+      userId,
+      tokenHash: hashRefreshToken(refresh.token),
+      expiresAt: refresh.expiresAt,
+    });
+
+    const response = await request(apiApp)
+      .post('/auth/refresh')
+      .send({ refresh_token: refresh.token });
+    assert.strictEqual(response.status, 401);
+    assert.strictEqual(await RefreshToken.findById(refresh.sessionId), null);
+  });
+
+  it('refuse le renouvellement si la rotation du refresh token a échoué', async () => {
+    await request(apiApp).post('/auth/register').send(account);
+    const login = await request(apiApp).post('/auth/login').send({
+      email: account.email,
+      password: account.password,
+    });
+    const originalUpdateOne = RefreshToken.updateOne;
+    RefreshToken.updateOne = async () => ({ matchedCount: 0 });
+
+    try {
+      const response = await request(apiApp)
+        .post('/auth/refresh')
+        .send({ refresh_token: login.body.refresh_token });
+      assert.strictEqual(response.status, 401);
+    } finally {
+      RefreshToken.updateOne = originalUpdateOne;
+    }
+  });
+
+  it('refuse un refresh token utilisé comme access token', async () => {
+    const refresh = signRefreshToken({
+      _id: { toString: () => '6ac8c78e50318b28d457048f' },
+      role: 'Visiteur',
+    });
+    const response = await request(buildMiddlewareApp())
+      .get('/me')
+      .set('Authorization', `Bearer ${refresh.token}`);
+
+    assert.strictEqual(response.status, 401);
+  });
+
+  it('révoque la session lors du logout', async () => {
+    await request(apiApp).post('/auth/register').send(account);
+    const login = await request(apiApp).post('/auth/login').send({
+      email: account.email,
+      password: account.password,
+    });
+
+    const logout = await request(apiApp)
+      .post('/auth/logout')
+      .send({ refresh_token: login.body.refresh_token });
+    assert.strictEqual(logout.status, 204);
+
+    const protectedRequest = await request(apiApp)
+      .get('/users/me')
+      .set('Authorization', 'Bearer ' + login.body.access_token);
+    assert.strictEqual(protectedRequest.status, 401);
+
+    const refreshed = await request(apiApp)
+      .post('/auth/refresh')
+      .send({ refresh_token: login.body.refresh_token });
+    assert.strictEqual(refreshed.status, 401);
+  });
+
   it('protège les routes et refuse les tokens invalides', async () => {
-    const missing = await request(app).get('/users/me');
+    const missing = await request(apiApp).get('/users/me');
     assert.strictEqual(missing.status, 401);
 
     const invalid = await request(app).get('/users/me').set('Authorization', 'Bearer invalid');
@@ -108,9 +336,9 @@ describe('/auth', () => {
   });
 
   it('refuse un mot de passe incorrect avec une réponse générique', async () => {
-    await request(app).post('/auth/register').send(account);
+    await request(apiApp).post('/auth/register').send(account);
 
-    const res = await request(app).post('/auth/login').send({
+    const res = await request(apiApp).post('/auth/login').send({
       email: account.email,
       password: 'incorrect',
     });
@@ -120,9 +348,9 @@ describe('/auth', () => {
   });
 
   it('refuse de créer un compte avec un e-mail déjà utilisé', async () => {
-    await request(app).post('/auth/register').send(account);
+    await request(apiApp).post('/auth/register').send(account);
 
-    const res = await request(app).post('/auth/register').send(account);
+    const res = await request(apiApp).post('/auth/register').send(account);
 
     assert.strictEqual(res.status, 409);
   });
@@ -166,6 +394,7 @@ describe('/auth', () => {
     };
     const tokens = [
       'not-a-jwt',
+      'header..signature',
       `${validHeader}.${Buffer.from('not-json').toString('base64url')}.signature`,
       sign({ alg: 'none', typ: 'JWT' }, validPayload),
       `${sign({ alg: 'HS256', typ: 'JWT' }, validPayload).slice(0, -1)}x`,
@@ -173,14 +402,21 @@ describe('/auth', () => {
       sign({ alg: 'HS256', typ: 'JWT' }, { ...validPayload, exp: 'later' }),
       sign({ alg: 'HS256', typ: 'JWT' }, { ...validPayload, exp: 1 }),
       sign({ alg: 'HS256', typ: 'JWT' }, { role: 'Visiteur', exp: validPayload.exp }),
+      sign({ alg: 'HS256', typ: 'JWT' }, { ...validPayload, token_use: 'refresh' }),
     ];
     const middlewareApp = buildMiddlewareApp();
 
     for (const token of tokens) {
-      assert.throws(() => verifyAccessToken(token));
+      await assert.rejects(() => verifyAccessToken(token));
       const res = await request(middlewareApp).get('/me').set('Authorization', `Bearer ${token}`);
       assert.strictEqual(res.status, 401);
     }
+
+    const missingSessionId = sign(
+      { alg: 'HS256', typ: 'JWT' },
+      { ...validPayload, sid: undefined },
+    );
+    await assert.rejects(() => verifyAccessToken(missingSessionId));
   });
 
   it('transmet les erreurs de configuration JWT du middleware au gestionnaire Express', async () => {

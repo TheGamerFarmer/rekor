@@ -55,6 +55,12 @@ const LoginInput = z
   })
   .openapi('LoginInput');
 
+const RefreshTokenInput = z
+  .object({
+    refresh_token: z.string().min(1),
+  })
+  .openapi('RefreshTokenInput');
+
 const ChangePasswordInput = z
   .object({
     old_password: z.string().min(1),
@@ -81,6 +87,7 @@ const UserDetails = UserListItem.extend({
 const LoginResponse = z
   .object({
     access_token: z.string(),
+    refresh_token: z.string(),
   })
   .openapi('LoginResponse');
 
@@ -238,12 +245,46 @@ registry.registerPath({
   path: '/auth/login',
   operationId: 'login',
   tags: ['Authentication'],
-  summary: 'Vérifie les identifiants et renvoie un token JWT',
+  summary: 'Vérifie les identifiants et renvoie un access token et un refresh token',
   request: { body: { required: true, content: json(LoginInput) } },
   responses: {
     200: { description: 'Utilisateur authentifié', content: json(LoginResponse) },
     400: failure('Requête invalide'),
     401: failure('E-mail ou mot de passe incorrect'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne ou configuration d’authentification indisponible'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/auth/refresh',
+  operationId: 'refreshTokens',
+  tags: ['Authentication'],
+  summary: 'Renouvelle les tokens à partir d’un refresh token valide',
+  request: { body: { required: true, content: json(RefreshTokenInput) } },
+  responses: {
+    200: { description: 'Nouvelle paire de tokens', content: json(LoginResponse) },
+    400: failure('Requête invalide'),
+    401: failure('Refresh token invalide ou expiré'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne ou configuration d’authentification indisponible'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/auth/logout',
+  operationId: 'logout',
+  tags: ['Authentication'],
+  summary: 'Révoque la session liée au refresh token',
+  request: { body: { required: true, content: json(RefreshTokenInput) } },
+  responses: {
+    204: { description: 'Session révoquée, sans contenu de réponse' },
+    400: failure('Requête invalide'),
+    401: failure('Refresh token invalide ou expiré'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
     500: failure('Erreur interne ou configuration d’authentification indisponible'),
