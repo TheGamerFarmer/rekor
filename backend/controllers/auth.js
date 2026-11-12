@@ -14,6 +14,7 @@ const {
   revokeSession,
 } = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
+const { userContext } = require('../db/plugins/audit');
 const User = require('../db/models/user');
 const Association = require('../db/models/association');
 const Registeration = require('../db/models/registration');
@@ -78,10 +79,12 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
 
       const user = await User.findOne({ email: { $eq: email } });
 
+      const store = userContext.getStore();
+      if (store) store.userId = user._id.toString();
+
       try {
         await Registeration.create({
           association: association._id,
-          created_by: user._id,
         });
       } catch (error) {
         if (error.code === 11000) {
