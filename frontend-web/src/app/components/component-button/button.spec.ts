@@ -27,13 +27,13 @@ describe('Button', () => {
     expect(button.disabled).toBe(true);
     expect(button.classList).toContain('button-danger');
 
-    fixture.componentRef.setInput('href', '/evenements');
+    fixture.componentRef.setInput('href', '/actualites');
     fixture.componentRef.setInput('disabled', false);
     fixture.componentRef.setInput('variant', 'outline');
     fixture.detectChanges();
     const link = fixture.nativeElement.querySelector('a') as HTMLAnchorElement;
 
-    expect(link.getAttribute('href')).toBe('/evenements');
+    expect(link.getAttribute('href')).toBe('/actualites');
     expect(link.classList).toContain('button-outline');
   });
 });

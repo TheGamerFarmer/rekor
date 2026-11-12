@@ -1,65 +1,72 @@
 <app-component-banner
-  image="/img/volley4.jpg"
-  title="Actualités et événements"
-  subtitle="Les nouvelles et les rendez-vous qui font vivre le Gières Volley-Ball."
+  image="/images/volley2.jpg"
+  title="Événements"
+  subtitle="Retrouvez les prochains rendez-vous du Gières Volley-Ball."
 />
 
 <main class="events-page">
-  <section class="news-list" aria-label="Actualités du club">
-    @for (event of visibleEvents(); track event.slug) {
-      <article
-        class="news-card"
-        [class.news-card-registration]="event.slug === 'inscriptions-ouvertes'"
-        [style.background-image]="'url(' + event.image + ')'"
-      >
-        <div class="news-content">
-          <time [attr.datetime]="event.date">{{ event.dateLabel }}</time>
-          <h2>{{ event.title }}</h2>
-          <p>{{ event.summary }}</p>
+  <div class="page-heading">
+    <div class="event-filters" aria-label="Filtrer les événements">
+      <app-button
+        [variant]="eventFilter() === 'upcoming' ? 'primary' : 'secondary'"
+        text="Événements à venir"
+        [ariaCurrent]="eventFilter() === 'upcoming' ? 'page' : null"
+        (click)="setFilter('upcoming')"
+      ></app-button>
+      <app-button
+        [variant]="eventFilter() === 'past' ? 'primary' : 'secondary'"
+        text="Événements passés"
+        [ariaCurrent]="eventFilter() === 'past' ? 'page' : null"
+        (click)="setFilter('past')"
+      ></app-button>
+    </div>
+    <app-button variant="primary" href="/admin/evenements" text="Gérer les événements"></app-button>
+  </div>
+
+  <section class="event-list" aria-label="Liste des événements">
+    @for (evenement of visibleEvenements(); track evenement.slug) {
+      <article class="event-card">
+        <div class="event-date" aria-label="Date de l'événement">
+          <strong>{{ evenement.date | date: 'dd' }}</strong>
+          <span>{{ evenement.date | date: 'MMM' }}</span>
+        </div>
+        <div class="event-content">
+          <span class="event-type">{{ evenement.type }}</span>
+          <h2>{{ evenement.name }}</h2>
+          <p>{{ evenement.description }}</p>
+          <div class="event-meta">
+            <span><img src="/icons/calendrier.png" alt="" />{{ evenement.time }}</span>
+            <span><img src="/icons/map.png" alt="" />{{ getNomGymnase(evenement.place) }}</span>
+          </div>
         </div>
         <app-button
-          class="news-link"
           variant="outline"
-          [href]="'/evenements/' + event.slug"
-          text="Lire l’actualité"
-          [iconSrc]="'/icons/arrow.png'"
-          [iconVariant]="'light'"
+          [href]="'/evenements/' + evenement.slug"
+          text="Voir le détail"
         ></app-button>
       </article>
+    } @empty {
+      <p class="empty-state">Aucun événement n'est prévu pour le moment.</p>
     }
   </section>
 
-  <nav class="pagination" aria-label="Navigation des pages d’actualités">
-    <app-button
-      class="pagination-previous"
-      variant="secondary"
-      size="small"
-      text="Précédent"
-      ariaLabel="Page précédente"
-      [disabled]="activePage() === 1"
-      (click)="goToPage(activePage() - 1)"
-    ></app-button>
-    <div class="pagination-pages">
-      @for (page of visiblePages(); track page) {
-        <app-button
-          class="pagination-page"
-          [variant]="page === activePage() ? 'primary' : 'secondary'"
-          size="small"
-          [text]="page.toString()"
-          [ariaLabel]="'Page ' + page"
-          [ariaCurrent]="page === activePage() ? 'page' : null"
-          (click)="goToPage(page)"
-        ></app-button>
-      }
-    </div>
-    <app-button
-      class="pagination-next"
-      variant="secondary"
-      size="small"
-      text="Suivant"
-      ariaLabel="Page suivante"
-      [disabled]="activePage() === pageCount()"
-      (click)="goToPage(activePage() + 1)"
-    ></app-button>
-  </nav>
+  @if (pageCount() > 1) {
+    <nav class="pagination" aria-label="Navigation des pages d'événements">
+      <app-button
+        variant="secondary"
+        size="small"
+        text="Précédent"
+        [disabled]="currentPage() === 1"
+        (click)="goToPage(currentPage() - 1)"
+      ></app-button>
+      <span>Page {{ currentPage() }} sur {{ pageCount() }}</span>
+      <app-button
+        variant="secondary"
+        size="small"
+        text="Suivant"
+        [disabled]="currentPage() === pageCount()"
+        (click)="goToPage(currentPage() + 1)"
+      ></app-button>
+    </nav>
+  }
 </main>

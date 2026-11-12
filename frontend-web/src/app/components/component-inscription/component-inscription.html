@@ -1,5 +1,5 @@
 <app-component-banner
-  image="/img/team.jpg"
+  image="/images/team.jpg"
   title="Rejoignez le club"
   subtitle="Inscrivez-vous à l’association de volley-ball de Gières."
 />
@@ -60,6 +60,39 @@
           ) {
             <p class="error">Saisissez votre nom.</p>
           }
+        </div>
+      </div>
+
+      <div class="name-fields">
+        <div class="field">
+          <label for="pronoun"
+            >Pronom <span class="required-marker" aria-hidden="true">*</span></label
+          >
+          <select
+            id="pronoun"
+            formControlName="pronoun"
+            required
+            [attr.aria-invalid]="
+              (submitted() || registrationForm.controls.pronoun.dirty) &&
+              registrationForm.controls.pronoun.invalid
+            "
+          >
+            <option value="">Sélectionnez votre pronom</option>
+            @for (pronoun of pronouns; track pronoun) {
+              <option [value]="pronoun">{{ pronoun }}</option>
+            }
+          </select>
+          @if (
+            (submitted() || registrationForm.controls.pronoun.dirty) &&
+            registrationForm.controls.pronoun.invalid
+          ) {
+            <p class="error">Sélectionnez votre pronom.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="birthday">Date de naissance</label>
+          <input id="birthday" type="date" formControlName="birthday" autocomplete="bday" />
         </div>
       </div>
 
@@ -237,6 +270,10 @@
         </label>
       </fieldset>
 
+      @if (registrationError()) {
+        <p class="form-message error" role="alert">{{ registrationError() }}</p>
+      }
+
       @if (submitted() && registrationForm.invalid) {
         <p class="form-message error" role="alert">
           Veuillez compléter les champs requis et cocher la politique de confidentialité et le
@@ -245,13 +282,8 @@
       }
 
       <div class="actions">
-        <app-button
-          variant="secondary"
-          href="/"
-          [fullWidth]="true"
-          text="Retour à l’accueil"
-        ></app-button>
-        <app-button type="submit" [fullWidth]="true" text="Valider"></app-button>
+        <app-button variant="secondary" href="/" text="Retour"></app-button>
+        <app-button type="submit" text="Valider"></app-button>
       </div>
     </form>
   </section>

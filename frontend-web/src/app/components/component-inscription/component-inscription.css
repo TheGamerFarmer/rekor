@@ -27,26 +27,6 @@
   text-align: center;
 }
 
-.brand {
-  align-items: center;
-  background: #2355c4;
-  border-radius: 0.75rem;
-  color: #fff;
-  display: flex;
-  font-size: 1.5rem;
-  font-weight: 800;
-  height: 3rem;
-  justify-content: center;
-  margin: 0 auto 1.25rem;
-  width: 3rem;
-}
-
-h1 {
-  color: #18243a;
-  font-size: 1.75rem;
-  margin: 0 0 0.5rem;
-}
-
 .subtitle {
   color: #62708a;
   line-height: 1.5;
@@ -82,9 +62,11 @@ label {
 input[type='email'],
 input[type='password'],
 input[type='tel'],
-input[type='text'] {
-  background: #fff;
-  border: 1px solid #cbd5e3;
+input[type='text'],
+input[type='date'],
+select {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
   border-radius: 0.625rem;
   box-sizing: border-box;
   color: #18243a;
@@ -196,46 +178,10 @@ input[aria-invalid='true'] {
 }
 
 .actions {
+  align-items: center;
   display: flex;
   gap: 1rem;
-}
-
-.secondary-button,
-.submit-button {
-  border: 0;
-  border-radius: 1rem;
-  cursor: pointer;
-  font: inherit;
-  font-weight: 700;
-  padding: 0.85rem 1rem;
-  transition:
-    background 150ms ease,
-    transform 150ms ease;
-  width: 100%;
-}
-
-.secondary-button {
-  background: #e8edf5;
-  color: #26354f;
-}
-
-.secondary-button:hover {
-  background: #d6dfed;
-}
-
-.submit-button {
-  background: #ffd900;
-  color: black;
-}
-
-.submit-button:hover {
-  background: #2355c4;
-  color: #fff;
-}
-
-.secondary-button:active,
-.submit-button:active {
-  transform: translateY(1px);
+  justify-content: center;
 }
 
 @media (max-width: 600px) {

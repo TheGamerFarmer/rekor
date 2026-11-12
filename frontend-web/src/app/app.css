@@ -1,5 +1,7 @@
 :host {
-  display: block;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   font-family: 'DM Sans', Arial, sans-serif;
 }
 
@@ -99,6 +101,7 @@ a {
 .site-footer {
   position: relative;
   min-height: 230px;
+  margin-top: auto;
   padding: 32px max(6vw, calc((100vw - 1060px) / 2)) 22px;
   background: linear-gradient(120deg, var(--color-primary), var(--color-primary-hover));
 }
@@ -146,15 +149,6 @@ a {
   font-size: 11px;
   font-style: italic;
   opacity: 0.85;
-}
-
-.backend-status {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
 }
 
 @media (max-width: 720px) {

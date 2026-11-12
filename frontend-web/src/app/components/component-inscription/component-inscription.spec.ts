@@ -1,15 +1,25 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ComponentInscription } from './component-inscription';
-import { provideRouter } from '@angular/router';
+import { Router } from '@angular/router';
+import { InscriptionService } from '../../services/inscription.service';
+import { of, throwError } from 'rxjs';
 
 describe('ComponentInscription', () => {
   let component: ComponentInscription;
   let fixture: ComponentFixture<ComponentInscription>;
+  let register: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
+    register = vi.fn().mockReturnValue(of(undefined));
     await TestBed.configureTestingModule({
       imports: [ComponentInscription],
-      providers: [provideRouter([])],
+      providers: [
+        { provide: Router, useValue: { navigate: vi.fn() } },
+        {
+          provide: InscriptionService,
+          useValue: { register },
+        },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ComponentInscription);
@@ -39,6 +49,11 @@ describe('ComponentInscription', () => {
       input.value = value;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
+    const pronoun = fixture.nativeElement.querySelector(
+      '[formControlName="pronoun"]',
+    ) as HTMLSelectElement;
+    pronoun.value = '';
+    pronoun.dispatchEvent(new Event('change', { bubbles: true }));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelectorAll('.field .error').length).toBeGreaterThanOrEqual(
@@ -114,6 +129,12 @@ describe('ComponentInscription', () => {
       input.value = value;
       input.dispatchEvent(new Event('input', { bubbles: true }));
     }
+    const pronoun = fixture.nativeElement.querySelector(
+      '[formControlName="pronoun"]',
+    ) as HTMLSelectElement;
+    pronoun.value = 'Elle';
+    pronoun.dispatchEvent(new Event('change', { bubbles: true }));
+
     for (const name of ['privacyPolicy', 'internalRules', 'healthData', 'imageRights']) {
       const checkbox = fixture.nativeElement.querySelector(
         `[formControlName="${name}"]`,
@@ -158,5 +179,31 @@ describe('ComponentInscription', () => {
     fixture.detectChanges();
     expect(password.type).toBe('password');
     expect(confirmation.type).toBe('password');
+  });
+
+  it.each([
+    [409, 'Un compte existe déjà avec cette adresse e-mail.'],
+    [429, 'Trop de tentatives. Veuillez patienter avant de réessayer.'],
+    [500, 'Une erreur est survenue pendant l’inscription. Veuillez réessayer.'],
+  ])('shows the registration error for status %s', async (status, message) => {
+    register.mockReturnValue(throwError(() => ({ status })));
+    component['registrationForm'].patchValue({
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      pronoun: 'Elle',
+      birthday: '1815-12-10',
+      email: 'ada@example.com',
+      phone: '0600000000',
+      password: 'Motdepasse1!',
+      confirmPassword: 'Motdepasse1!',
+      internalRules: true,
+      privacyPolicy: true,
+    });
+
+    component['submit']();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent).toContain(message);
   });
 });

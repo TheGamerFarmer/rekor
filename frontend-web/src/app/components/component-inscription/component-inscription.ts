@@ -1,14 +1,19 @@
-import { Component, signal } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import {
   AbstractControl,
   FormBuilder,
+  FormControl,
   ReactiveFormsModule,
   ValidationErrors,
   Validators,
 } from '@angular/forms';
+import { Router } from '@angular/router';
+import { RegisterInput } from '../../api/model/registerInput';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
+import { InscriptionService } from '../../services/inscription.service';
 
+/** Ensures that the password confirmation matches the original password. */
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   const password = control.get('password')?.value;
   const confirmation = control.get('confirmPassword')?.value;
@@ -16,9 +21,9 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
   return password === confirmation ? null : { passwordsMismatch: true };
 }
 
+/** Rejects phone numbers containing more than ten digits. */
 function maxPhoneDigits(control: AbstractControl): ValidationErrors | null {
   const digitCount = String(control.value).replace(/\D/g, '').length;
-
   return digitCount > 10 ? { maxPhoneDigits: { max: 10, actual: digitCount } } : null;
 }
 
@@ -32,11 +37,21 @@ export class ComponentInscription {
   protected readonly showPassword = signal(false);
   protected readonly showConfirmation = signal(false);
   protected readonly submitted = signal(false);
+  protected readonly registrationError = signal<string | null>(null);
+  protected readonly pronouns = Object.values(RegisterInput.PronounEnum);
+
+  private readonly inscriptionService = inject(InscriptionService);
+  private readonly router = inject(Router);
 
   protected readonly registrationForm = new FormBuilder().nonNullable.group(
     {
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
+      pronoun: new FormControl<RegisterInput.PronounEnum | ''>('', {
+        nonNullable: true,
+        validators: [Validators.required],
+      }),
+      birthday: [''],
       email: ['', [Validators.required, Validators.email]],
       phone: ['', [Validators.required, maxPhoneDigits]],
       password: [
@@ -56,11 +71,46 @@ export class ComponentInscription {
     { validators: passwordsMatch },
   );
 
+  /** Validates the form and delegates registration to the inscription service. */
   protected submit(): void {
     this.submitted.set(true);
+    this.registrationError.set(null);
 
     if (this.registrationForm.invalid) {
       this.registrationForm.markAllAsTouched();
+      return;
     }
+
+    const values = this.registrationForm.getRawValue();
+    if (!values.pronoun) {
+      return;
+    }
+
+    this.inscriptionService
+      .register({
+        firstName: values.firstName,
+        lastName: values.lastName,
+        email: values.email,
+        password: values.password,
+        pronoun: values.pronoun,
+        phone: values.phone,
+        birthday: values.birthday,
+      })
+      .subscribe({
+        next: () => void this.router.navigate(['/connexion']),
+        error: (error) => {
+          if (error.status === 409) {
+            this.registrationError.set('Un compte existe déjà avec cette adresse e-mail.');
+          } else if (error.status === 429) {
+            this.registrationError.set(
+              'Trop de tentatives. Veuillez patienter avant de réessayer.',
+            );
+          } else {
+            this.registrationError.set(
+              'Une erreur est survenue pendant l’inscription. Veuillez réessayer.',
+            );
+          }
+        },
+      });
   }
 }
