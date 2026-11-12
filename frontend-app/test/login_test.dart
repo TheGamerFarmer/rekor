@@ -73,19 +73,64 @@ void main() {
       expect(find.text('Veuillez saisir votre mot de passe'), findsOneWidget);
     });
 
-    testWidgets('Affiche les messages de champs invalides', (tester) async {
-      await tester.pumpWidget(
-        const MaterialApp(home: Scaffold(body: MyLoginPage())),
-      );
+    testWidgets(
+      'Affiche les messages de champs invalides avec pas assez de caractères sur mot de passe',
+      (tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(home: Scaffold(body: MyLoginPage())),
+        );
 
-      await tester.enterText(find.byType(TextFormField).at(0), 'a');
-      await tester.enterText(find.byType(TextFormField).at(1), 'apo');
+        await tester.enterText(find.byType(TextFormField).at(0), 'a');
+        await tester.enterText(find.byType(TextFormField).at(1), 'mdp');
 
-      await tester.tap(find.text('Se connecter'));
-      await tester.pump();
+        await tester.tap(find.text('Se connecter'));
+        await tester.pump();
 
-      expect(find.text('Adresse e-mail invalide'), findsOneWidget);
-      expect(find.text('8 caractères minimum'), findsOneWidget);
-    });
+        expect(find.text('Adresse e-mail invalide'), findsOneWidget);
+        expect(find.text('8 caractères minimum'), findsOneWidget);
+      },
+    );
+
+    testWidgets(
+      'Affiche les messages de champs invalides sans symbole sur le mot de passe',
+      (tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(home: Scaffold(body: MyLoginPage())),
+        );
+
+        await tester.enterText(find.byType(TextFormField).at(0), 'a');
+        await tester.enterText(find.byType(TextFormField).at(1), 'motdepasse');
+
+        await tester.tap(find.text('Se connecter'));
+        await tester.pump();
+
+        expect(find.text('Adresse e-mail invalide'), findsOneWidget);
+        expect(
+          find.text('Veuillez saisir au moins un symbole'),
+          findsOneWidget,
+        );
+      },
+    );
+
+    testWidgets(
+      'Affiche les messages de champs invalides sans majuscule sur le mot de passe',
+      (tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(home: Scaffold(body: MyLoginPage())),
+        );
+
+        await tester.enterText(find.byType(TextFormField).at(0), 'a');
+        await tester.enterText(find.byType(TextFormField).at(1), 'motdep@sse');
+
+        await tester.tap(find.text('Se connecter'));
+        await tester.pump();
+
+        expect(find.text('Adresse e-mail invalide'), findsOneWidget);
+        expect(
+          find.text('Veuillez saisir au moins une majuscule'),
+          findsOneWidget,
+        );
+      },
+    );
   });
 }
