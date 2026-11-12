@@ -1,0 +1,48 @@
+@if (actualite(); as currentActualite) {
+  <app-component-banner
+    [image]="currentActualite.image"
+    [title]="currentActualite.titre"
+    [subtitle]="currentActualite.summary"
+  />
+
+  <main class="actualite-detail">
+    <article class="actualite-card">
+      <div class="actualite-content">
+        <div class="actualite-body">
+          @for (paragraph of currentActualite.corps; track $index) {
+            <p>{{ paragraph }}</p>
+          }
+        </div>
+        @if (currentActualite.slug === 'inscriptions-ouvertes') {
+          <app-button
+            variant="primary"
+            href="/inscription"
+            text="Accéder au formulaire d’inscription"
+          ></app-button>
+        }
+      </div>
+      <div class="actualite-meta">
+        <span
+          ><img src="/icons/calendrier.png" alt="" />{{
+            currentActualite.date | date: 'dd/MM/yyyy'
+          }}</span
+        >
+      </div>
+    </article>
+    <app-button
+      class="back-button"
+      variant="secondary"
+      href="/actualites"
+      text="Retour aux actualités"
+    ></app-button>
+  </main>
+} @else {
+  <app-component-banner
+    image="/images/volley4.jpg"
+    title="Actualité introuvable"
+    subtitle="Cette actualité n’existe pas ou n’est plus disponible."
+  />
+  <main class="actualite-detail not-found">
+    <app-button variant="primary" href="/actualites" text="Voir toutes les actualités"></app-button>
+  </main>
+}

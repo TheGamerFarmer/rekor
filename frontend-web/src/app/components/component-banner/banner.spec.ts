@@ -10,7 +10,7 @@ describe('Banner', () => {
     }).compileComponents();
 
     fixture = TestBed.createComponent(Banner);
-    fixture.componentRef.setInput('image', '/img/test.jpg');
+    fixture.componentRef.setInput('image', '/images/test.jpg');
     fixture.componentRef.setInput('title', 'Titre de test');
   });
 

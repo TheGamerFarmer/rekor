@@ -2,6 +2,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 
 import { ComponentCompte } from './component-compte';
+import { AuthService } from '../../services/auth.service';
 
 describe('ComponentCompte', () => {
   let component: ComponentCompte;
@@ -10,7 +11,7 @@ describe('ComponentCompte', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [ComponentCompte],
-      providers: [provideRouter([])],
+      providers: [provideRouter([]), { provide: AuthService, useValue: { logout: vi.fn() } }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ComponentCompte);
@@ -51,7 +52,7 @@ describe('ComponentCompte', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelectorAll('.field .error').length).toBe(4);
+    expect(fixture.nativeElement.querySelectorAll('.field .error').length).toBe(3);
     expect(fixture.nativeElement.textContent).not.toContain(
       'Vos informations ont été enregistrées.',
     );

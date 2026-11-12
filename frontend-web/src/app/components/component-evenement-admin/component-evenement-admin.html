@@ -1,0 +1,70 @@
+<app-component-banner
+  [title]="isEditing() ? 'Modifier un événement' : 'Créer un événement'"
+  [subtitle]="
+    isEditing()
+      ? 'Mettez à jour les informations de cet événement.'
+      : 'Ajoutez un rendez-vous à l’agenda du club.'
+  "
+  image="/images/volley2.jpg"
+/>
+
+<main class="admin-event-page">
+  <section class="admin-event-card" aria-labelledby="admin-event-title">
+    <form [formGroup]="eventForm" (ngSubmit)="save()" novalidate>
+      <div class="form-grid">
+        <label class="field field-wide" for="name">
+          Nom de l'événement
+          <input id="name" type="text" formControlName="name" />
+          @if (eventForm.controls.name.invalid && eventForm.controls.name.touched) {
+            <small>Le nom est obligatoire.</small>
+          }
+        </label>
+
+        <label class="field" for="type">
+          Type
+          <select id="type" formControlName="type">
+            @for (type of eventTypes; track type) {
+              <option [value]="type">{{ type }}</option>
+            }
+          </select>
+        </label>
+
+        <label class="field" for="group">
+          Groupe
+          <input id="group" type="text" formControlName="group" placeholder="Ex. Seniors" />
+        </label>
+
+        <label class="field" for="date">
+          Date
+          <input id="date" type="date" formControlName="date" />
+        </label>
+
+        <label class="field" for="time">
+          Heure
+          <input id="time" type="time" formControlName="time" />
+        </label>
+
+        <label class="field field-wide" for="place">
+          Lieu
+          <input id="place" type="text" formControlName="place" />
+        </label>
+
+        <label class="field field-wide" for="description">
+          Description
+          <textarea id="description" rows="5" formControlName="description"></textarea>
+          @if (eventForm.controls.description.invalid && eventForm.controls.description.touched) {
+            <small>La description doit contenir au moins 10 caractères.</small>
+          }
+        </label>
+      </div>
+
+      <div class="actions">
+        <app-button variant="secondary" href="/evenements" text="Annuler"></app-button>
+        <app-button
+          type="submit"
+          [text]="isEditing() ? 'Enregistrer les modifications' : 'Enregistrer l’événement'"
+        ></app-button>
+      </div>
+    </form>
+  </section>
+</main>

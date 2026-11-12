@@ -28,7 +28,7 @@ h2,
   display: inline-block;
   object-fit: contain;
 }
-.event-card i {
+.evenement-card i {
   display: inline-block;
   height: 3px;
   width: 3px;
@@ -96,18 +96,22 @@ h2,
   margin: 3px 0 0;
   font-size: 14px;
 }
+.feature-card h3,
+.feature-card p,
+.feature-card .round-arrow {
+  align-self: flex-start;
+  text-align: left;
+}
 .signup-card {
-  justify-content: center;
   background: linear-gradient(135deg, var(--color-primary), var(--color-primary-hover));
 }
-.signup-card h3 {
-  margin-top: 20px;
-}
 .line-icon {
-  position: relative;
+  position: absolute;
   display: inline-block;
   width: 42px;
   height: 42px;
+  top: 18px;
+  right: 18px;
 }
 .line-icon img {
   display: block;
@@ -148,7 +152,7 @@ h2,
 .tournament-card {
   background:
     linear-gradient(0deg, color-mix(in srgb, var(--color-dark) 85%, transparent), transparent 72%),
-    url('../../../../public/img/volley2.jpg') center / cover,
+    url('../../../../public/images/volley2.jpg') center / cover,
     var(--color-dark);
 }
 .rules-card {
@@ -166,7 +170,7 @@ h2,
 .rules-card h3 {
   max-width: 190px;
 }
-.events-card {
+.actualites-card {
   grid-column: 1 / 2;
   background:
     linear-gradient(
@@ -174,24 +178,22 @@ h2,
       color-mix(in srgb, var(--color-dark) 84%, transparent),
       color-mix(in srgb, var(--color-dark) 5%, transparent) 85%
     ),
-    url('../../../../public/img/volley3.jpg') center / cover,
+    url('../../../../public/images/volley3.jpg') center / cover,
     var(--color-dark);
 }
-.events-card h3 {
+.actualites-card h3 {
   font-size: 28px;
 }
-.events-card p {
+.actualites-card p {
   font-size: 12px;
 }
-.events-card .round-arrow {
-  position: absolute;
-  right: 22px;
-  bottom: 20px;
+.actualites-card .round-arrow {
+  position: static;
 }
 .about-card {
   grid-column: 2 / 4;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   background: linear-gradient(120deg, var(--color-primary), var(--color-primary-hover));
 }
@@ -245,12 +247,12 @@ h2,
   filter: brightness(0) saturate(100%) invert(23%) sepia(98%) saturate(1834%) hue-rotate(204deg)
     brightness(91%) contrast(103%);
 }
-.event-list {
+.evenement-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
 }
-.event-card {
+.evenement-card {
   display: flex;
   gap: 16px;
   align-items: flex-start;
@@ -258,7 +260,7 @@ h2,
   border-radius: 11px;
   background: color-mix(in srgb, var(--glass-background) 88%, transparent);
 }
-.event-badge {
+.evenement-badge {
   display: grid;
   place-items: center;
   flex: 0 0 48px;
@@ -266,20 +268,20 @@ h2,
   height: 48px;
   border-radius: 50%;
 }
-.event-badge img {
+.evenement-badge img {
   width: 25px;
   height: 25px;
   object-fit: contain;
 }
-.event-badge.blue {
+.evenement-badge.blue {
   color: var(--color-surface);
   background: var(--color-primary);
 }
-.event-badge.yellow {
+.evenement-badge.yellow {
   color: var(--color-dark);
   background: var(--color-secondary);
 }
-.event-badge.blue img {
+.evenement-badge.blue img {
   filter: brightness(0) invert(1);
 }
 .tag {
@@ -298,16 +300,16 @@ h2,
   color: var(--color-text);
   background: var(--color-secondary);
 }
-.event-card h3 {
+.evenement-card h3 {
   margin: 6px 0 8px;
   font-size: 14px;
 }
-.event-card p {
+.evenement-card p {
   margin: 5px 0 0;
   color: var(--color-text-muted);
   font-size: 11px;
 }
-.event-icon {
+.evenement-icon {
   width: 14px;
   height: 14px;
   margin-right: 8px;
@@ -340,7 +342,7 @@ h2,
   .rules-card {
     grid-column: 1;
   }
-  .events-card {
+  .actualites-card {
     grid-column: 2;
   }
   .about-card {
@@ -363,7 +365,7 @@ h2,
   .appointments-heading .section-heading h2 {
     font-size: 32px;
   }
-  .event-list {
+  .evenement-list {
     grid-template-columns: 1fr;
   }
 }
@@ -372,11 +374,11 @@ h2,
   .feature-card h3 {
     font-size: 22px;
   }
-  .event-card {
+  .evenement-card {
     gap: 11px;
     padding: 13px;
   }
-  .event-badge {
+  .evenement-badge {
     flex-basis: 40px;
     width: 40px;
     height: 40px;
