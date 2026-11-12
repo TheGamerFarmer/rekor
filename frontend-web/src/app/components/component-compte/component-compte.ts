@@ -10,6 +10,7 @@ import {
 } from '@angular/forms';
 import { RegisterInput } from '../../api/model/registerInput';
 import { Button } from '../component-button/button';
+import { AuthService } from '../../services/auth.service';
 
 /** Ensures that the new password confirmation matches the new password. */
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
@@ -32,6 +33,7 @@ export class ComponentCompte {
   protected readonly accountDeleted = signal(false);
 
   private readonly router = inject(Router);
+  private readonly authService = inject(AuthService);
   protected readonly pronouns = Object.values(RegisterInput.PronounEnum);
 
   protected readonly accountForm = new FormBuilder().nonNullable.group({
@@ -83,6 +85,7 @@ export class ComponentCompte {
 
   /** Returns the user to the home page. */
   protected logout(): void {
+    this.authService.logout();
     void this.router.navigate(['/accueil']);
   }
 }

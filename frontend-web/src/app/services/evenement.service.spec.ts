@@ -36,6 +36,14 @@ describe('EvenementService', () => {
     localStorage.setItem('rekor-evenements', JSON.stringify(['invalid']));
     expect(new EvenementService().evenements()).toEqual(defaultEvenements);
 
+    localStorage.setItem(
+      'rekor-evenements',
+      JSON.stringify([
+        { ...storedEvent, participants: [{ id: 1, name: 'Joueur', status: 'unknown' }] },
+      ]),
+    );
+    expect(new EvenementService().evenements()).toEqual(defaultEvenements);
+
     localStorage.setItem('rekor-evenements', JSON.stringify({ invalid: true }));
     expect(new EvenementService().evenements()).toEqual(defaultEvenements);
 

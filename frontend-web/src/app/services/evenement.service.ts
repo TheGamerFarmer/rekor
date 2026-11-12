@@ -99,6 +99,7 @@ function isEvenement(value: unknown): value is Evenement {
   }
 
   const evenement = value as Record<string, unknown>;
+  const participants = evenement['participants'];
   return (
     typeof evenement['id'] === 'number' &&
     typeof evenement['slug'] === 'string' &&
@@ -108,6 +109,23 @@ function isEvenement(value: unknown): value is Evenement {
     typeof evenement['time'] === 'string' &&
     typeof evenement['place'] === 'string' &&
     typeof evenement['description'] === 'string' &&
-    typeof evenement['group'] === 'string'
+    typeof evenement['group'] === 'string' &&
+    (participants === undefined ||
+      (Array.isArray(participants) && participants.every(isParticipant)))
+  );
+}
+
+function isParticipant(value: unknown): boolean {
+  if (!value || typeof value !== 'object') {
+    return false;
+  }
+
+  const participant = value as Record<string, unknown>;
+  return (
+    typeof participant['id'] === 'number' &&
+    typeof participant['name'] === 'string' &&
+    (participant['status'] === 'present' ||
+      participant['status'] === 'absent' ||
+      participant['status'] === 'pending')
   );
 }

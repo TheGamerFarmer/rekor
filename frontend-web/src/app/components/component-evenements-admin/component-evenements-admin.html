@@ -44,14 +44,36 @@
             <p>{{ evenement.type }} · {{ evenement.group }}</p>
             <span>{{ evenement.place }}</span>
           </div>
+          <div class="event-participants" aria-label="Participants à l'événement">
+            @for (category of participantCategories; track category.status) {
+              <section class="participant-category">
+                <h3>
+                  {{ category.label }} ({{ getParticipants(evenement, category.status).length }})
+                </h3>
+                @if (getParticipants(evenement, category.status).length > 0) {
+                  <ul>
+                    @for (
+                      participant of getParticipants(evenement, category.status);
+                      track participant.id
+                    ) {
+                      <li>{{ participant.name }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p>Aucun participant</p>
+                }
+              </section>
+            }
+          </div>
           <div class="event-actions">
             <a
               class="icon-action edit-action"
               [href]="'/admin/evenements/' + evenement.slug + '/modifier'"
               [attr.aria-label]="'Modifier ' + evenement.name"
               title="Modifier"
-              >✎</a
             >
+              <img src="/icons/crayon.png" alt="" aria-hidden="true" />
+            </a>
             <button
               class="icon-action delete-action"
               type="button"
@@ -59,7 +81,7 @@
               title="Supprimer"
               (click)="deleteEvenement(evenement.id)"
             >
-              🗑
+              <img src="/icons/corbeille.png" alt="" aria-hidden="true" />
             </button>
           </div>
         </article>

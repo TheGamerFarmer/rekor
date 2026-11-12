@@ -59,8 +59,8 @@ h1 {
 
 .event-row {
   display: grid;
-  grid-template-columns: 130px 1fr auto;
-  align-items: center;
+  grid-template-columns: 130px minmax(180px, 1fr) minmax(360px, 2fr) auto;
+  align-items: start;
   gap: 24px;
   padding: 18px 20px;
   border: 1px solid color-mix(in srgb, var(--color-dark) 12%, transparent);
@@ -93,6 +93,40 @@ h1 {
   font-size: 13px;
 }
 
+.event-participants {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.participant-category {
+  min-width: 0;
+  padding: 10px;
+  border-radius: 6px;
+  background: color-mix(in srgb, var(--color-dark) 5%, transparent);
+}
+
+.participant-category h3 {
+  margin: 0 0 6px;
+  font-size: 12px;
+}
+
+.participant-category ul,
+.participant-category p {
+  margin: 0;
+  padding: 0;
+  color: var(--color-text-muted);
+  font-size: 12px;
+}
+
+.participant-category ul {
+  padding-left: 16px;
+}
+
+.participant-category p {
+  font-style: italic;
+}
+
 .event-actions {
   display: flex;
   gap: 8px;
@@ -111,6 +145,12 @@ h1 {
   line-height: 1;
   text-decoration: none;
   cursor: pointer;
+}
+
+.icon-action img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
 }
 
 .icon-action:hover,
@@ -160,5 +200,13 @@ h1 {
 
   .event-date {
     grid-column: 1 / -1;
+  }
+
+  .event-participants {
+    grid-column: 1 / -1;
+  }
+
+  .event-actions {
+    grid-column: 2;
   }
 }

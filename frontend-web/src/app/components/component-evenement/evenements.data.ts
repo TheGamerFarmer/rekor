@@ -1,6 +1,14 @@
 export type EvenementType =
   'Entraînement' | 'Match amical' | 'Match compétitif' | 'Réunion' | 'Autre';
 
+export type ParticipantStatus = 'present' | 'absent' | 'pending';
+
+export interface Participant {
+  id: number;
+  name: string;
+  status: ParticipantStatus;
+}
+
 export interface Evenement {
   id: number;
   slug: string;
@@ -11,6 +19,7 @@ export interface Evenement {
   place: string;
   description: string;
   group: string;
+  participants?: Participant[];
 }
 
 /** Extracts the venue name from the first segment of a complete address. */

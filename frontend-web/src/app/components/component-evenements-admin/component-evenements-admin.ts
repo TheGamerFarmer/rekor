@@ -5,6 +5,11 @@ import { interval } from 'rxjs';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
 import { EvenementService } from '../../services/evenement.service';
+import type {
+  Evenement,
+  Participant,
+  ParticipantStatus,
+} from '../component-evenement/evenements.data';
 
 @Component({
   imports: [Banner, Button, DatePipe],
@@ -17,6 +22,11 @@ export class ComponentEvenementsAdmin {
   protected readonly evenements = this.evenementService.evenements;
   protected readonly eventFilter = signal<'past' | 'upcoming'>('upcoming');
   private readonly clockTick = toSignal(interval(60_000), { initialValue: 0 });
+  protected readonly participantCategories = [
+    { label: 'Présents', status: 'present' },
+    { label: 'Absents', status: 'absent' },
+    { label: 'En attente', status: 'pending' },
+  ] as const satisfies readonly { label: string; status: ParticipantStatus }[];
 
   protected readonly filteredEvenements = computed(() => {
     this.clockTick();
@@ -26,6 +36,11 @@ export class ComponentEvenementsAdmin {
       isPast ? evenement.date < today : evenement.date >= today,
     );
   });
+
+  /** Returns participants in the requested attendance category. */
+  protected getParticipants(evenement: Evenement, status: ParticipantStatus): Participant[] {
+    return evenement.participants?.filter((participant) => participant.status === status) ?? [];
+  }
 
   /** Changes the active status filter in the administration list. */
   protected setFilter(filter: 'past' | 'upcoming'): void {

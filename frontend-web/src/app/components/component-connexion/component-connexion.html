@@ -52,8 +52,8 @@
 
       <app-button type="submit" [fullWidth]="true" text="Se connecter"></app-button>
 
-      @if (submitted() && loginForm.valid) {
-        <p class="form-message" role="status">Vos identifiants sont prêts à être envoyés.</p>
+      @if (loginError()) {
+        <p class="form-message error" role="alert">{{ loginError() }}</p>
       }
     </form>
 

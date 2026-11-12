@@ -7,15 +7,29 @@
     <a href="/actualites">Actus</a>
     <a href="/evenements">Événements</a>
     <a href="/presentation-club">Le club</a>
-    <a href="/inscription">Inscription</a>
+    @if (authService.isAuthenticated()) {
+      <a href="/compte">Mon compte</a>
+    } @else {
+      <a href="/inscription">Inscription</a>
+    }
     <a href="/#regles">FAQ</a>
-    <app-button
-      class="login-link"
-      variant="outline"
-      size="small"
-      href="/connexion"
-      [text]="'Connexion'"
-    ></app-button>
+    @if (authService.isAuthenticated()) {
+      <app-button
+        class="login-link"
+        variant="outline"
+        size="small"
+        text="Déconnexion"
+        (click)="logout()"
+      ></app-button>
+    } @else {
+      <app-button
+        class="login-link"
+        variant="outline"
+        size="small"
+        href="/connexion"
+        text="Connexion"
+      ></app-button>
+    }
   </nav>
 </header>
 
