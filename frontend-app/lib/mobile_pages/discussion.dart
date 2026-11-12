@@ -10,8 +10,10 @@ class DiscussionPage extends StatefulWidget {
   const DiscussionPage({
     super.key,
     required this.groupe,
-    required this.onMessageEnvoye,
     required this.utilisateurs,
+    required this.onMessageEnvoye,
+    required this.onQuitter,
+    required this.onParticipantsAjoutes,
   });
 
   // Le groupe sur lequel on a cliqué dans la liste
@@ -22,6 +24,12 @@ class DiscussionPage extends StatefulWidget {
 
   // Appelée à chaque message envoyé, pour que la page des groupes le garde
   final void Function(Message message) onMessageEnvoye;
+
+  // Appelée quand l'utilisateur quitte le groupe
+  final VoidCallback onQuitter;
+
+  // Appelée quand on ajoute des personnes au groupe
+  final void Function(Set<int> ids) onParticipantsAjoutes;
 
   @override
   State<DiscussionPage> createState() => _DiscussionPageState();
@@ -37,6 +45,9 @@ class _DiscussionPageState extends State<DiscussionPage> {
   late final List<Message> _messages = List<Message>.from(
     _groupe.tousLesMessages,
   );
+
+  // ids des participants (mis à jour quand on en ajoute)
+  late final Set<int> _participantIds = {..._groupe.participantIds};
 
   // Texte tapé dans la barre de saisie
   final _saisieCtrl = TextEditingController();
@@ -99,6 +110,31 @@ class _DiscussionPageState extends State<DiscussionPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) => _allerEnBas());
   }
 
+  // Ouvre la page d'informations du groupe
+  Future<void> _ouvrirDetails() async {
+    final aQuitte = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => GroupeDetailsPage(
+          groupe: _groupe,
+          utilisateurs: widget.utilisateurs,
+          participantIds: _participantIds,
+          onAjouter: (ids) {
+            // On retient les nouveaux participants ici aussi
+            _participantIds.addAll(ids);
+            widget.onParticipantsAjoutes(ids);
+          },
+        ),
+      ),
+    );
+
+    // true = l'utilisateur a quitté le groupe : on prévient la liste, puis on revient
+    if (aQuitte == true && mounted) {
+      widget.onQuitter();
+      Navigator.pop(context);
+    }
+  }
+
   // Choisit d'où vient la photo : mémoire, internet ou fichier du projet
   ImageProvider? _imageGroupe() {
     if (_groupe.imageLocale != null) return MemoryImage(_groupe.imageLocale!);
@@ -133,22 +169,6 @@ class _DiscussionPageState extends State<DiscussionPage> {
       child: IconButton(
         icon: const Icon(Icons.arrow_back, color: Colors.white),
         onPressed: () => Navigator.pop(context),
-      ),
-    );
-  }
-
-  // Ouvre la page d'informations du groupe
-  void _ouvrirDetails() {
-    // Les personnes dont l'id fait partie du groupe
-    final participants = widget.utilisateurs
-        .where((u) => _groupe.participantIds.contains(u.id))
-        .toList();
-
-    Navigator.push(
-      context,
-      MaterialPageRoute(
-        builder: (context) =>
-            GroupeDetailsPage(groupe: _groupe, participants: participants),
       ),
     );
   }

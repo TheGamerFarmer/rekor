@@ -69,6 +69,7 @@ class _GroupesPageState extends State<GroupesPage> {
         date: DateTime.now().subtract(const Duration(hours: 10)),
       ),
       participantIds: {1, 5, 4, 3},
+      derniereLecture: DateTime.now(),
     ),
     Groupe(
       id: 4,
@@ -82,6 +83,7 @@ class _GroupesPageState extends State<GroupesPage> {
         date: DateTime.now().subtract(const Duration(days: 3)),
       ),
       participantIds: {3},
+      derniereLecture: DateTime.now(),
     ),
     // Groupe sans message
     Groupe(
@@ -94,6 +96,7 @@ class _GroupesPageState extends State<GroupesPage> {
 
   String _recherche = '';
 
+  // Un groupe avec exactement ces personnes existe-t-il déjà ?
   bool _groupeExiste(Set<int> ids) {
     return _groupes.any(
       (g) =>
@@ -102,24 +105,52 @@ class _GroupesPageState extends State<GroupesPage> {
     );
   }
 
-  // Garde un message envoyé depuis la page de discussion
-  void _ajouterMessage(Groupe groupe, Message message) {
+  // Remplace un groupe de la liste par sa version modifiée
+  void _remplacerGroupe(
+    Groupe groupe,
+    Groupe Function(Groupe ancien) modifier,
+  ) {
     final index = _groupes.indexWhere((g) => g.id == groupe.id);
     if (index == -1) return;
+    setState(() => _groupes[index] = modifier(_groupes[index]));
+  }
 
-    final ancien = _groupes[index];
-    setState(() {
-      _groupes[index] = Groupe(
-        id: ancien.id,
-        nom: ancien.nom,
-        dateCreation: ancien.dateCreation,
-        image: ancien.image,
-        imageLocale: ancien.imageLocale,
-        participantIds: ancien.participantIds,
+  // Garde un message envoyé depuis la page de discussion
+  void _ajouterMessage(Groupe groupe, Message message) {
+    _remplacerGroupe(
+      groupe,
+      (ancien) => ancien.copyWith(
         messages: [...ancien.tousLesMessages, message],
         dernierMessage: message,
-      );
-    });
+        derniereLecture:
+            DateTime.now(), // c'est nous qui écrivons : tout est lu
+      ),
+    );
+  }
+
+  // Ajoute des personnes à un groupe
+  void _ajouterParticipants(Groupe groupe, Set<int> ids) {
+    // TODO : prévenir l'API (association "fait-partie")
+    _remplacerGroupe(
+      groupe,
+      (ancien) =>
+          ancien.copyWith(participantIds: {...ancien.participantIds, ...ids}),
+    );
+  }
+
+  // Enlève la pastille bleue d'un groupe
+  void _marquerCommeLu(Groupe groupe) {
+    // TODO : prévenir l'API (dernière lecture de l'utilisateur connecté)
+    _remplacerGroupe(
+      groupe,
+      (ancien) => ancien.copyWith(derniereLecture: DateTime.now()),
+    );
+  }
+
+  // Retire le groupe de la liste quand on le quitte
+  void _quitterGroupe(Groupe groupe) {
+    // TODO : prévenir l'API (supprimer l'association "fait-partie" de l'utilisateur connecté)
+    setState(() => _groupes.removeWhere((g) => g.id == groupe.id));
   }
 
   // ouvre le popup, puis ajoute le groupe créé en haut de la liste
@@ -159,12 +190,35 @@ class _GroupesPageState extends State<GroupesPage> {
     });
   }
 
+  // Ouvre la discussion d'un groupe
+  void _ouvrirGroupe(Groupe groupe) {
+    // On ouvre le groupe : les messages sont considérés comme lus
+    _marquerCommeLu(groupe);
+
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DiscussionPage(
+          groupe: groupe,
+          utilisateurs: _utilisateurs,
+          onMessageEnvoye: (message) => _ajouterMessage(groupe, message),
+          onQuitter: () => _quitterGroupe(groupe),
+          onParticipantsAjoutes: (ids) => _ajouterParticipants(groupe, ids),
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // Groupes dont le nom contient le texte recherché
-    final liste = _groupes
-        .where((g) => g.nom.toLowerCase().contains(_recherche.toLowerCase()))
-        .toList();
+    // Groupes dont le nom contient le texte recherché, le plus récent en premier
+    final liste =
+        _groupes
+            .where(
+              (g) => g.nom.toLowerCase().contains(_recherche.toLowerCase()),
+            )
+            .toList()
+          ..sort((a, b) => b.derniereActivite.compareTo(a.derniereActivite));
 
     return MainLayout(
       child: SingleChildScrollView(
@@ -237,20 +291,7 @@ class _GroupesPageState extends State<GroupesPage> {
               if (i > 0) const Divider(color: Colors.white12, height: 1),
               GroupeTile(
                 groupe: liste[i],
-                onTap: () {
-                  final groupe = liste[i];
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => DiscussionPage(
-                        groupe: groupe,
-                        utilisateurs: _utilisateurs,
-                        onMessageEnvoye: (message) =>
-                            _ajouterMessage(groupe, message),
-                      ),
-                    ),
-                  );
-                },
+                onTap: () => _ouvrirGroupe(liste[i]),
               ),
             ],
             const SizedBox(height: 130),

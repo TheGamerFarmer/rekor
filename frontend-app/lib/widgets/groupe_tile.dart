@@ -91,6 +91,18 @@ class GroupeTile extends StatelessWidget {
                           ),
                         ),
                       ],
+                      if (groupe.nonLu) ...[
+                        const SizedBox(width: 8),
+                        Container(
+                          width: 10,
+                          height: 10,
+                          margin: const EdgeInsets.only(top: 4),
+                          decoration: const BoxDecoration(
+                            color: Colors.blueAccent,
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                      ],
                     ],
                   ),
                   const SizedBox(height: 4),
