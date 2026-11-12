@@ -69,7 +69,6 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
           ...(birthday ? { birthday: new Date(`${birthday}T00:00:00.000Z`) } : {}),
           pronoun,
         });
-        res.status(201).end();
       } catch (error) {
         if (error.code === 11000) {
           return res.status(409).json({ message: 'Un utilisateur avec cet e-mail existe déjà' });
@@ -77,7 +76,7 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         throw error;
       }
 
-      const user = User.findOne({ email: email });
+      const user = await User.findOne({ email: { $eq: email } });
 
       try {
         await Registeration.create({
@@ -92,6 +91,8 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         }
         throw error;
       }
+
+      return res.status(201).end();
     }),
   );
 

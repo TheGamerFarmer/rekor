@@ -100,4 +100,34 @@ describe('ensureSchema', () => {
       Model.createCollection = original;
     }
   });
+
+  it('ignore un doublon concurrent si l’association par défaut existe déjà', async () => {
+    const originalUpdateOne = Association.updateOne;
+    Association.updateOne = async () => {
+      throw Object.assign(new Error('Duplicate association'), { code: 11000 });
+    };
+
+    try {
+      await assert.doesNotReject(ensureSchema());
+    } finally {
+      Association.updateOne = originalUpdateOne;
+    }
+  });
+
+  it('propage un doublon de seed si l’association par défaut est absente', async () => {
+    const originalUpdateOne = Association.updateOne;
+    const originalExists = Association.exists;
+    const duplicate = Object.assign(new Error('Duplicate association'), { code: 11000 });
+    Association.updateOne = async () => {
+      throw duplicate;
+    };
+    Association.exists = async () => null;
+
+    try {
+      await assert.rejects(ensureSchema(), (error) => error === duplicate);
+    } finally {
+      Association.updateOne = originalUpdateOne;
+      Association.exists = originalExists;
+    }
+  });
 });
