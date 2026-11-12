@@ -4,8 +4,6 @@ const { rateLimit } = require('express-rate-limit');
 const {
   Types: { ObjectId },
 } = require('mongoose');
-const User = require('../db/models/user');
-const RefreshToken = require('../db/models/refresh-token');
 const { wrapAsync } = require('./services/shared');
 const {
   InvalidTokenError,
@@ -16,9 +14,13 @@ const {
   revokeSession,
 } = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
+const User = require('../db/models/user');
+const Association = require('../db/models/association');
+const Registeration = require('../db/models/registration');
+const RefreshToken = require('../db/models/refresh-token');
 
-async function createRefreshSession(user) {
-  const refresh = signRefreshToken(user);
+async function createRefreshSession(user, association) {
+  const refresh = signRefreshToken(user, association);
   await RefreshToken.create({
     _id: refresh.sessionId,
     userId: user._id,
@@ -44,10 +46,16 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
   router.post(
     '/register',
     wrapAsync(async (req, res) => {
-      const { name, firstName, email, password, phoneNumber, birthday, pronoun } = req.body;
+      const { name, firstName, email, password, phoneNumber, birthday, pronoun, associationName } =
+        req.body;
 
       if (await User.exists({ email: { $eq: email } })) {
         return res.status(409).json({ message: 'Un utilisateur avec cet e-mail existe déjà' });
+      }
+
+      const association = await Association.findOne({ name: { $eq: associationName } });
+      if (!association) {
+        return res.status(404).json({ message: "L'association n'existe pas" });
       }
 
       try {
@@ -68,22 +76,43 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         }
         throw error;
       }
+
+      const user = User.findOne({ email: email });
+
+      try {
+        await Registeration.create({
+          association: association._id,
+          created_by: user._id,
+        });
+      } catch (error) {
+        if (error.code === 11000) {
+          return res
+            .status(409)
+            .json({ message: "L'utilisateur est déjà inscrit dans cet association" });
+        }
+        throw error;
+      }
     }),
   );
 
   router.post(
     '/login',
     wrapAsync(async (req, res) => {
-      const { email, password } = req.body;
-      const user = await User.findOne({ email: { $eq: email } });
+      const { email, password, associationName } = req.body;
 
+      const association = await Association.findOne({ name: { $eq: associationName } });
+      if (!association) {
+        return res.status(404).json({ message: "L'association n'existe pas" });
+      }
+
+      const user = await User.findOne({ email: { $eq: email } });
       if (!user || !(await verifyPassword(password, user.password))) {
         return res.status(401).json({ message: 'E-mail ou mot de passe incorrect' });
       }
 
-      const session = await createRefreshSession(user);
+      const session = await createRefreshSession(user, association);
       res.json({
-        access_token: signAccessToken(user, session.sessionId),
+        access_token: signAccessToken(user, association, session.sessionId),
         refresh_token: session.token,
       });
     }),
@@ -123,7 +152,12 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
       }
 
-      const refresh = signRefreshToken(user, session._id);
+      const association = await Association.findOne({ name: { $eq: claims.association } });
+      if (!association) {
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      const refresh = signRefreshToken(user, association, session._id);
       const updated = await RefreshToken.updateOne(
         { _id: session._id, tokenHash: oldTokenHash, expiresAt: { $gt: new Date() } },
         {
@@ -138,7 +172,7 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
       }
 
       res.json({
-        access_token: signAccessToken(user, session._id),
+        access_token: signAccessToken(user, association, session._id),
         refresh_token: refresh.token,
       });
     }),

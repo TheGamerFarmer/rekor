@@ -10,7 +10,7 @@ const BankOperationDocument = require('../../db/models/bank_operation_document')
 const Publication = require('../../db/models/publication');
 const Media = require('../../db/models/media');
 
-describe('collections association', () => {
+describe('collections association.js', () => {
   let mongod;
 
   before(async () => {

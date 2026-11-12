@@ -67,6 +67,27 @@
           "message"
         ]
       },
+      "Association": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "_id",
+          "name",
+          "address"
+        ]
+      },
       "UserDetails": {
         "allOf": [
           {
@@ -177,6 +198,12 @@
             "minLength": 1,
             "example": "motdepasse"
           },
+          "associationName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Gières Volley-Ball",
+            "description": "Nom de l’association"
+          },
           "pronoun": {
             "type": "string",
             "enum": [
@@ -202,6 +229,7 @@
           "firstName",
           "email",
           "password",
+          "associationName",
           "pronoun"
         ]
       },
@@ -232,11 +260,18 @@
             "type": "string",
             "minLength": 1,
             "example": "motdepasse"
+          },
+          "associationName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Gières Volley-Ball",
+            "description": "Nom de l’association"
           }
         },
         "required": [
           "email",
-          "password"
+          "password",
+          "associationName"
         ]
       },
       "RefreshTokenInput": {
@@ -319,6 +354,50 @@
           },
           "503": {
             "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/association": {
+      "get": {
+        "operationId": "listAssociations",
+        "tags": [
+          "Associations"
+        ],
+        "summary": "Liste les associations",
+        "responses": {
+          "200": {
+            "description": "Les associations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Association"
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur",
             "content": {
               "application/json": {
                 "schema": {
@@ -748,7 +827,7 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Crée un compte utilisateur (rôle Visiteur attribué par le serveur)",
+        "summary": "Crée un compte Visiteur et l’inscrit dans l’association indiquée",
         "requestBody": {
           "required": true,
           "content": {
@@ -773,8 +852,18 @@
               }
             }
           },
+          "404": {
+            "description": "Association introuvable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "409": {
-            "description": "Un utilisateur avec cet e-mail existe déjà",
+            "description": "E-mail déjà utilisé ou utilisateur déjà inscrit à cette association",
             "content": {
               "application/json": {
                 "schema": {
@@ -822,7 +911,7 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Vérifie les identifiants et renvoie un access token et un refresh token",
+        "summary": "Authentifie l’utilisateur dans l’association indiquée et renvoie les tokens",
         "requestBody": {
           "required": true,
           "content": {
@@ -856,6 +945,16 @@
           },
           "401": {
             "description": "E-mail ou mot de passe incorrect",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Association introuvable",
             "content": {
               "application/json": {
                 "schema": {
