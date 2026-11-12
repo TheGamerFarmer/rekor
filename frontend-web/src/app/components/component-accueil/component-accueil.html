@@ -1,0 +1,110 @@
+<main>
+  <app-component-banner
+    image="/images/volley4.jpg"
+    title="Gières vs Lyon"
+    subtitle="10 octobre"
+    [isHome]="true"
+  />
+
+  <div class="page-content">
+    <section class="club-section" id="club">
+      <div class="section-heading">
+        <h2>La vie du club</h2>
+        <p><span class="heading-mark"></span> Tout ce qui fait vibrer Gières.</p>
+      </div>
+
+      <div class="feature-grid">
+        <a class="feature-card signup-card" id="inscriptions" href="/inscription">
+          <span class="line-icon" aria-hidden="true">
+            <img src="/icons/user.png" alt="" />
+          </span>
+          <h3>Inscription</h3>
+          <p>Rejoignez l'équipe</p>
+          <span class="round-arrow" aria-hidden="true"
+            ><img src="/icons/arrow_circle.png" alt=""
+          /></span>
+        </a>
+        <a class="feature-card tournament-card" href="/evenements">
+          <h3>Événements</h3>
+          <p>Retrouvez tous les événements à venir</p>
+          <span class="round-arrow" aria-hidden="true"
+            ><img src="/icons/arrow_circle.png" alt=""
+          /></span>
+        </a>
+        <a class="feature-card rules-card" id="regles" href="/#contact">
+          <img class="rules-icon" src="/icons/gear.png" alt="" aria-hidden="true" />
+          <h3>Règles du jeu</h3>
+          <span class="round-arrow" aria-hidden="true"
+            ><img src="/icons/arrow_circle.png" alt=""
+          /></span>
+        </a>
+        <a class="feature-card actualites-card" href="/actualites">
+          <h3>Actualités</h3>
+          <p>Retrouvez toutes les actualités du club</p>
+          <span class="round-arrow" aria-hidden="true"
+            ><img src="/icons/arrow_circle.png" alt=""
+          /></span>
+        </a>
+        <a class="feature-card about-card" routerLink="/presentation-club">
+          <div>
+            <h3>Le club</h3>
+            <p>Découvrez notre histoire et nos équipes</p>
+            <span class="round-arrow" aria-hidden="true"
+              ><img src="/icons/arrow_circle.png" alt=""
+            /></span>
+          </div>
+          <span class="volleyball-mark" aria-hidden="true">◉</span>
+        </a>
+      </div>
+    </section>
+
+    <section class="appointments" id="rendez-vous">
+      <div class="appointments-heading">
+        <div class="section-heading">
+          <h2>Les prochains rendez-vous</h2>
+          <span class="heading-mark"></span>
+        </div>
+        <a href="/evenements"
+          >Voir toutes les évènements<img
+            class="icon icon-arrow-blue"
+            src="/icons/arrow.png"
+            alt=""
+        /></a>
+      </div>
+      <div class="evenement-list">
+        <article class="evenement-card">
+          <span class="evenement-badge blue" aria-hidden="true"
+            ><img src="/icons/trophee.png" alt=""
+          /></span>
+          <div>
+            <span class="tag blue-tag">Match</span>
+            <h3>Match amical - Gières vs Lyon</h3>
+            <p>
+              <img class="evenement-icon icon-calendar" src="/icons/calendrier.png" alt="" /> Samedi
+              10 octobre à 18h00
+            </p>
+            <p>
+              <img class="evenement-icon icon-map" src="/icons/map.png" alt="" /> Gymnase de Gières
+            </p>
+          </div>
+        </article>
+        <article class="evenement-card">
+          <span class="evenement-badge yellow" aria-hidden="true"
+            ><img src="/icons/trophee.png" alt=""
+          /></span>
+          <div>
+            <span class="tag yellow-tag">Tournoi</span>
+            <h3>Tournoi jeunes</h3>
+            <p>
+              <img class="evenement-icon icon-calendar" src="/icons/calendrier.png" alt="" />
+              Dimanche 18 octobre à 09h00
+            </p>
+            <p>
+              <img class="evenement-icon icon-map" src="/icons/map.png" alt="" /> Gymnase de Gières
+            </p>
+          </div>
+        </article>
+      </div>
+    </section>
+  </div>
+</main>

@@ -1,0 +1,93 @@
+<app-component-banner
+  image="/images/volley2.jpg"
+  title="Gestion des événements"
+  subtitle="Consultez et gérez les rendez-vous du club."
+/>
+
+<main class="admin-events-page">
+  <section class="admin-events-card" aria-labelledby="admin-events-title">
+    <header class="admin-events-header">
+      <div>
+        <div class="event-filters" aria-label="Filtrer les événements">
+          <app-button
+            [variant]="eventFilter() === 'upcoming' ? 'primary' : 'secondary'"
+            text="Événements à venir"
+            [ariaCurrent]="eventFilter() === 'upcoming' ? 'page' : null"
+            (click)="setFilter('upcoming')"
+          ></app-button>
+          <app-button
+            [variant]="eventFilter() === 'past' ? 'primary' : 'secondary'"
+            text="Événements passés"
+            [ariaCurrent]="eventFilter() === 'past' ? 'page' : null"
+            (click)="setFilter('past')"
+          ></app-button>
+        </div>
+      </div>
+      <div class="header-actions">
+        <app-button
+          variant="primary"
+          href="/admin/evenements/nouveau"
+          text="Ajouter un événement"
+        ></app-button>
+      </div>
+    </header>
+
+    <div class="event-table" role="list">
+      @for (evenement of filteredEvenements(); track evenement.id) {
+        <article class="event-row" role="listitem">
+          <div class="event-date">
+            <strong>{{ evenement.date | date: 'dd/MM/yyyy' }}</strong>
+            <span>{{ evenement.time }}</span>
+          </div>
+          <div class="event-information">
+            <h2>{{ evenement.name }}</h2>
+            <p>{{ evenement.type }} · {{ evenement.group }}</p>
+            <span>{{ evenement.place }}</span>
+          </div>
+          <div class="event-participants" aria-label="Participants à l'événement">
+            @for (category of participantCategories; track category.status) {
+              <section class="participant-category">
+                <h3>
+                  {{ category.label }} ({{ getParticipants(evenement, category.status).length }})
+                </h3>
+                @if (getParticipants(evenement, category.status).length > 0) {
+                  <ul>
+                    @for (
+                      participant of getParticipants(evenement, category.status);
+                      track participant.id
+                    ) {
+                      <li>{{ participant.name }}</li>
+                    }
+                  </ul>
+                } @else {
+                  <p>Aucun participant</p>
+                }
+              </section>
+            }
+          </div>
+          <div class="event-actions">
+            <a
+              class="icon-action edit-action"
+              [href]="'/admin/evenements/' + evenement.slug + '/modifier'"
+              [attr.aria-label]="'Modifier ' + evenement.name"
+              title="Modifier"
+            >
+              <img src="/icons/crayon.png" alt="" aria-hidden="true" />
+            </a>
+            <button
+              class="icon-action delete-action"
+              type="button"
+              [attr.aria-label]="'Supprimer ' + evenement.name"
+              title="Supprimer"
+              (click)="deleteEvenement(evenement.id)"
+            >
+              <img src="/icons/corbeille.png" alt="" aria-hidden="true" />
+            </button>
+          </div>
+        </article>
+      } @empty {
+        <p class="empty-state">Aucun événement à gérer.</p>
+      }
+    </div>
+  </section>
+</main>
