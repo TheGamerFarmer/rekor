@@ -16,19 +16,19 @@ class UsersApi {
 
   final ApiClient apiClient;
 
-  /// Crée un utilisateur
+  /// Modifie le mot de passe du compte authentifié
   ///
   /// Note: This method returns the HTTP [Response].
   ///
   /// Parameters:
   ///
-  /// * [UserInput] userInput (required):
-  Future<Response> createUserWithHttpInfo(UserInput userInput, { Future<void>? abortTrigger, }) async {
+  /// * [ChangePasswordInput] changePasswordInput (required):
+  Future<Response> changeMyPasswordWithHttpInfo(ChangePasswordInput changePasswordInput, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/users';
+    final path = r'/users/me/password';
 
     // ignore: prefer_final_locals
-    Object? postBody = userInput;
+    Object? postBody = changePasswordInput;
 
     final queryParams = <QueryParam>[];
     final headerParams = <String, String>{};
@@ -39,7 +39,7 @@ class UsersApi {
 
     return apiClient.invokeAPI(
       path,
-      'POST',
+      'PUT',
       queryParams,
       postBody,
       headerParams,
@@ -49,13 +49,87 @@ class UsersApi {
     );
   }
 
-  /// Crée un utilisateur
+  /// Modifie le mot de passe du compte authentifié
   ///
   /// Parameters:
   ///
-  /// * [UserInput] userInput (required):
-  Future<User?> createUser(UserInput userInput, { Future<void>? abortTrigger, }) async {
-    final response = await createUserWithHttpInfo(userInput, abortTrigger: abortTrigger,);
+  /// * [ChangePasswordInput] changePasswordInput (required):
+  Future<void> changeMyPassword(ChangePasswordInput changePasswordInput, { Future<void>? abortTrigger, }) async {
+    final response = await changeMyPasswordWithHttpInfo(changePasswordInput, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Supprime le compte authentifié
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> deleteMyProfileWithHttpInfo({ Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/users/me';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'DELETE',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Supprime le compte authentifié
+  Future<void> deleteMyProfile({ Future<void>? abortTrigger, }) async {
+    final response = await deleteMyProfileWithHttpInfo(abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Récupère le profil de l’utilisateur authentifié
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> getMyProfileWithHttpInfo({ Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/users/me';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Récupère le profil de l’utilisateur authentifié
+  Future<UserDetails?> getMyProfile({ Future<void>? abortTrigger, }) async {
+    final response = await getMyProfileWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -63,7 +137,7 @@ class UsersApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'User',) as User;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserDetails',) as UserDetails;
     
     }
     return null;
@@ -108,7 +182,7 @@ class UsersApi {
   /// Parameters:
   ///
   /// * [String] id (required):
-  Future<User?> getUser(String id, { Future<void>? abortTrigger, }) async {
+  Future<UserDetails?> getUser(String id, { Future<void>? abortTrigger, }) async {
     final response = await getUserWithHttpInfo(id, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -117,13 +191,13 @@ class UsersApi {
     // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
-      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'User',) as User;
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'UserDetails',) as UserDetails;
     
     }
     return null;
   }
 
-  /// Liste les utilisateurs (100 au maximum)
+  /// Liste les utilisateurs
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> listUsersWithHttpInfo({ Future<void>? abortTrigger, }) async {
@@ -152,8 +226,8 @@ class UsersApi {
     );
   }
 
-  /// Liste les utilisateurs (100 au maximum)
-  Future<List<User>?> listUsers({ Future<void>? abortTrigger, }) async {
+  /// Liste les utilisateurs
+  Future<List<UserListItem>?> listUsers({ Future<void>? abortTrigger, }) async {
     final response = await listUsersWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
@@ -163,11 +237,56 @@ class UsersApi {
     // FormatException when trying to decode an empty string.
     if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
       final responseBody = await _decodeBodyBytes(response);
-      return (await apiClient.deserializeAsync(responseBody, 'List<User>') as List)
-        .cast<User>()
+      return (await apiClient.deserializeAsync(responseBody, 'List<UserListItem>') as List)
+        .cast<UserListItem>()
         .toList(growable: false);
 
     }
     return null;
+  }
+
+  /// Modifie les informations du profil authentifié
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [UpdateProfileInput] updateProfileInput (required):
+  Future<Response> updateMyProfileWithHttpInfo(UpdateProfileInput updateProfileInput, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/users/me';
+
+    // ignore: prefer_final_locals
+    Object? postBody = updateProfileInput;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PATCH',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Modifie les informations du profil authentifié
+  ///
+  /// Parameters:
+  ///
+  /// * [UpdateProfileInput] updateProfileInput (required):
+  Future<void> updateMyProfile(UpdateProfileInput updateProfileInput, { Future<void>? abortTrigger, }) async {
+    final response = await updateMyProfileWithHttpInfo(updateProfileInput, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
   }
 }

@@ -1,0 +1,64 @@
+@if (event(); as currentEvent) {
+  <app-component-banner
+    [image]="currentEvent.image"
+    [title]="currentEvent.title"
+    [subtitle]="currentEvent.summary"
+  />
+
+  <main class="event-detail">
+    <div class="event-layout">
+      <article>
+        <div class="event-meta">
+          <span>{{ currentEvent.category }}</span>
+        </div>
+        <div class="event-body">
+          @for (paragraph of currentEvent.paragraphs; track $index) {
+            <p>{{ paragraph }}</p>
+          }
+        </div>
+        @if (currentEvent.slug === 'inscriptions-ouvertes') {
+          <app-button
+            variant="primary"
+            href="/inscription"
+            text="Accéder au formulaire d’inscription"
+          ></app-button>
+        }
+      </article>
+
+      <aside class="event-info" aria-labelledby="event-info-title">
+        <h2 id="event-info-title">Informations pratiques</h2>
+        <dl>
+          <div>
+            <dt><img src="/icons/calendrier.png" alt="" />Date</dt>
+            <dd>
+              <time [attr.datetime]="currentEvent.date">{{ currentEvent.dateLabel }}</time>
+            </dd>
+          </div>
+          <div>
+            <dt><img src="/icons/horloge.png" alt="" />Heure</dt>
+            <dd>{{ currentEvent.time ?? 'Non précisée' }}</dd>
+          </div>
+          <div>
+            <dt><img src="/icons/map.png" alt="" />Lieu</dt>
+            <dd>{{ currentEvent.location ?? 'Non précisé' }}</dd>
+          </div>
+          <div>
+            <dt><img src="/icons/user.png" alt="" />Participants</dt>
+            <dd>{{ currentEvent.participants ?? 'Non précisés' }}</dd>
+          </div>
+        </dl>
+      </aside>
+    </div>
+
+    <app-button variant="secondary" href="/evenements" text="Retour aux actualités"></app-button>
+  </main>
+} @else {
+  <app-component-banner
+    image="/img/volley4.jpg"
+    title="Actualité introuvable"
+    subtitle="Cette actualité n’existe pas ou n’est plus disponible."
+  />
+  <main class="event-detail not-found">
+    <app-button variant="primary" href="/evenements" text="Voir toutes les actualités"></app-button>
+  </main>
+}

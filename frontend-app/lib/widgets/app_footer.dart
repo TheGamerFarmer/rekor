@@ -2,27 +2,26 @@ import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/home_page.dart';
 
 // Footer de l'application mobile avec lien vers Accueil, Menu et Discussions
-class AppFooter extends StatelessWidget{
+class AppFooter extends StatelessWidget {
   final VoidCallback onMenuTap;
   const AppFooter({super.key, required this.onMenuTap});
-
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        border: Border.all(
-          color: Colors.white,
-          width: 2,
-        ),
+        color: Colors.black.withValues(alpha: 0.65),
+        border: Border.all(color: Colors.white, width: 2),
         borderRadius: BorderRadius.circular(15),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         // Les 3 boutons (Accueil, Menu, Discussions)
         children: [
-          InkWell(
+          //Accueil
+          _buildFooterButton(
+            label: 'Accueil',
             onTap: () {
               Navigator.push(
                 context,
@@ -31,35 +30,43 @@ class AppFooter extends StatelessWidget{
                 ),
               );
             },
-            child: const Text(
-              'Accueil',
-              style: TextStyle(color: Colors.white),
-            ),
           ),
-          InkWell(
-            onTap: onMenuTap,
-            child: const Text(
-              'Menu',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
-          InkWell(
+          // Bouton Menu
+          _buildFooterButton(label: 'Menu', onTap: onMenuTap),
+          // Bouton Discussions
+          _buildFooterButton(
+            label: 'Discussions',
             onTap: () {
-              /*Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MyHomePage(title: 'Discussions'),
-                ),
-              );*/
+              // Navigation vers discussions à ajouter
             },
-            child: const Text(
-              'Discussions',
-              style: TextStyle(color: Colors.white),
-            ),
           ),
         ],
       ),
     );
   }
+}
 
+Widget _buildFooterButton({
+  required String label,
+  required VoidCallback onTap,
+}) {
+  return Semantics(
+    button: true,
+    label: label,
+    child: ExcludeSemantics(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(8),
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minWidth: 48, minHeight: 48),
+            child: Center(
+              child: Text(label, style: const TextStyle(color: Colors.white)),
+            ),
+          ),
+        ),
+      ),
+    ),
+  );
 }

@@ -1,7 +1,7 @@
 const test = require('node:test');
 const assert = require('node:assert');
 const { MongoMemoryServer } = require('mongodb-memory-server');
-const db = require('../db');
+const db = require('../db/db');
 
 test("getDb() échoue tant que connect() n'a pas été appelé", () => {
   assert.throws(() => db.getDb(), /n'est pas connectée/);
@@ -13,6 +13,19 @@ test('connect() sans URI est refusé clairement', async () => {
 
 test('connect() abandonne après les essais si la base est injoignable', async () => {
   await assert.rejects(db.connect({ uri: 'mongodb://127.0.0.1:1', retries: 2, delayMs: 10 }));
+});
+
+test('connect() avec user/password transmet les credentials au client', async () => {
+  // Les lignes options.auth sont exécutées avant l'échec réseau
+  await assert.rejects(
+    db.connect({
+      uri: 'mongodb://127.0.0.1:1',
+      user: 'admin',
+      password: 'secret',
+      retries: 1,
+      delayMs: 0,
+    }),
+  );
 });
 
 test('écrit et relit un document dans un vrai mongod', async (t) => {

@@ -1,16 +1,16 @@
 const express = require('express');
-const swaggerUi = require('swagger-ui-express');
 const OpenApiValidator = require('express-openapi-validator');
-const { buildSpec } = require('./openapi');
-const db = require('./db');
-const { ensureSchema } = require('./schema');
-const createUsersRouter = require('./routes/users');
+const { buildSpec } = require('./swagger/openapi');
+const db = require('./db/db');
+const { ensureSchema } = require('./db/schema');
+const { registerRoutes, registerSwagger } = require('./controllers/routes');
+const { userContext } = require('./db/plugins/audit');
 const helmet = require('helmet');
 
 const app = express();
 
-// Derrière nginx (docker compose), l'adresse du client arrive dans X-Forwarded-For :
-// TRUST_PROXY=1 permet de limiter chaque client séparément, et non nginx tout entier.
+// Behind a reverse proxy (e.g. nginx in Docker), the client IP arrives in X-Forwarded-For.
+// TRUST_PROXY=1 lets express-rate-limit count each client individually rather than the proxy.
 if (process.env.TRUST_PROXY) {
   app.set('trust proxy', Number(process.env.TRUST_PROXY));
 }
@@ -20,13 +20,9 @@ const spec = buildSpec();
 app.use(helmet());
 app.use(express.json());
 
-// Documentation (montée avant le validateur pour ne pas être filtrée par lui)
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(spec));
-app.get('/api-docs.json', (req, res) => {
-  res.json(spec);
-});
+registerSwagger(app);
 
-// Toute requête/réponse est vérifiée contre la spec générée depuis openapi.js
+// Every request and response is validated against the spec built from openapi.js.
 app.use(
   OpenApiValidator.middleware({
     apiSpec: spec,
@@ -35,28 +31,31 @@ app.use(
   }),
 );
 
-app.get('/', (req, res) => {
-  res.json({ status: 'ok' });
-});
+app.use((req, res, next) => userContext.run({}, next));
 
-app.use('/users', createUsersRouter());
+registerRoutes(app);
 
-// Erreurs du validateur (400 requête invalide, 404 route non documentée, 500 réponse non conforme)
-// et des routes (503 base indisponible). Express exige EXACTEMENT 4 paramètres pour reconnaître
-// un gestionnaire d'erreurs : `next` doit donc rester dans la signature.
-app.use((err, req, res, next) => {
-  if (res.headersSent) return next(err);
-  res.status(err.status || 500).json({
+// Error handler for validator errors (400/404/500) and controller errors (503).
+// Express requires exactly 4 parameters to recognise an error handler — `next` must stay.
+// eslint-disable-next-line no-unused-vars
+function handleError(err, req, res, next) {
+  if (res.headersSent) return;
+
+  const status = err.status || 500;
+
+  if (!err.status) console.error(err);
+
+  res.status(status).json({
     message: err.message,
     errors: err.errors,
   });
-});
+}
+app.use(handleError);
 
 async function start() {
-  // Sans MONGODB_URI, le back démarre sans base (utile en local et avec un faux back)
   if (process.env.MONGODB_URI) {
     await db.connect();
-    await ensureSchema(db.getDb());
+    await ensureSchema();
     console.log('Connecté à MongoDB');
   }
 
@@ -64,7 +63,7 @@ async function start() {
     console.log(`Server running on port ${port}`);
   });
 
-  // `docker stop` envoie SIGTERM : on ferme proprement le serveur puis la connexion à la base
+  // `docker stop` sends SIGTERM — close the HTTP server then the DB connection cleanly.
   const shutdown = () => {
     server.close(async () => {
       await db.close();
@@ -76,6 +75,8 @@ async function start() {
   process.on('SIGINT', shutdown);
 }
 
+// Covered by test/index-startup.test.js (subprocess — not visible to in-process c8).
+/* c8 ignore next 6 */
 if (require.main === module) {
   start().catch((error) => {
     console.error('Démarrage impossible :', error.message);
@@ -84,3 +85,5 @@ if (require.main === module) {
 }
 
 module.exports = app;
+module.exports.start = start;
+module.exports.handleError = handleError;

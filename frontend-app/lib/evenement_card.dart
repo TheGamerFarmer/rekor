@@ -21,7 +21,7 @@ class EvenementCard extends StatelessWidget {
       width: double.infinity,
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: const Color(0xFF303030).withOpacity(0.85),
+        color: const Color(0xFF303030).withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white10),
       ),
@@ -207,7 +207,7 @@ class EvenementCard extends StatelessWidget {
               height: 54,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.blue.withOpacity(0.15),
+                color: Colors.blue.withValues(alpha: 0.15),
                 border: Border.all(color: Colors.blue, width: 1.5),
               ),
               child: Icon(_iconeType(), color: Colors.blue, size: 28),
@@ -342,7 +342,7 @@ class EvenementCard extends StatelessWidget {
   }
 
   // Barre verte / rouge : participation d'un coup d'œil
-  Widget _barreParticipation() {
+  /*Widget _barreParticipation() {
     final p = evenement.presents.length;
     final a = evenement.absents.length;
 
@@ -383,7 +383,7 @@ class EvenementCard extends StatelessWidget {
         ),
       ],
     );
-  }
+  }*/
 
   // Une ligne d'info : icône + texte
   Widget _ligneInfo(IconData icone, String texte) {

@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_app/mobile_pages/arbitrage.dart';
 
-import '../mobile_pages/CovoituragePage.dart';
-import '../mobile_pages/evenementPage.dart';
+import '../mobile_pages/covoiturage_page.dart';
+import '../mobile_pages/evenement_page.dart';
 import '../mobile_pages/home_page.dart';
 
 // Menu de l'application mobile avec la navigation vers les différentes pages
@@ -44,6 +45,7 @@ class AppMenu extends StatelessWidget {
                 ),
 
                 IconButton(
+                  tooltip: 'Close',
                   onPressed: onClose,
                   icon: const Icon(Icons.close, color: Colors.white),
                 ),
@@ -60,110 +62,28 @@ class AppMenu extends StatelessWidget {
                 children: [
                   // Boucle pour les 9 pages dans elements
                   for (final element in elements)
-                    InkWell(
-                      onTap: () {
-                        // Lien à définir pour chaque élément
-                        if (element.$2 == 'Accueil') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  const MyHomePage(title: 'Accueil'),
-                            ),
-                          );
-                        }
-                        /*if (element.$2 == 'Discussions') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Discussions',
+                    Semantics(
+                      button: true,
+                      label: element.$2,
+                      //onTap: () => naviguerVersPage(context, element.$2),
+                      child: ExcludeSemantics(
+                        child: InkWell(
+                          onTap: () => naviguerVersPage(context, element.$2),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(element.$1, color: Colors.white, size: 35),
+                              const SizedBox(height: 10),
+                              Text(
+                                element.$2,
+                                textAlign: TextAlign.center,
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 16,
+                                ),
                               ),
-                            ),
-                          );
-                        }*/
-                        if (element.$2 == 'Covoiturage') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const CovoituragePage(),
-                            ),
-                          );
-                        }
-                        if (element.$2 == 'Évènements') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const Evenementpage(),
-                            ),
-                          );
-                        }
-                        /*if (element.$2 == 'Compétition') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Compétition',
-                              ),
-                            ),
-                          );
-                        }*/
-                        /*if (element.$2 == 'Arbitrage') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Arbitrage',
-                              ),
-                            ),
-                          );
-                        }*/
-                        /*if (element.$2 == 'Statistiques') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Statistiques',
-                              ),
-                            ),
-                          );
-                        }*/
-                        /*if (element.$2 == 'News') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'News',
-                              ),
-                            ),
-                          );
-                        }*/
-                        /*if (element.$2 == 'Paramètres') {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) => const MyHomePage(
-                                title: 'Paramètres',
-                              ),
-                            ),
-                          );
-                        }*/
-                      },
-                      child: Container(
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(element.$1, color: Colors.white, size: 35),
-                            const SizedBox(height: 10),
-                            Text(
-                              element.$2,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                              ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -173,6 +93,35 @@ class AppMenu extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+void naviguerVersPage(BuildContext context, String page) {
+  if (page == 'Accueil') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const MyHomePage(title: 'Accueil'),
+      ),
+    );
+  }
+  if (page == 'Covoiturage') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CovoituragePage()),
+    );
+  }
+  if (page == 'Évènements') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const Evenementpage()),
+    );
+  }
+  if (page == 'Arbitrage') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ArbitragePage()),
     );
   }
 }

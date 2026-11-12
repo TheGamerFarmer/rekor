@@ -28,7 +28,7 @@ class EvenementListeCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 15),
         padding: const EdgeInsets.all(10),
         decoration: BoxDecoration(
-          color: const Color(0xFF303030).withOpacity(0.9),
+          color: const Color(0xFF303030).withValues(alpha: 0.9),
           borderRadius: BorderRadius.circular(15),
         ),
         child: Row(

@@ -4,11 +4,10 @@ import { RouterOutlet } from '@angular/router';
 import { catchError, map, of } from 'rxjs';
 
 import { HealthService } from './api';
-import { SiteFooter } from './shared/site-footer/site-footer';
-import { SiteHeader } from './shared/site-header/site-header';
+import { Button } from './components/component-button/button';
 
 @Component({
-  imports: [RouterOutlet, SiteHeader, SiteFooter],
+  imports: [Button, RouterOutlet],
   selector: 'app-root',
   styleUrl: './app.css',
   templateUrl: './app.html',
