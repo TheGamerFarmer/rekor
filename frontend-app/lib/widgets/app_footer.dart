@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/home_page.dart';
+import 'package:frontend_app/mobile_pages/groupe.dart';
 
 // Footer de l'application mobile avec lien vers Accueil, Menu et Discussions
 class AppFooter extends StatelessWidget {
@@ -38,6 +39,10 @@ class AppFooter extends StatelessWidget {
             label: 'Discussions',
             onTap: () {
               // Navigation vers discussions à ajouter
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const GroupesPage()),
+              );
             },
           ),
         ],

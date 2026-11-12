@@ -37,6 +37,7 @@ dependencies:
   http: ^1.6.0
   rekor_api:
     path: api_client
+  image_picker: ^1.2.4
 
 dev_dependencies:
   flutter_test:
@@ -66,6 +67,7 @@ flutter:
     - public/img/volley_ball1.jpg
     - public/logo/logomark_noir.png
     - public/img/event.png
+    - public/img/
 
   # To add assets to your application, add an assets section, like this:
   # assets:
