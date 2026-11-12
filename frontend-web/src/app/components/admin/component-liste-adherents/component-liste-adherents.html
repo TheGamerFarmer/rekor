@@ -1,0 +1,23 @@
+<main>
+  <table>
+    <thead>
+      <tr>
+        <td>Nom</td>
+        <td>Prénom</td>
+        <td>Licences</td>
+        <td>Rôle</td>
+      </tr>
+    </thead>
+    <tbody>
+      @for (adherent of listeAdherents; track adherent.id) {
+        <tr>
+          <td>{{ adherent.nom }}</td>
+          <td>{{ adherent.prenom }}</td>
+          <td>{{ adherent.licences }}</td>
+          <td>{{ adherent.role }}</td>
+          <td><mat-icon>more_horiz</mat-icon></td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</main>
