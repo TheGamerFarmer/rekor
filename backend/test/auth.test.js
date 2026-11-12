@@ -24,6 +24,7 @@ const {
 const { createHmac } = require('node:crypto');
 const { clearRevokedSessions } = require('./helpers/redis');
 const RateLimit = require('express-rate-limit');
+const { userContext } = require('../db/plugins/audit');
 
 const account = {
   email: 'ada@exemple.fr',
@@ -63,6 +64,7 @@ function buildMiddlewareApp() {
 function buildApiApp() {
   const apiApp = express();
   apiApp.use(express.json());
+  apiApp.use((req, res, next) => userContext.run({}, next));
   apiApp.use('/users', createUsersRouter({ limit: 100 }));
   apiApp.use('/auth', createAuthRouter({ limit: 100 }));
   return apiApp;

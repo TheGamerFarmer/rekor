@@ -80,7 +80,7 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
       const user = await User.findOne({ email: { $eq: email } });
 
       const store = userContext.getStore();
-      if (store) store.userId = user._id.toString();
+      if (store) store.userId = user._id;
 
       try {
         await Registeration.create({
