@@ -111,6 +111,12 @@ class MyLoginPageState extends State<MyLoginPage> {
                     if (value.length < 8) {
                       return '8 caractères minimum';
                     }
+                    if (!RegExp(r'[^a-zA-Z0-9]').hasMatch(value)) {
+                      return 'Veuillez saisir au moins un symbole';
+                    }
+                    if (!RegExp(r'[A-Z]').hasMatch(value)) {
+                      return 'Veuillez saisir au moins une majuscule';
+                    }
                     return null;
                   },
                 ),
