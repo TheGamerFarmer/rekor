@@ -1,29 +1,39 @@
+import { provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
-import { AuthenticationService } from '../api/api/authentication.service';
+import { provideApi } from '../api';
 import { AuthService } from './auth.service';
 
 describe('AuthService', () => {
-  let login: ReturnType<typeof vi.fn>;
+  let http: HttpTestingController;
 
   beforeEach(() => {
     localStorage.clear();
-    login = vi.fn(() => of({ access_token: 'token-123' }));
     TestBed.configureTestingModule({
-      providers: [AuthService, { provide: AuthenticationService, useValue: { login } }],
+      providers: [AuthService, provideHttpClient(), provideHttpClientTesting(), provideApi('/api')],
     });
+    http = TestBed.inject(HttpTestingController);
   });
 
-  it('starts unauthenticated and logs in with the returned token', () => {
+  afterEach(() => {
+    http.verify();
+  });
+
+  it('posts credentials to the backend login endpoint and stores the returned token', () => {
     const service = TestBed.inject(AuthService);
 
     expect(service.isAuthenticated()).toBe(false);
     service.login({ email: 'joueur@example.com', password: 'motdepasse' }).subscribe();
 
-    expect(login).toHaveBeenCalledWith({
+    const request = http.expectOne('/api/auth/login');
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual({
       email: 'joueur@example.com',
       password: 'motdepasse',
     });
+
+    request.flush({ access_token: 'token-123', refresh_token: 'refresh-123' });
+
     expect(localStorage.getItem('rekor-access-token')).toBe('token-123');
     expect(service.isAuthenticated()).toBe(true);
   });
