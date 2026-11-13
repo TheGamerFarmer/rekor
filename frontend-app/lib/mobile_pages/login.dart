@@ -73,7 +73,7 @@ class MyLoginPageState extends State<MyLoginPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Adresse e-mail ou mot de passe incorrect.'),
+          content: Text('E-mail ou mot de passe incorrect'),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 3),
         ),
