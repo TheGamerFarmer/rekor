@@ -30,6 +30,7 @@ describe('ComponentConnexion', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+    expect(component['loginForm'].getRawValue().associationName).toBe('Gières Volley-Ball');
   });
 
   it('shows email validation and submits valid credentials', async () => {
@@ -58,6 +59,9 @@ describe('ComponentConnexion', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+    expect(login).toHaveBeenCalledWith(
+      expect.objectContaining({ associationName: 'Gières Volley-Ball' }),
+    );
   });
 
   it('toggles password visibility', () => {

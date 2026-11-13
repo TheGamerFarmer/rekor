@@ -13,6 +13,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './component-connexion.html',
 })
 export class ComponentConnexion {
+  private readonly associationName = 'Gières Volley-Ball';
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   protected readonly showPassword = signal(false);
@@ -20,6 +21,7 @@ export class ComponentConnexion {
   protected readonly loginError = signal<string | null>(null);
 
   protected readonly loginForm = new FormBuilder().nonNullable.group({
+    associationName: [this.associationName],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],
   });

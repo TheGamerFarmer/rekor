@@ -25,6 +25,7 @@ const ada = {
   birthday: new Date('1815-12-10T00:00:00.000Z'),
 };
 const UNKNOWN_ID = '000000000000000000000000';
+const association = { name: 'Gières Volley-Ball' };
 
 describe('/users (avec un vrai mongod)', () => {
   let mongod;
@@ -70,8 +71,8 @@ describe('/users (avec un vrai mongod)', () => {
       role: 'Adhérent',
       pronoun: 'Il',
     });
-    adaToken = signAccessToken({ _id: adaId, role: ada.role });
-    const refresh = signRefreshToken({ _id: adaId, role: ada.role });
+    adaToken = signAccessToken({ _id: adaId, role: ada.role }, association);
+    const refresh = signRefreshToken({ _id: adaId, role: ada.role }, association);
     adaRefreshToken = refresh.token;
     await RefreshToken.create({
       _id: refresh.sessionId,
@@ -150,10 +151,13 @@ describe('/users (avec un vrai mongod)', () => {
   });
 
   it('GET /users/me renvoie 404 si le compte du token a été supprimé', async () => {
-    const token = signAccessToken({
-      _id: new ObjectId(UNKNOWN_ID),
-      role: 'Visiteur',
-    });
+    const token = signAccessToken(
+      {
+        _id: new ObjectId(UNKNOWN_ID),
+        role: 'Visiteur',
+      },
+      association,
+    );
     const res = await request(app).get('/users/me').set('Authorization', `Bearer ${token}`);
 
     assert.strictEqual(res.status, 404);
@@ -183,11 +187,29 @@ describe('/users (avec un vrai mongod)', () => {
     assert.strictEqual(await verifyPassword('ancien-mot-de-passe', updated.password), true);
   });
 
+  it('PATCH /users/me accepte une mise à jour sans champ et ne modifie rien', async () => {
+    const response = await request(app)
+      .patch('/users/me')
+      .set('Authorization', `Bearer ${adaToken}`)
+      .send({});
+
+    assert.strictEqual(response.status, 204);
+    const unchanged = await db.getDb().collection('users').findOne({ _id: adaId });
+    assert.strictEqual(unchanged.name, ada.name);
+    assert.strictEqual(unchanged.firstName, ada.firstName);
+    assert.strictEqual(unchanged.phoneNumber, ada.phoneNumber);
+    assert.strictEqual(unchanged.birthday.toISOString(), ada.birthday.toISOString());
+    assert.strictEqual(unchanged.pronoun, ada.pronoun);
+  });
+
   it('PATCH /users/me renvoie 404 si le compte n’existe plus', async () => {
-    const token = signAccessToken({
-      _id: new ObjectId(UNKNOWN_ID),
-      role: 'Visiteur',
-    });
+    const token = signAccessToken(
+      {
+        _id: new ObjectId(UNKNOWN_ID),
+        role: 'Visiteur',
+      },
+      association,
+    );
     const res = await request(app)
       .patch('/users/me')
       .set('Authorization', `Bearer ${token}`)
@@ -213,10 +235,13 @@ describe('/users (avec un vrai mongod)', () => {
   });
 
   it('DELETE /users/me renvoie 404 si le compte n’existe plus', async () => {
-    const token = signAccessToken({
-      _id: new ObjectId(UNKNOWN_ID),
-      role: 'Visiteur',
-    });
+    const token = signAccessToken(
+      {
+        _id: new ObjectId(UNKNOWN_ID),
+        role: 'Visiteur',
+      },
+      association,
+    );
     const res = await request(app).delete('/users/me').set('Authorization', `Bearer ${token}`);
 
     assert.strictEqual(res.status, 404);
@@ -246,10 +271,13 @@ describe('/users (avec un vrai mongod)', () => {
   });
 
   it('PUT /users/me/password renvoie 404 si le compte n’existe plus', async () => {
-    const token = signAccessToken({
-      _id: new ObjectId(UNKNOWN_ID),
-      role: 'Visiteur',
-    });
+    const token = signAccessToken(
+      {
+        _id: new ObjectId(UNKNOWN_ID),
+        role: 'Visiteur',
+      },
+      association,
+    );
     const res = await request(app)
       .put('/users/me/password')
       .set('Authorization', `Bearer ${token}`)
@@ -311,5 +339,34 @@ describe('/users (avec un vrai mongod)', () => {
       },
     };
     handleError(new Error('already sent'), {}, mockRes, () => {});
+  });
+
+  it("le gestionnaire d'erreur respecte le status explicite et transmet les erreurs", () => {
+    const { handleError } = require('../index');
+    let responseStatus;
+    let responseBody;
+    const mockRes = {
+      headersSent: false,
+      status(status) {
+        responseStatus = status;
+        return this;
+      },
+      json(body) {
+        responseBody = body;
+      },
+    };
+
+    handleError(
+      Object.assign(new Error('invalid request'), { status: 422, errors: ['invalid field'] }),
+      {},
+      mockRes,
+      () => {},
+    );
+
+    assert.strictEqual(responseStatus, 422);
+    assert.deepStrictEqual(responseBody, {
+      message: 'invalid request',
+      errors: ['invalid field'],
+    });
   });
 });

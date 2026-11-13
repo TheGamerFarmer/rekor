@@ -1,5 +1,6 @@
 const createUsersRouter = require('./users');
 const createAuthRouter = require('./auth');
+const createAssociationRouter = require('./association');
 const swaggerUi = require('swagger-ui-express');
 const { buildSpec } = require('../swagger/openapi');
 
@@ -18,8 +19,9 @@ function registerRoutes(app) {
     res.json({ status: 'ok' });
   });
 
-  app.use('/users', createUsersRouter());
   app.use('/auth', createAuthRouter());
+  app.use('/users', createUsersRouter());
+  app.use('/association', createAssociationRouter());
 }
 
 module.exports = { registerSwagger, registerRoutes };
