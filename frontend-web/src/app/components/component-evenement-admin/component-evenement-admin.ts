@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
 import { EvenementService } from '../../services/evenement.service';
-import type { EvenementType } from '../component-evenement/evenements.data';
+import { getHeureEvenement, type EvenementType } from '../component-evenement/evenements.data';
 
 @Component({
   imports: [Banner, Button, ReactiveFormsModule],
@@ -42,7 +42,11 @@ export class ComponentEvenementAdmin {
 
     if (evenement) {
       this.isEditing.set(true);
-      this.eventForm.patchValue(evenement);
+      this.eventForm.patchValue({
+        ...evenement,
+        date: evenement.date.split('T')[0],
+        time: getHeureEvenement(evenement.date),
+      });
     }
   }
 
@@ -53,22 +57,21 @@ export class ComponentEvenementAdmin {
       return;
     }
 
-    const values = this.eventForm.getRawValue();
+    const { date, time, ...values } = this.eventForm.getRawValue();
+    const eventValues = {
+      ...values,
+      date: `${date}T${time}`,
+      type: values.type as EvenementType,
+    };
     const existingSlug = this.route.snapshot.paramMap.get('slug');
     if (existingSlug) {
       if (!this.evenementService.findBySlug(existingSlug)) {
         void this.router.navigate(['/admin/evenements']);
         return;
       }
-      this.evenementService.update(existingSlug, {
-        ...values,
-        type: values.type as EvenementType,
-      });
+      this.evenementService.update(existingSlug, eventValues);
     } else {
-      this.evenementService.add({
-        ...values,
-        type: values.type as EvenementType,
-      });
+      this.evenementService.add(eventValues);
     }
 
     void this.router.navigate(['/admin/evenements']);

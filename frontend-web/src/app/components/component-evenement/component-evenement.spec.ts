@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ComponentEvenement } from './component-evenement';
-import { defaultEvenements } from './evenements.data';
+import { defaultEvenements, getDateDuJour, getHeureEvenement } from './evenements.data';
 import { EvenementService } from '../../services/evenement.service';
 
 describe('ComponentEvenement', () => {
@@ -22,6 +22,23 @@ describe('ComponentEvenement', () => {
 
     fixture = TestBed.createComponent(ComponentEvenement);
     fixture.detectChanges();
+  });
+
+  it.each([
+    ['2026-11-13T08:30:00', '08:30'],
+    ['2026-11-13 08:30:00', '08:30'],
+    ['2026-11-13', ''],
+  ])('extracts the hour from %s', (date, expectedHour) => {
+    expect(getHeureEvenement(date)).toBe(expectedHour);
+  });
+
+  it('formats the current date for event filtering', () => {
+    const now = new Date();
+    const expected = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+      now.getDate(),
+    ).padStart(2, '0')}`;
+
+    expect(getDateDuJour()).toBe(expected);
   });
 
   it('renders upcoming events by default', () => {
@@ -86,5 +103,9 @@ describe('ComponentEvenement', () => {
     expect(fixture.nativeElement.querySelector('.empty-state')?.textContent).toContain(
       'Aucun événement',
     );
+  });
+
+  it('displays the event hour from the date field', () => {
+    expect(fixture.nativeElement.textContent).toContain('20:00');
   });
 });

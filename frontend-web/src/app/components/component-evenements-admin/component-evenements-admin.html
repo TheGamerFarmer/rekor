@@ -37,7 +37,7 @@
         <article class="event-row" role="listitem">
           <div class="event-date">
             <strong>{{ evenement.date | date: 'dd/MM/yyyy' }}</strong>
-            <span>{{ evenement.time }}</span>
+            <span>{{ getHeureEvenement(evenement.date) }}</span>
           </div>
           <div class="event-information">
             <h2>{{ evenement.name }}</h2>

@@ -31,6 +31,7 @@ describe('ComponentEvenementsAdmin', () => {
       'Gestion des événements',
     );
     expect(fixture.nativeElement.querySelectorAll('.event-row').length).toBeGreaterThan(0);
+    expect(fixture.nativeElement.textContent).toContain('20:00');
     expect(
       fixture.nativeElement.querySelector('a[href="/admin/evenements/nouveau"]'),
     ).not.toBeNull();
