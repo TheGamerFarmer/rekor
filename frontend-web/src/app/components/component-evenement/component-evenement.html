@@ -35,7 +35,10 @@
           <h2>{{ evenement.name }}</h2>
           <p>{{ evenement.description }}</p>
           <div class="event-meta">
-            <span><img src="/icons/calendrier.png" alt="" />{{ evenement.time }}</span>
+            <span>
+              <img src="/icons/calendrier.png" alt="" />
+              {{ getHeureEvenement(evenement.date) }}
+            </span>
             <span><img src="/icons/map.png" alt="" />{{ getNomGymnase(evenement.place) }}</span>
           </div>
         </div>

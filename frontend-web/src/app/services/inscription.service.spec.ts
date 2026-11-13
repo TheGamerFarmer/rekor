@@ -16,6 +16,7 @@ describe('InscriptionService', () => {
 
     service
       .register({
+        associationName: 'Gières Volley-Ball',
         firstName: 'Ada',
         lastName: 'Lovelace',
         email: 'ada@example.com',
@@ -32,6 +33,7 @@ describe('InscriptionService', () => {
   it('does not expose a backend error', () => {
     expect(() =>
       service.register({
+        associationName: 'Gières Volley-Ball',
         firstName: 'Ada',
         lastName: 'Lovelace',
         email: 'ada@example.com',
