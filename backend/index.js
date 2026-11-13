@@ -7,7 +7,7 @@ const { ensureSchema } = require('./db/schema');
 const { registerRoutes, registerSwagger } = require('./controllers/routes');
 const { userContext } = require('./db/plugins/audit');
 const helmet = require('helmet');
-const { cleanupExpiredAccounts } = require('./jobs/cleanupExpiredAccounts');
+const cleanupModule = require('./jobs/cleanupExpiredAccounts');
 
 const app = express();
 
@@ -65,16 +65,17 @@ async function start() {
     console.log(`Server running on port ${port}`);
   });
 
-  cron.schedule('0 1 * * *', async () => {
+  const cronTask = cron.schedule('0 1 * * *', async () => {
     try {
-      await cleanupExpiredAccounts();
+      await cleanupModule.cleanupExpiredAccounts();
     } catch (err) {
-      console.error('[Cron] Erreur lors de la suppression des comptes expirés :', err);
+      console.error('[Cron] Failed to delete expired accounts:', err);
     }
   });
 
   // `docker stop` sends SIGTERM — close the HTTP server then the DB connection cleanly.
   const shutdown = () => {
+    cronTask.stop();
     server.close(async () => {
       await db.close();
       process.exit(0);

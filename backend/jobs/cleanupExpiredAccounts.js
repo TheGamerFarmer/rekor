@@ -1,6 +1,12 @@
 const User = require('../db/models/user');
 const Registration = require('../db/models/registration');
 
+/**
+ * Deletes expired user accounts based on their role:
+ * - Visitors inactive for more than 2 months are removed unconditionally.
+ * - Other roles (Adhérent, Capitaine, Entraineur) are removed after 14 months
+ *   unless they have at least one registration created within that period.
+ */
 async function cleanupExpiredAccounts() {
   const now = new Date();
 
@@ -26,8 +32,8 @@ async function cleanupExpiredAccounts() {
   });
 
   console.log(
-    `[Cleanup] ${visiteurResult.deletedCount} visiteur(s) supprimé(s), ` +
-      `${userResult.deletedCount} utilisateur(s) expiré(s) supprimé(s).`,
+    `[Cleanup] ${visiteurResult.deletedCount} visitor(s) deleted, ` +
+      `${userResult.deletedCount} expired account(s) deleted.`,
   );
 }
 

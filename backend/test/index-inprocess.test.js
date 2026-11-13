@@ -44,6 +44,94 @@ describe('index.js (in-process)', () => {
     });
   });
 
+  describe('cron callback', () => {
+    it('exécute cleanupExpiredAccounts sans erreur', async () => {
+      const cron = require('node-cron');
+      const cleanup = require('../jobs/cleanupExpiredAccounts');
+
+      let capturedCallback;
+      const originalSchedule = cron.schedule;
+      cron.schedule = (_expr, cb) => {
+        capturedCallback = cb;
+        return { stop: () => {} };
+      };
+      const originalCleanup = cleanup.cleanupExpiredAccounts;
+      cleanup.cleanupExpiredAccounts = async () => {};
+
+      const { start } = require('../index');
+      const saved = saveSignals();
+      const originalExit = process.exit;
+      let resolveExit;
+      process.exit = (code) => resolveExit(code);
+      const exitPromise = new Promise((resolve) => {
+        resolveExit = resolve;
+      });
+      const prevUri = process.env.MONGODB_URI;
+      delete process.env.MONGODB_URI;
+
+      try {
+        await start();
+        await capturedCallback();
+      } finally {
+        cron.schedule = originalSchedule;
+        cleanup.cleanupExpiredAccounts = originalCleanup;
+        process.emit('SIGTERM');
+        await exitPromise;
+        process.exit = originalExit;
+        restoreSignals(saved);
+        if (prevUri === undefined) delete process.env.MONGODB_URI;
+        else process.env.MONGODB_URI = prevUri;
+      }
+    });
+
+    it('intercepte et loggue les erreurs de cleanupExpiredAccounts', async () => {
+      const cron = require('node-cron');
+      const cleanupModule = require('../jobs/cleanupExpiredAccounts');
+
+      let capturedCallback;
+      const originalSchedule = cron.schedule;
+      cron.schedule = (_expr, cb) => {
+        capturedCallback = cb;
+        return { stop: () => {} };
+      };
+      const originalCleanup = cleanupModule.cleanupExpiredAccounts;
+      cleanupModule.cleanupExpiredAccounts = async () => {
+        throw new Error('DB failure');
+      };
+
+      const { start } = require('../index');
+      const saved = saveSignals();
+      const originalExit = process.exit;
+      let resolveExit;
+      process.exit = (code) => resolveExit(code);
+      const exitPromise = new Promise((resolve) => {
+        resolveExit = resolve;
+      });
+      const prevUri = process.env.MONGODB_URI;
+      delete process.env.MONGODB_URI;
+
+      const logs = [];
+      const originalError = console.error;
+      console.error = (...args) => logs.push(args.map(String).join(' '));
+
+      try {
+        await start();
+        await capturedCallback();
+        assert.ok(logs.some((l) => l.includes('DB failure') && l.includes('[Cron]')));
+      } finally {
+        cron.schedule = originalSchedule;
+        cleanupModule.cleanupExpiredAccounts = originalCleanup;
+        console.error = originalError;
+        process.emit('SIGTERM');
+        await exitPromise;
+        process.exit = originalExit;
+        restoreSignals(saved);
+        if (prevUri === undefined) delete process.env.MONGODB_URI;
+        else process.env.MONGODB_URI = prevUri;
+      }
+    });
+  });
+
   describe('start()', () => {
     it('démarre le serveur et arrête sur SIGTERM sans base de données', async () => {
       const { start } = require('../index');
