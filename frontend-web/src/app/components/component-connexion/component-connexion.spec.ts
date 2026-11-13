@@ -57,6 +57,10 @@ describe('ComponentConnexion', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
+    expect(login).toHaveBeenCalledWith({
+      email: 'joueur@example.com',
+      password: 'motdepasse',
+    });
     expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
   });
 

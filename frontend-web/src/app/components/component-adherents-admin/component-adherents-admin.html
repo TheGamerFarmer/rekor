@@ -1,0 +1,188 @@
+<app-component-banner
+  image="/images/volley2.jpg"
+  title="Gestion des adhérents"
+  subtitle="Gérez les profils et suivez les inscriptions du club."
+/>
+
+<main class="admin-members-page">
+  <section class="admin-members-card" aria-label="Gestion des adhérents">
+    <header class="admin-members-header">
+      <nav class="registration-filters" aria-label="Filtrer les inscriptions">
+        @for (status of statuses; track status.value) {
+          <app-button
+            [variant]="registrationFilter() === status.value ? 'primary' : 'secondary'"
+            [text]="status.label + ' (' + getCount(status.value) + ')'"
+            [ariaCurrent]="registrationFilter() === status.value ? 'page' : null"
+            (click)="setFilter(status.value)"
+          ></app-button>
+        }
+      </nav>
+      <div class="header-actions">
+        <app-button
+          variant="secondary"
+          href="/admin/evenements"
+          text="Gérer les événements"
+        ></app-button>
+        <app-button
+          variant="primary"
+          text="Ajouter un adhérent"
+          (click)="startCreate()"
+        ></app-button>
+      </div>
+    </header>
+
+    @if (isFormVisible()) {
+      <section class="member-form-card" aria-labelledby="member-form-title">
+        <h2 id="member-form-title">
+          {{ editingId() === null ? 'Ajouter un adhérent' : 'Modifier un adhérent' }}
+        </h2>
+        <form [formGroup]="memberForm" (ngSubmit)="save()" novalidate>
+          <div class="form-grid">
+            <label class="field" for="last-name">
+              Nom
+              <input
+                id="last-name"
+                type="text"
+                formControlName="lastName"
+                autocomplete="family-name"
+              />
+              @if (submitted() && memberForm.controls.lastName.invalid) {
+                <small>Le nom est obligatoire.</small>
+              }
+            </label>
+
+            <label class="field" for="first-name">
+              Prénom
+              <input
+                id="first-name"
+                type="text"
+                formControlName="firstName"
+                autocomplete="given-name"
+              />
+              @if (submitted() && memberForm.controls.firstName.invalid) {
+                <small>Le prénom est obligatoire.</small>
+              }
+            </label>
+
+            <label class="field" for="pronoun">
+              Pronom
+              <select id="pronoun" formControlName="pronoun">
+                @for (pronoun of pronouns; track pronoun) {
+                  <option [value]="pronoun">{{ pronoun }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="field" for="birth-year">
+              Année de naissance
+              <input
+                id="birth-year"
+                type="number"
+                formControlName="birthYear"
+                min="1900"
+                [max]="currentYear"
+              />
+              @if (submitted() && memberForm.controls.birthYear.invalid) {
+                <small>Saisissez une année valide.</small>
+              }
+            </label>
+
+            <label class="field" for="phone">
+              Téléphone
+              <input id="phone" type="tel" formControlName="phone" autocomplete="tel" />
+              @if (submitted() && memberForm.controls.phone.invalid) {
+                <small>Saisissez un numéro de téléphone valide.</small>
+              }
+            </label>
+
+            <label class="field" for="email">
+              E-mail
+              <input id="email" type="email" formControlName="email" autocomplete="email" />
+              @if (submitted() && memberForm.controls.email.invalid) {
+                <small>Saisissez une adresse e-mail valide.</small>
+              }
+            </label>
+
+            <fieldset class="field role-field">
+              <legend>Rôle(s)</legend>
+              <div class="role-options">
+                @for (role of roles; track role) {
+                  <label class="role-option">
+                    <input
+                      type="checkbox"
+                      [checked]="hasRole(role)"
+                      (change)="onRoleChange(role, $event)"
+                    />
+                    {{ role }}
+                  </label>
+                }
+              </div>
+              @if (submitted() && memberForm.controls.roles.invalid) {
+                <small>Sélectionnez au moins un rôle.</small>
+              }
+            </fieldset>
+
+            <label class="field" for="registration-status">
+              Statut de l’inscription
+              <select id="registration-status" formControlName="registrationStatus">
+                @for (status of statuses; track status.value) {
+                  <option [value]="status.value">{{ status.label }}</option>
+                }
+              </select>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <app-button variant="secondary" text="Annuler" (click)="closeForm()"></app-button>
+            <app-button
+              type="submit"
+              [text]="editingId() === null ? 'Ajouter' : 'Enregistrer'"
+            ></app-button>
+          </div>
+        </form>
+      </section>
+    }
+
+    <div class="member-list" role="list">
+      @for (member of filteredAdherents(); track member.id) {
+        <article class="member-row" role="listitem">
+          <div class="member-information">
+            <h2>{{ member.firstName }} {{ member.lastName }}</h2>
+            <p>{{ member.pronoun }} · Né·e en {{ member.birthYear }}</p>
+            <div class="member-contact">
+              <a [href]="'tel:' + member.phone">{{ member.phone }}</a>
+              <a [href]="'mailto:' + member.email">{{ member.email }}</a>
+            </div>
+          </div>
+          <ul class="member-roles" aria-label="Rôles">
+            @for (role of member.roles; track role) {
+              <li>{{ role }}</li>
+            }
+          </ul>
+          <div class="member-actions">
+            <button
+              class="icon-action edit-action"
+              type="button"
+              [attr.aria-label]="'Modifier ' + member.firstName + ' ' + member.lastName"
+              title="Modifier"
+              (click)="startEdit(member)"
+            >
+              <img src="/icons/crayon.png" alt="" aria-hidden="true" />
+            </button>
+            <button
+              class="icon-action delete-action"
+              type="button"
+              [attr.aria-label]="'Supprimer ' + member.firstName + ' ' + member.lastName"
+              title="Supprimer"
+              (click)="deleteMember(member.id)"
+            >
+              <img src="/icons/corbeille.png" alt="" aria-hidden="true" />
+            </button>
+          </div>
+        </article>
+      } @empty {
+        <p class="empty-state">Aucun adhérent dans cette catégorie d’inscription.</p>
+      }
+    </div>
+  </section>
+</main>
