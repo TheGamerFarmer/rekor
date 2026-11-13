@@ -16,7 +16,11 @@
             currentEvenement.date | date: 'dd/MM/yyyy'
           }}</span
         >
-        <span><img src="/icons/horloge.png" alt="" />{{ currentEvenement.time }}</span>
+        <span
+          ><img src="/icons/horloge.png" alt="" />{{
+            getHeureEvenement(currentEvenement.date)
+          }}</span
+        >
         <span><img src="/icons/map.png" alt="" />{{ currentEvenement.place }}</span>
         <span><img src="/icons/user.png" alt="" />{{ currentEvenement.group }}</span>
       </div>

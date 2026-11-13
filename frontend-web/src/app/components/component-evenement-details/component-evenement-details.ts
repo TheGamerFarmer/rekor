@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
+import { getHeureEvenement } from '../component-evenement/evenements.data';
 import { EvenementService } from '../../services/evenement.service';
 
 @Component({
@@ -22,4 +23,9 @@ export class ComponentEvenementDetails {
     const slug = this.params()?.get('slug');
     return slug ? this.evenementService.findBySlug(slug) : undefined;
   });
+
+  /** Returns the hour stored in the event date-time value. */
+  protected getHeureEvenement(date: string): string {
+    return getHeureEvenement(date);
+  }
 }

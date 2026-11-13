@@ -1,7 +1,7 @@
 <app-component-banner
   image="/images/team.jpg"
   title="Rejoignez le club"
-  subtitle="Inscrivez-vous à l’association de volley-ball de Gières."
+  subtitle="Inscrivez-vous à l’association."
 />
 
 <main class="registration-page">
@@ -9,8 +9,10 @@
     <header class="registration-header">
       <h2 id="registration-title">Inscription</h2>
       <p class="subtitle">
-        Inscrivez-vous à l’association en remplissant ce formulaire. Votre candidature sera ensuite
-        étudiée par un responsable. Les champs marqués d’un astérisque (*) sont obligatoires.
+        Inscrivez-vous à l’association
+        {{ registrationForm.controls.associationName.value }}
+        en remplissant ce formulaire. Votre candidature sera ensuite étudiée par un responsable. Les
+        champs marqués d’un astérisque (*) sont obligatoires.
       </p>
     </header>
 

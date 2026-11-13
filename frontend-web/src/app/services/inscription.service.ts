@@ -3,6 +3,7 @@ import { Observable, of } from 'rxjs';
 import { RegisterInput } from '../api/model/registerInput';
 
 export interface InscriptionData {
+  associationName: string;
   firstName: string;
   lastName: string;
   email: string;
