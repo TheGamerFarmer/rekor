@@ -9,6 +9,7 @@ import {
   Validators,
 } from '@angular/forms';
 import { RegisterInput } from '../../api/model/registerInput';
+import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
 import { AuthService } from '../../services/auth.service';
 
@@ -21,7 +22,7 @@ function passwordsMatch(control: AbstractControl): ValidationErrors | null {
 }
 
 @Component({
-  imports: [Button, ReactiveFormsModule],
+  imports: [Banner, Button, ReactiveFormsModule],
   selector: 'app-component-compte',
   styleUrl: './component-compte.css',
   templateUrl: './component-compte.html',
@@ -45,6 +46,8 @@ export class ComponentCompte {
     email: ['alex.martin@example.com', [Validators.required, Validators.email]],
     phone: ['06 00 00 00 00'],
     birthday: [''],
+    healthData: [false],
+    imageRights: [false],
   });
 
   protected readonly passwordForm = new FormBuilder().nonNullable.group(
