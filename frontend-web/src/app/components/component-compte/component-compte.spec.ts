@@ -24,6 +24,29 @@ describe('ComponentCompte', () => {
     expect(component).toBeTruthy();
   });
 
+  it('shows the account banner and consent checkboxes below the birthday field', () => {
+    const banner = fixture.nativeElement.querySelector('app-component-banner');
+    const birthday = fixture.nativeElement.querySelector('#birthday');
+    const checkboxes = fixture.nativeElement.querySelectorAll(
+      'input[type="checkbox"][formControlName]',
+    ) as NodeListOf<HTMLInputElement>;
+
+    expect(banner).not.toBeNull();
+    expect(banner.getAttribute('title')).toBe('Mon compte');
+    expect(checkboxes).toHaveLength(2);
+    expect(
+      birthday.compareDocumentPosition(checkboxes[0]) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(checkboxes[0].getAttribute('formControlName')).toBe('healthData');
+    expect(checkboxes[1].getAttribute('formControlName')).toBe('imageRights');
+    expect(fixture.nativeElement.textContent).toContain(
+      'J’accepte que mon certificat médical soit collecté dans le cadre de mon inscription à l’association.',
+    );
+    expect(fixture.nativeElement.textContent).toContain(
+      'J’autorise l’association à utiliser et à diffuser les photos et vidéos sur lesquelles j’apparais, prises dans le cadre de ses activités, sur son site internet et ses supports de communication, selon les modalités précisées dans l’autorisation de droit à l’image.',
+    );
+  });
+
   it('saves valid account information', async () => {
     fixture.nativeElement.querySelector('form').dispatchEvent(new Event('submit'));
     await fixture.whenStable();

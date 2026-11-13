@@ -14,7 +14,7 @@ export interface Adherent {
   lastName: string;
   firstName: string;
   pronoun: MemberPronoun;
-  birthYear: number;
+  birthDate: string | null;
   phone: string;
   email: string;
   roles: MemberRole[];
@@ -69,11 +69,30 @@ export class AdherentService {
 
     try {
       const parsed: unknown = JSON.parse(stored);
-      return Array.isArray(parsed) && parsed.every(isAdherent) ? parsed : [];
+      if (!Array.isArray(parsed)) {
+        return [];
+      }
+
+      const members = parsed.map(migrateLegacyAdherent);
+      return members.every(isAdherent) ? members : [];
     } catch {
       return [];
     }
   }
+}
+
+function migrateLegacyAdherent(value: unknown): unknown {
+  if (!value || typeof value !== 'object') {
+    return value;
+  }
+
+  const member = value as Record<string, unknown>;
+  if (!('birthYear' in member) || 'birthDate' in member) {
+    return value;
+  }
+
+  const { birthYear: _birthYear, ...legacyMember } = member;
+  return { ...legacyMember, birthDate: null };
 }
 
 function isAdherent(value: unknown): value is Adherent {
@@ -87,7 +106,7 @@ function isAdherent(value: unknown): value is Adherent {
     typeof member['lastName'] === 'string' &&
     typeof member['firstName'] === 'string' &&
     MEMBER_PRONOUNS.includes(member['pronoun'] as MemberPronoun) &&
-    typeof member['birthYear'] === 'number' &&
+    (typeof member['birthDate'] === 'string' || member['birthDate'] === null) &&
     typeof member['phone'] === 'string' &&
     typeof member['email'] === 'string' &&
     Array.isArray(member['roles']) &&

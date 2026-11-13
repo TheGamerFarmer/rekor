@@ -17,25 +17,11 @@
           ></app-button>
         }
       </nav>
-      <div class="header-actions">
-        <app-button
-          variant="secondary"
-          href="/admin/evenements"
-          text="Gérer les événements"
-        ></app-button>
-        <app-button
-          variant="primary"
-          text="Ajouter un adhérent"
-          (click)="startCreate()"
-        ></app-button>
-      </div>
     </header>
 
-    @if (isFormVisible()) {
+    @if (isFormVisible() && editingId() !== null) {
       <section class="member-form-card" aria-labelledby="member-form-title">
-        <h2 id="member-form-title">
-          {{ editingId() === null ? 'Ajouter un adhérent' : 'Modifier un adhérent' }}
-        </h2>
+        <h2 id="member-form-title">Modifier un adhérent</h2>
         <form [formGroup]="memberForm" (ngSubmit)="save()" novalidate>
           <div class="form-grid">
             <label class="field" for="last-name">
@@ -73,17 +59,17 @@
               </select>
             </label>
 
-            <label class="field" for="birth-year">
-              Année de naissance
+            <label class="field" for="birth-date">
+              Date de naissance
               <input
-                id="birth-year"
-                type="number"
-                formControlName="birthYear"
-                min="1900"
-                [max]="currentYear"
+                id="birth-date"
+                type="date"
+                formControlName="birthDate"
+                min="1900-01-01"
+                [max]="currentDate"
               />
-              @if (submitted() && memberForm.controls.birthYear.invalid) {
-                <small>Saisissez une année valide.</small>
+              @if (submitted() && memberForm.controls.birthDate.invalid) {
+                <small>Saisissez une date de naissance valide.</small>
               }
             </label>
 
@@ -126,7 +112,9 @@
               Statut de l’inscription
               <select id="registration-status" formControlName="registrationStatus">
                 @for (status of statuses; track status.value) {
-                  <option [value]="status.value">{{ status.label }}</option>
+                  <option [value]="status.value">
+                    {{ status.value === 'validated' ? 'Validée' : status.label }}
+                  </option>
                 }
               </select>
             </label>
@@ -134,10 +122,7 @@
 
           <div class="form-actions">
             <app-button variant="secondary" text="Annuler" (click)="closeForm()"></app-button>
-            <app-button
-              type="submit"
-              [text]="editingId() === null ? 'Ajouter' : 'Enregistrer'"
-            ></app-button>
+            <app-button type="submit" text="Enregistrer"></app-button>
           </div>
         </form>
       </section>
@@ -148,7 +133,14 @@
         <article class="member-row" role="listitem">
           <div class="member-information">
             <h2>{{ member.firstName }} {{ member.lastName }}</h2>
-            <p>{{ member.pronoun }} · Né·e en {{ member.birthYear }}</p>
+            <p>
+              {{ member.pronoun }} ·
+              @if (member.birthDate) {
+                Né·e le {{ member.birthDate | date: 'dd/MM/yyyy' : 'UTC' }}
+              } @else {
+                Date de naissance à compléter
+              }
+            </p>
             <div class="member-contact">
               <a [href]="'tel:' + member.phone">{{ member.phone }}</a>
               <a [href]="'mailto:' + member.email">{{ member.email }}</a>

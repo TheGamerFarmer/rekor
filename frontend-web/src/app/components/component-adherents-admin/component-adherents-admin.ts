@@ -1,5 +1,13 @@
+import { DatePipe } from '@angular/common';
 import { Component, computed, inject, signal } from '@angular/core';
-import { FormBuilder, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
+import {
+  FormBuilder,
+  FormControl,
+  ReactiveFormsModule,
+  ValidationErrors,
+  Validators,
+  type AbstractControl,
+} from '@angular/forms';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
 import {
@@ -14,7 +22,7 @@ import {
 } from '../../services/adherent.service';
 
 @Component({
-  imports: [Banner, Button, ReactiveFormsModule],
+  imports: [Banner, Button, DatePipe, ReactiveFormsModule],
   selector: 'app-component-adherents-admin',
   templateUrl: './component-adherents-admin.html',
   styleUrl: './component-adherents-admin.css',
@@ -26,7 +34,7 @@ export class ComponentAdherentsAdmin {
   protected readonly editingId = signal<number | null>(null);
   protected readonly isFormVisible = signal(false);
   protected readonly submitted = signal(false);
-  protected readonly currentYear = new Date().getFullYear();
+  protected readonly currentDate = this.formatDate(new Date());
   protected readonly pronouns = MEMBER_PRONOUNS;
   protected readonly roles = MEMBER_ROLES;
   protected readonly statuses = [
@@ -46,10 +54,7 @@ export class ComponentAdherentsAdmin {
       nonNullable: true,
       validators: [Validators.required],
     }),
-    birthYear: [
-      new Date().getFullYear() - 20,
-      [Validators.required, Validators.min(1900), Validators.max(new Date().getFullYear())],
-    ],
+    birthDate: ['', [Validators.required, this.validateBirthDate]],
     phone: ['', [Validators.required, Validators.pattern(/^[0-9+().\s-]{6,20}$/)]],
     email: ['', [Validators.required, Validators.email]],
     roles: new FormControl<MemberRole[]>([], {
@@ -71,22 +76,6 @@ export class ComponentAdherentsAdmin {
     this.closeForm();
   }
 
-  protected startCreate(): void {
-    this.editingId.set(null);
-    this.submitted.set(false);
-    this.memberForm.reset({
-      lastName: '',
-      firstName: '',
-      pronoun: 'Iel',
-      birthYear: new Date().getFullYear() - 20,
-      phone: '',
-      email: '',
-      roles: [],
-      registrationStatus: this.registrationFilter(),
-    });
-    this.isFormVisible.set(true);
-  }
-
   protected startEdit(member: Adherent): void {
     this.editingId.set(member.id);
     this.submitted.set(false);
@@ -94,7 +83,7 @@ export class ComponentAdherentsAdmin {
       lastName: member.lastName,
       firstName: member.firstName,
       pronoun: member.pronoun,
-      birthYear: member.birthYear,
+      birthDate: member.birthDate ?? '',
       phone: member.phone,
       email: member.email,
       roles: [...member.roles],
@@ -131,9 +120,7 @@ export class ComponentAdherentsAdmin {
 
     const values: AdherentInput = this.memberForm.getRawValue();
     const id = this.editingId();
-    if (id === null) {
-      this.adherentService.add(values);
-    } else {
+    if (id !== null) {
       this.adherentService.update(id, values);
     }
     this.closeForm();
@@ -148,5 +135,27 @@ export class ComponentAdherentsAdmin {
     this.editingId.set(null);
     this.submitted.set(false);
     this.memberForm.reset();
+  }
+
+  private validateBirthDate(control: AbstractControl<string>): ValidationErrors | null {
+    const value = control.value;
+    if (!value) {
+      return null;
+    }
+
+    const date = new Date(`${value}T00:00:00`);
+    const [year, month, day] = value.split('-').map(Number);
+    const isValidDate =
+      date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+    return isValidDate && value >= '1900-01-01' && value <= this.currentDate
+      ? null
+      : { invalidBirthDate: true };
+  }
+
+  private formatDate(date: Date): string {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
   }
 }

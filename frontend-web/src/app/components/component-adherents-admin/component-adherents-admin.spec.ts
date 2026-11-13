@@ -15,7 +15,7 @@ describe('ComponentAdherentsAdmin', () => {
     lastName: 'Martin',
     firstName: 'Alex',
     pronoun: 'Iel',
-    birthYear: 2000,
+    birthDate: '2000-05-12',
     phone: '0600000000',
     email: 'alex@example.fr',
     roles: ['Adhérent', 'Capitaine'],
@@ -68,25 +68,11 @@ describe('ComponentAdherentsAdmin', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Sam Durand');
   });
 
-  it('opens the form with all requested profile fields', () => {
-    const buttons = fixture.nativeElement.querySelectorAll(
-      'button',
-    ) as NodeListOf<HTMLButtonElement>;
-    const addButton = Array.from(buttons).find((button) =>
-      button.textContent?.includes('Ajouter un adhérent'),
-    );
-    expect(addButton).toBeDefined();
-    addButton?.click();
+  it('does not offer member creation or navigation to event administration', () => {
     fixture.detectChanges();
 
-    const form = fixture.nativeElement.querySelector('form');
-    expect(form.querySelector('#last-name')).not.toBeNull();
-    expect(form.querySelector('#first-name')).not.toBeNull();
-    expect(form.querySelector('#pronoun')).not.toBeNull();
-    expect(form.querySelector('#birth-year')).not.toBeNull();
-    expect(form.querySelector('#phone')).not.toBeNull();
-    expect(form.querySelector('#email')).not.toBeNull();
-    expect(form.querySelectorAll('.role-option')).toHaveLength(4);
+    expect(fixture.nativeElement.textContent).not.toContain('Ajouter un adhérent');
+    expect(fixture.nativeElement.querySelector('a[href="/admin/evenements"]')).toBeNull();
   });
 
   it('loads the selected member into the edit form', () => {
@@ -98,53 +84,11 @@ describe('ComponentAdherentsAdmin', () => {
 
     expect(fixture.nativeElement.querySelector('#first-name').value).toBe('Sam');
     expect(fixture.nativeElement.querySelector('#email').value).toBe('sam@example.fr');
+    expect(fixture.nativeElement.querySelector('#birth-date').type).toBe('date');
+    expect(fixture.nativeElement.querySelector('#birth-date').value).toBe('2000-05-12');
     expect(fixture.nativeElement.querySelector('#member-form-title').textContent).toContain(
       'Modifier',
     );
-  });
-
-  it('saves a new member with multiple roles and a registration status', () => {
-    const addButton = fixture.nativeElement.querySelector(
-      '.header-actions app-button button',
-    ) as HTMLButtonElement;
-    addButton.click();
-    fixture.detectChanges();
-
-    const form = fixture.nativeElement.querySelector('form') as HTMLFormElement;
-    const setValue = (selector: string, value: string): void => {
-      const input = form.querySelector(selector) as HTMLInputElement | HTMLSelectElement;
-      input.value = value;
-      input.dispatchEvent(new Event('input', { bubbles: true }));
-      input.dispatchEvent(new Event('change', { bubbles: true }));
-    };
-
-    setValue('#last-name', 'Bernard');
-    setValue('#first-name', 'Charlie');
-    setValue('#birth-year', '2005');
-    setValue('#phone', '0612345678');
-    setValue('#email', 'charlie@example.fr');
-    const roleCheckboxes = form.querySelectorAll(
-      '.role-option input',
-    ) as NodeListOf<HTMLInputElement>;
-    roleCheckboxes[2].checked = true;
-    roleCheckboxes[2].dispatchEvent(new Event('change', { bubbles: true }));
-    roleCheckboxes[3].checked = true;
-    roleCheckboxes[3].dispatchEvent(new Event('change', { bubbles: true }));
-    fixture.detectChanges();
-
-    form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
-
-    expect(add).toHaveBeenCalledWith(
-      expect.objectContaining({
-        firstName: 'Charlie',
-        lastName: 'Bernard',
-        birthYear: 2005,
-        roles: ['Capitaine', 'Adhérent'],
-        registrationStatus: 'to-validate',
-      }),
-    );
-    fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('form')).toBeNull();
   });
 
   it('saves changes to the selected member', () => {
@@ -169,7 +113,10 @@ describe('ComponentAdherentsAdmin', () => {
       .querySelector('form')
       .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
 
-    expect(update).toHaveBeenCalledWith(1, expect.objectContaining({ firstName: 'Alexandre' }));
+    expect(update).toHaveBeenCalledWith(
+      1,
+      expect.objectContaining({ firstName: 'Alexandre', birthDate: '2000-05-12' }),
+    );
   });
 
   it('calls the service to delete a member', () => {
