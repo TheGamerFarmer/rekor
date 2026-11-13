@@ -1,5 +1,5 @@
 const { Schema, model } = require('mongoose');
-const { EVENT_TYPES } = require('../enums');
+const { EVENT_TYPE } = require('../enums');
 
 const eventSchema = new Schema(
   {
@@ -7,7 +7,7 @@ const eventSchema = new Schema(
     place: { type: String, required: true },
     type: {
       type: String,
-      enum: EVENT_TYPES,
+      enum: Object.values(EVENT_TYPE),
       required: true,
     },
     name: { type: String, required: true },

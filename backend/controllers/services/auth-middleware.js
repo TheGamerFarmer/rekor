@@ -1,7 +1,7 @@
 const { createHash, createHmac, randomUUID, timingSafeEqual } = require('node:crypto');
 const { getRedis } = require('./redisCache');
 const { userContext } = require('../../db/plugins/audit');
-const { USER_ROLES } = require('../../db/enums');
+const { USER_ROLE } = require('../../db/enums');
 
 /** Validity duration of access tokens, in seconds. */
 const ACCESS_TOKEN_LIFETIME_SECONDS = 15 * 60;
@@ -120,7 +120,7 @@ function verifyToken(token, secret) {
   const now = Math.floor(Date.now() / 1000);
   if (
     typeof payload.sub !== 'string' ||
-    !USER_ROLES.includes(payload.role) ||
+    !Object.values(USER_ROLE).includes(payload.role) ||
     !Number.isInteger(payload.exp) ||
     payload.exp <= now
   ) {
@@ -203,8 +203,8 @@ function authorize(...allowedRoles) {
     if (
       !allowedRoles.some(
         (role) =>
-          USER_ROLES.includes(role) &&
-          USER_ROLES.indexOf(req.auth.role) <= USER_ROLES.indexOf(role),
+          Object.values(USER_ROLE).includes(role) &&
+          Object.values(USER_ROLE).indexOf(req.auth.role) <= Object.values(USER_ROLE).indexOf(role),
       )
     ) {
       return res.status(403).json({ message: 'Accès interdit' });
