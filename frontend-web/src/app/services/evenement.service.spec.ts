@@ -1,3 +1,4 @@
+import { TestBed } from '@angular/core/testing';
 import { EvenementService } from './evenement.service';
 import {
   defaultEvenements,
@@ -16,6 +17,11 @@ const eventValues: Omit<Evenement, 'id' | 'slug'> = {
 describe('EvenementService', () => {
   beforeEach(() => {
     localStorage.clear();
+  });
+
+  it('can be injected via Angular DI', () => {
+    const service = TestBed.inject(EvenementService);
+    expect(service.evenements()).toEqual(defaultEvenements);
   });
 
   it('loads the default events when storage is empty', () => {
@@ -81,6 +87,25 @@ describe('EvenementService', () => {
     expect(JSON.parse(localStorage.getItem('rekor-evenements') ?? '')).toEqual(
       service.evenements(),
     );
+  });
+
+  it('falls back to defaults and skips persistence when localStorage is unavailable (SSR)', () => {
+    vi.stubGlobal('localStorage', undefined);
+
+    const service = new EvenementService();
+    expect(service.evenements()).toEqual(defaultEvenements);
+
+    service.add(eventValues);
+    expect(service.evenements()).toHaveLength(defaultEvenements.length + 1);
+
+    vi.unstubAllGlobals();
+  });
+
+  it('rejects stored events whose participants contain a null entry', () => {
+    const storedEvent = { ...defaultEvenements[0], participants: [null] };
+    localStorage.setItem('rekor-evenements', JSON.stringify([storedEvent]));
+
+    expect(new EvenementService().evenements()).toEqual(defaultEvenements);
   });
 
   it('updates, finds, and removes events', () => {

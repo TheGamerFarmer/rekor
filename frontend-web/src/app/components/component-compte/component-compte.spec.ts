@@ -123,6 +123,31 @@ describe('ComponentCompte', () => {
     expect(deleteButton.textContent).toContain('Compte supprimé');
   });
 
+  it('shows pronoun validation error when touched and empty', () => {
+    const pronounControl = component['accountForm'].controls.pronoun;
+    pronounControl.setValue(null);
+    pronounControl.markAsTouched();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Sélectionnez votre pronom.');
+  });
+
+  it('shows error when new password confirmation is empty after interaction', () => {
+    const confirmPassword = fixture.nativeElement.querySelector(
+      '#confirmPassword',
+    ) as HTMLInputElement;
+    confirmPassword.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Confirmez votre nouveau mot de passe.');
+  });
+
+  it('does not delete account when called without confirmation', () => {
+    component['deleteAccount']();
+
+    expect(component['accountDeleted']()).toBe(false);
+  });
+
   it('navigates to the home page when logging out', async () => {
     const router = TestBed.inject(Router);
     const navigateSpy = vi.spyOn(router, 'navigate').mockResolvedValue(true);

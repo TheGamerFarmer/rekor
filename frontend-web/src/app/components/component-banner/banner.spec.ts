@@ -34,4 +34,12 @@ describe('Banner', () => {
     expect(fixture.nativeElement.querySelector('.match-strip')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('.banner')?.id).toBe('accueil');
   });
+
+  it('renders the subtitle inside the home banner heading when provided', () => {
+    fixture.componentRef.setInput('isHome', true);
+    fixture.componentRef.setInput('subtitle', 'vs Grenoble');
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('h1 span')?.textContent).toContain('vs Grenoble');
+  });
 });
