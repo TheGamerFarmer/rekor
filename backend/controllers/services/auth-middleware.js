@@ -7,7 +7,6 @@ const { USER_ROLES } = require('../../db/enums');
 const ACCESS_TOKEN_LIFETIME_SECONDS = 15 * 60;
 /** Validity duration of refresh tokens, in seconds. */
 const REFRESH_TOKEN_LIFETIME_SECONDS = 30 * 24 * 60 * 60;
-const ROLES = USER_ROLES;
 
 class InvalidTokenError extends Error {}
 class RevokedSessionError extends Error {}
@@ -121,7 +120,7 @@ function verifyToken(token, secret) {
   const now = Math.floor(Date.now() / 1000);
   if (
     typeof payload.sub !== 'string' ||
-    !ROLES.includes(payload.role) ||
+    !USER_ROLES.includes(payload.role) ||
     !Number.isInteger(payload.exp) ||
     payload.exp <= now
   ) {
@@ -201,7 +200,13 @@ function authorize(...allowedRoles) {
     if (!req.auth) {
       return res.status(401).json({ message: 'Authentification requise' });
     }
-    if (!allowedRoles.some((role) => ROLES.includes(role) && req.auth.role === role)) {
+    if (
+      !allowedRoles.some(
+        (role) =>
+          USER_ROLES.includes(role) &&
+          USER_ROLES.indexOf(req.auth.role) <= USER_ROLES.indexOf(role),
+      )
+    ) {
       return res.status(403).json({ message: 'Accès interdit' });
     }
     return next();
