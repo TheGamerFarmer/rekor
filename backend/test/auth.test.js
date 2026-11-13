@@ -24,6 +24,7 @@ const {
 const { createHmac } = require('node:crypto');
 const { clearRevokedSessions } = require('./helpers/redis');
 const RateLimit = require('express-rate-limit');
+const { USER_ROLE } = require('../db/enums');
 const { userContext } = require('../db/plugins/audit');
 
 const account = {
@@ -501,7 +502,7 @@ describe('/auth', () => {
     const userId = '6ac8c78e50318b28d457048f';
 
     const visitorToken = signAccessToken(
-      { _id: { toString: () => userId }, role: 'Visiteur' },
+      { _id: { toString: () => userId }, role: USER_ROLE.VISITEUR },
       association,
     );
     const denied = await request(roleApp)
@@ -510,13 +511,22 @@ describe('/auth', () => {
     assert.strictEqual(denied.status, 403);
 
     const trainerToken = signAccessToken(
-      { _id: { toString: () => userId }, role: 'Entraineur' },
+      { _id: { toString: () => userId }, role: USER_ROLE.ENTRAINEUR },
       association,
     );
     const allowed = await request(roleApp)
       .get('/trainers')
       .set('Authorization', `Bearer ${trainerToken}`);
     assert.strictEqual(allowed.status, 204);
+
+    const administratorToken = signAccessToken(
+      { _id: { toString: () => userId }, role: USER_ROLE.ADMINISTRATEUR },
+      association,
+    );
+    const administratorAllowed = await request(roleApp)
+      .get('/trainers')
+      .set('Authorization', `Bearer ${administratorToken}`);
+    assert.strictEqual(administratorAllowed.status, 204);
   });
 
   it('rejette les tokens mal formés, falsifiés ou avec des claims invalides', async () => {

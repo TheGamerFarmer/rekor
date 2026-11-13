@@ -4,14 +4,15 @@ const { ObjectId } = require('mongodb');
 const { setup, teardown } = require('./helpers');
 const User = require('../../db/models/user');
 const { userContext } = require('../../db/plugins/audit');
+const { USER_ROLE, USER_PRONOUN } = require('../../db/enums');
 
 const valid = {
   name: 'Lovelace',
   firstName: 'Ada',
   email: 'ada@exemple.fr',
   password: 'motdepasse',
-  role: 'Adhérent',
-  pronoun: 'Elle',
+  role: USER_ROLE.ADHERENT,
+  pronoun: USER_PRONOUN.ELLE,
 };
 
 describe('collection user', () => {
@@ -26,6 +27,21 @@ describe('collection user', () => {
 
   it('accepte un document valide', async () => {
     await assert.doesNotReject(User.create({ ...valid }));
+  });
+
+  it('accepte chaque rôle et pronom défini par les enums', async () => {
+    for (const [index, role] of Object.values(USER_ROLE).entries()) {
+      await assert.doesNotReject(
+        User.create({ ...valid, email: `role-${index}@exemple.fr`, role }),
+      );
+    }
+
+    await User.deleteMany({});
+    for (const [index, pronoun] of Object.values(USER_PRONOUN).entries()) {
+      await assert.doesNotReject(
+        User.create({ ...valid, email: `pronoun-${index}@exemple.fr`, pronoun }),
+      );
+    }
   });
 
   for (const field of ['name', 'firstName', 'email', 'password', 'role', 'pronoun']) {

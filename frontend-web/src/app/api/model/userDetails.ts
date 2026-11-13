@@ -21,6 +21,7 @@ export interface UserDetails {
 }
 export namespace UserDetails {
     export const RoleEnum = {
+        Administrateur: 'Administrateur',
         Entraineur: 'Entraineur',
         Capitaine: 'Capitaine',
         Adhrent: 'Adhérent',

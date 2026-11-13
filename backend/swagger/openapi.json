@@ -99,6 +99,7 @@
               "role": {
                 "type": "string",
                 "enum": [
+                  "Administrateur",
                   "Entraineur",
                   "Capitaine",
                   "Adhérent",

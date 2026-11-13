@@ -2,12 +2,16 @@ const test = require('node:test');
 const assert = require('node:assert');
 const request = require('supertest');
 const app = require('../index');
+const { USER_ROLE } = require('../db/enums');
 
 test('GET /api-docs.json expose la spec OpenAPI avec la route /', async () => {
   const res = await request(app).get('/api-docs.json');
   assert.strictEqual(res.status, 200);
   assert.ok(res.body.openapi);
   assert.ok(res.body.paths['/']);
+  assert.deepStrictEqual(res.body.components.schemas.UserDetails.allOf[1].properties.role.enum, [
+    ...Object.values(USER_ROLE),
+  ]);
 });
 
 test('GET /api-docs.json documente les associations et leur usage en authentification', async () => {

@@ -9,6 +9,7 @@ const BankOperation = require('../../db/models/bank_operation');
 const BankOperationDocument = require('../../db/models/bank_operation_document');
 const Publication = require('../../db/models/publication');
 const Media = require('../../db/models/media');
+const { DOCUMENT_TYPE, MEDIA_TYPE } = require('../../db/enums');
 
 describe('collections association.js', () => {
   let mongod;
@@ -65,7 +66,7 @@ describe('collections association.js', () => {
 
     const valid = () => ({
       fileName: 'contrat.pdf',
-      type: 'Facture',
+      type: DOCUMENT_TYPE.FACTURE,
       association: new ObjectId(),
     });
 
@@ -86,6 +87,14 @@ describe('collections association.js', () => {
         Document.create({ ...valid(), type: 'PhotoDeVacances' }),
         /ValidationError/,
       );
+    });
+
+    it('accepte chaque type de document défini par l’enum', async () => {
+      for (const [index, type] of Object.values(DOCUMENT_TYPE).entries()) {
+        await assert.doesNotReject(
+          Document.create({ ...valid(), fileName: `document-${index}.pdf`, type }),
+        );
+      }
     });
 
     it('fileName doit être unique', async () => {
@@ -159,7 +168,11 @@ describe('collections association.js', () => {
   describe('media', () => {
     beforeEach(() => Media.deleteMany({}));
 
-    const valid = () => ({ name: 'photo.jpg', type: 'Image', publication: new ObjectId() });
+    const valid = () => ({
+      name: 'photo.jpg',
+      type: MEDIA_TYPE.IMAGE,
+      publication: new ObjectId(),
+    });
 
     it('accepte un document valide', async () => {
       await assert.doesNotReject(Media.create(valid()));
@@ -175,6 +188,12 @@ describe('collections association.js', () => {
 
     it('refuse un type invalide', async () => {
       await assert.rejects(Media.create({ ...valid(), type: 'Audio' }), /ValidationError/);
+    });
+
+    it('accepte chaque type de média défini par l’enum', async () => {
+      for (const [index, type] of Object.values(MEDIA_TYPE).entries()) {
+        await assert.doesNotReject(Media.create({ ...valid(), name: `media-${index}`, type }));
+      }
     });
   });
 });
