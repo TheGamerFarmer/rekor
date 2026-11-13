@@ -14,25 +14,31 @@ class LoginResponse {
   /// Returns a new [LoginResponse] instance.
   LoginResponse({
     required this.accessToken,
+    required this.refreshToken,
   });
 
   String accessToken;
 
+  String refreshToken;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is LoginResponse &&
-    other.accessToken == accessToken;
+    other.accessToken == accessToken &&
+    other.refreshToken == refreshToken;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
-    (accessToken.hashCode);
+    (accessToken.hashCode) +
+    (refreshToken.hashCode);
 
   @override
-  String toString() => 'LoginResponse[accessToken=$accessToken]';
+  String toString() => 'LoginResponse[accessToken=$accessToken, refreshToken=$refreshToken]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'access_token'] = this.accessToken;
+      json[r'refresh_token'] = this.refreshToken;
     return json;
   }
 
@@ -49,11 +55,14 @@ class LoginResponse {
       assert(() {
         assert(json.containsKey(r'access_token'), 'Required key "LoginResponse[access_token]" is missing from JSON.');
         assert(json[r'access_token'] != null, 'Required key "LoginResponse[access_token]" has a null value in JSON.');
+        assert(json.containsKey(r'refresh_token'), 'Required key "LoginResponse[refresh_token]" is missing from JSON.');
+        assert(json[r'refresh_token'] != null, 'Required key "LoginResponse[refresh_token]" has a null value in JSON.');
         return true;
       }());
 
       return LoginResponse(
         accessToken: mapValueOfType<String>(json, r'access_token')!,
+        refreshToken: mapValueOfType<String>(json, r'refresh_token')!,
       );
     }
     return null;
@@ -102,6 +111,7 @@ class LoginResponse {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     'access_token',
+    'refresh_token',
   };
 }
 

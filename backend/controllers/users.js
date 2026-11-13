@@ -6,6 +6,7 @@ const {
   Types: { ObjectId },
 } = require('mongoose');
 const User = require('../db/models/user');
+const RefreshToken = require('../db/models/refresh-token');
 const { wrapAsync, toPublicUser, toEssentialPublicUser } = require('./services/shared');
 const { authenticate } = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
@@ -67,6 +68,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
       if (result.deletedCount === 0) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
+      await RefreshToken.deleteMany({ userId: new ObjectId(req.auth.sub) });
       res.status(204).end();
     }),
   );
@@ -93,6 +95,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
         return res.status(409).json({ message: 'Le mot de passe a changé, réessaie' });
       }
 
+      await RefreshToken.deleteMany({ userId: currentUser._id });
       res.status(204).end();
     }),
   );
