@@ -18,7 +18,13 @@ describe('AuthService', () => {
     const service = TestBed.inject(AuthService);
 
     expect(service.isAuthenticated()).toBe(false);
-    service.login({ email: 'joueur@example.com', password: 'motdepasse' }).subscribe();
+    service
+      .login({
+        associationName: 'Gières Volley-Ball',
+        email: 'joueur@example.com',
+        password: 'motdepasse',
+      })
+      .subscribe();
 
     expect(login).toHaveBeenCalledWith({
       email: 'joueur@example.com',
