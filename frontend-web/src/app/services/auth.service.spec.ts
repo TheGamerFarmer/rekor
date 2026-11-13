@@ -38,4 +38,17 @@ describe('AuthService', () => {
     expect(localStorage.getItem('rekor-access-token')).toBeNull();
     expect(service.isAuthenticated()).toBe(false);
   });
+
+  it('skips localStorage calls when unavailable (SSR)', () => {
+    vi.stubGlobal('localStorage', undefined);
+
+    const service = TestBed.inject(AuthService);
+    service.login({ email: 'joueur@example.com', password: 'motdepasse' }).subscribe();
+    expect(service.isAuthenticated()).toBe(true);
+
+    service.logout();
+    expect(service.isAuthenticated()).toBe(false);
+
+    vi.unstubAllGlobals();
+  });
 });
