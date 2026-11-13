@@ -1,5 +1,5 @@
 /** Roles a user can hold within the application, ordered from most to least privileged. */
-const USER_ROLES = ['Entraineur', 'Capitaine', 'Adhérent', 'Visiteur'];
+const USER_ROLES = ['Administrateur', 'Entraineur', 'Capitaine', 'Adhérent', 'Visiteur'];
 
 /** Accepted pronouns for a user profile. */
 const USER_PRONOUNS = ['Il', 'Elle', 'Iel', 'Autre'];
