@@ -27,6 +27,7 @@ describe('AuthService', () => {
       .subscribe();
 
     expect(login).toHaveBeenCalledWith({
+      associationName: 'Gières Volley-Ball',
       email: 'joueur@example.com',
       password: 'motdepasse',
     });
