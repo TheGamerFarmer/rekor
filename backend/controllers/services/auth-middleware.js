@@ -30,14 +30,17 @@ function encode(value) {
  * Signs and returns a JWT access token for the given user.
  *
  * @param {{ _id: { toString(): string }, role: string }} user
+ * @param association
+ * @param sessionId
  * @returns {string} Signed JWT
  */
-function signAccessToken(user, sessionId = randomUUID()) {
+function signAccessToken(user, association, sessionId = randomUUID()) {
   const now = Math.floor(Date.now() / 1000);
   return signToken(
     {
       sub: user._id.toString(),
       role: user.role,
+      association: association.name,
       sid: sessionId,
       iat: now,
       exp: now + ACCESS_TOKEN_LIFETIME_SECONDS,
@@ -46,13 +49,22 @@ function signAccessToken(user, sessionId = randomUUID()) {
   );
 }
 
-function signRefreshToken(user, sessionId = randomUUID()) {
+/**
+ * Signs and returns a JWT refresh token for the given user.
+ *
+ * @param {{ _id: { toString(): string }, role: string }} user
+ * @param association
+ * @param sessionId
+ * @returns {string} Signed JWT
+ */
+function signRefreshToken(user, association, sessionId = randomUUID()) {
   const now = Math.floor(Date.now() / 1000);
   return {
     token: signToken(
       {
         sub: user._id.toString(),
         role: user.role,
+        association: association.name,
         sid: sessionId,
         jti: randomUUID(),
         token_use: 'refresh',
@@ -81,6 +93,7 @@ function signToken(payload, secret) {
  * has an invalid signature, uses an unsupported algorithm, or has expired.
  *
  * @param {unknown} token
+ * @param secret
  * @returns {{ sub: string, role: string, iat: number, exp: number }}
  */
 function verifyToken(token, secret) {

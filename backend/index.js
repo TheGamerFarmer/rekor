@@ -1,4 +1,5 @@
 const express = require('express');
+const cron = require('node-cron');
 const OpenApiValidator = require('express-openapi-validator');
 const { buildSpec } = require('./swagger/openapi');
 const db = require('./db/db');
@@ -6,6 +7,7 @@ const { ensureSchema } = require('./db/schema');
 const { registerRoutes, registerSwagger } = require('./controllers/routes');
 const { userContext } = require('./db/plugins/audit');
 const helmet = require('helmet');
+const cleanupModule = require('./jobs/cleanupExpiredAccounts');
 
 const app = express();
 
@@ -63,8 +65,17 @@ async function start() {
     console.log(`Server running on port ${port}`);
   });
 
+  const cronTask = cron.schedule('0 1 * * *', async () => {
+    try {
+      await cleanupModule.cleanupExpiredAccounts();
+    } catch (err) {
+      console.error('[Cron] Failed to delete expired accounts:', err);
+    }
+  });
+
   // `docker stop` sends SIGTERM — close the HTTP server then the DB connection cleanly.
   const shutdown = () => {
+    cronTask.stop();
     server.close(async () => {
       await db.close();
       process.exit(0);

@@ -9,6 +9,8 @@ const app = require('../index');
 const createUsersRouter = require('../controllers/users');
 const createAuthRouter = require('../controllers/auth');
 const User = require('../db/models/user');
+const Association = require('../db/models/association');
+const Registration = require('../db/models/registration');
 const RefreshToken = require('../db/models/refresh-token');
 const {
   authenticate,
@@ -22,6 +24,7 @@ const {
 const { createHmac } = require('node:crypto');
 const { clearRevokedSessions } = require('./helpers/redis');
 const RateLimit = require('express-rate-limit');
+const { userContext } = require('../db/plugins/audit');
 
 const account = {
   email: 'ada@exemple.fr',
@@ -29,7 +32,9 @@ const account = {
   firstName: 'Lovelace',
   password: 'mot-de-passe',
   pronoun: 'Elle',
+  associationName: 'Gières Volley-Ball',
 };
+const association = { name: account.associationName, address: '1 Rue des Sports 38610 Gières' };
 
 function signClaims(payload, secret = process.env.JWT_SECRET) {
   const encode = (value) => Buffer.from(JSON.stringify(value)).toString('base64url');
@@ -59,6 +64,7 @@ function buildMiddlewareApp() {
 function buildApiApp() {
   const apiApp = express();
   apiApp.use(express.json());
+  apiApp.use((req, res, next) => userContext.run({}, next));
   apiApp.use('/users', createUsersRouter({ limit: 100 }));
   apiApp.use('/auth', createAuthRouter({ limit: 100 }));
   return apiApp;
@@ -75,6 +81,7 @@ describe('/auth', () => {
     mongod = await MongoMemoryServer.create();
     await db.connect({ uri: mongod.getUri(), dbName: 'auth-test' });
     await db.getDb().collection('users').createIndex({ email: 1 }, { unique: true });
+    await Association.create(association);
   });
 
   after(async () => {
@@ -90,6 +97,7 @@ describe('/auth', () => {
   beforeEach(async () => {
     clearRevokedSessions();
     await db.getDb().collection('users').deleteMany({});
+    await Registration.deleteMany({});
     await RefreshToken.deleteMany({});
   });
 
@@ -102,6 +110,10 @@ describe('/auth', () => {
     const stored = await db.getDb().collection('users').findOne({ email: account.email });
     assert.notStrictEqual(stored.password, account.password);
     assert.strictEqual(stored.password.split(':')[0].length, 32);
+    const registration = await Registration.findOne({
+      association: (await Association.findOne())._id,
+    });
+    assert.strictEqual(registration.created_by.toString(), stored._id.toString());
   });
 
   it('enregistre un compte avec un anniversaire', async () => {
@@ -127,6 +139,7 @@ describe('/auth', () => {
     const res = await request(apiApp).post('/auth/login').send({
       email: account.email,
       password: account.password,
+      associationName: account.associationName,
     });
 
     assert.strictEqual(res.status, 200);
@@ -135,9 +148,11 @@ describe('/auth', () => {
     const accessClaims = await verifyAccessToken(res.body.access_token);
     const refreshClaims = verifyRefreshToken(res.body.refresh_token);
     assert.strictEqual(accessClaims.sub, storedUser._id.toString());
+    assert.strictEqual(accessClaims.association, account.associationName);
     assert.strictEqual(accessClaims.sid, refreshClaims.sid);
     assert.strictEqual(accessClaims.exp - accessClaims.iat, 15 * 60);
     assert.strictEqual(refreshClaims.sub, storedUser._id.toString());
+    assert.strictEqual(refreshClaims.association, account.associationName);
     assert.strictEqual(refreshClaims.exp - refreshClaims.iat, 30 * 24 * 60 * 60);
 
     const me = await request(apiApp)
@@ -153,6 +168,7 @@ describe('/auth', () => {
     const login = await request(apiApp).post('/auth/login').send({
       email: account.email,
       password: account.password,
+      associationName: account.associationName,
     });
 
     const refreshed = await request(apiApp).post('/auth/refresh').send({
@@ -211,10 +227,10 @@ describe('/auth', () => {
       .send({ refresh_token: 'invalid' });
     assert.strictEqual(malformedLogout.status, 401);
 
-    const invalidSubjectToken = signRefreshToken({
-      _id: { toString: () => 'not-an-object-id' },
-      role: 'Visiteur',
-    }).token;
+    const invalidSubjectToken = signRefreshToken(
+      { _id: { toString: () => 'not-an-object-id' }, role: 'Visiteur' },
+      association,
+    ).token;
     const invalidSubjectRefresh = await request(apiApp)
       .post('/auth/refresh')
       .send({ refresh_token: invalidSubjectToken });
@@ -227,10 +243,13 @@ describe('/auth', () => {
   });
 
   it('refuse un refresh token sans session enregistrée en base', async () => {
-    const token = signRefreshToken({
-      _id: { toString: () => '6ac8c78e50318b28d457048f' },
-      role: 'Visiteur',
-    }).token;
+    const token = signRefreshToken(
+      {
+        _id: { toString: () => '6ac8c78e50318b28d457048f' },
+        role: 'Visiteur',
+      },
+      association,
+    ).token;
 
     const refresh = await request(apiApp).post('/auth/refresh').send({ refresh_token: token });
     assert.strictEqual(refresh.status, 401);
@@ -258,7 +277,7 @@ describe('/auth', () => {
 
   it('supprime une session de refresh orpheline dont le compte a disparu', async () => {
     const userId = new ObjectId('6ac8c78e50318b28d457048f');
-    const refresh = signRefreshToken({ _id: userId, role: 'Visiteur' });
+    const refresh = signRefreshToken({ _id: userId, role: 'Visiteur' }, association);
     await RefreshToken.create({
       _id: refresh.sessionId,
       userId,
@@ -278,6 +297,7 @@ describe('/auth', () => {
     const login = await request(apiApp).post('/auth/login').send({
       email: account.email,
       password: account.password,
+      associationName: account.associationName,
     });
     const originalUpdateOne = RefreshToken.updateOne;
     RefreshToken.updateOne = async () => ({ matchedCount: 0 });
@@ -293,10 +313,13 @@ describe('/auth', () => {
   });
 
   it('refuse un refresh token utilisé comme access token', async () => {
-    const refresh = signRefreshToken({
-      _id: { toString: () => '6ac8c78e50318b28d457048f' },
-      role: 'Visiteur',
-    });
+    const refresh = signRefreshToken(
+      {
+        _id: { toString: () => '6ac8c78e50318b28d457048f' },
+        role: 'Visiteur',
+      },
+      association,
+    );
     const response = await request(buildMiddlewareApp())
       .get('/me')
       .set('Authorization', `Bearer ${refresh.token}`);
@@ -309,6 +332,7 @@ describe('/auth', () => {
     const login = await request(apiApp).post('/auth/login').send({
       email: account.email,
       password: account.password,
+      associationName: account.associationName,
     });
 
     const logout = await request(apiApp)
@@ -341,6 +365,7 @@ describe('/auth', () => {
     const res = await request(apiApp).post('/auth/login').send({
       email: account.email,
       password: 'incorrect',
+      associationName: account.associationName,
     });
 
     assert.strictEqual(res.status, 401);
@@ -355,6 +380,119 @@ describe('/auth', () => {
     assert.strictEqual(res.status, 409);
   });
 
+  it('refuse inscription et connexion pour une association inconnue', async () => {
+    const registration = await request(apiApp)
+      .post('/auth/register')
+      .send({ ...account, email: 'unknown-association@exemple.fr', associationName: 'Inconnue' });
+    const login = await request(apiApp)
+      .post('/auth/login')
+      .send({ email: account.email, password: account.password, associationName: 'Inconnue' });
+
+    assert.strictEqual(registration.status, 404);
+    assert.strictEqual(login.status, 404);
+  });
+
+  it('refuse la connexion si le compte est absent ou le mot de passe incorrect', async () => {
+    const unknownUser = await request(apiApp).post('/auth/login').send({
+      email: 'missing@exemple.fr',
+      password: account.password,
+      associationName: account.associationName,
+    });
+    await request(apiApp).post('/auth/register').send(account);
+    const incorrectPassword = await request(apiApp).post('/auth/login').send({
+      email: account.email,
+      password: 'incorrect',
+      associationName: account.associationName,
+    });
+
+    assert.strictEqual(unknownUser.status, 401);
+    assert.strictEqual(incorrectPassword.status, 401);
+  });
+
+  it('renvoie 409 si la création de l’inscription rencontre un doublon concurrent', async () => {
+    const originalCreate = Registration.create;
+    Registration.create = async () => {
+      throw Object.assign(new Error('Duplicate registration'), { code: 11000 });
+    };
+
+    try {
+      const response = await request(apiApp)
+        .post('/auth/register')
+        .send({ ...account, email: 'duplicate-registration@exemple.fr' });
+      assert.strictEqual(response.status, 409);
+      assert.match(response.body.message, /déjà inscrit/);
+    } finally {
+      Registration.create = originalCreate;
+    }
+  });
+
+  it('propage les erreurs inattendues de création de l’inscription', async () => {
+    const originalCreate = Registration.create;
+    Registration.create = async () => {
+      throw Object.assign(new Error('Registration write failed'), { code: 12345 });
+    };
+
+    try {
+      const response = await request(apiApp)
+        .post('/auth/register')
+        .send({ ...account, email: 'registration-error@exemple.fr' });
+      assert.strictEqual(response.status, 500);
+      assert.match(response.text, /Registration write failed/);
+    } finally {
+      Registration.create = originalCreate;
+    }
+  });
+
+  it('refuse le login si la session de refresh ne peut pas être persistée', async () => {
+    await request(apiApp).post('/auth/register').send(account);
+    const originalCreate = RefreshToken.create;
+    RefreshToken.create = async () => {
+      throw new Error('Refresh session write failed');
+    };
+
+    try {
+      const response = await request(apiApp).post('/auth/login').send({
+        email: account.email,
+        password: account.password,
+        associationName: account.associationName,
+      });
+      assert.strictEqual(response.status, 500);
+      assert.match(response.text, /Refresh session write failed/);
+    } finally {
+      RefreshToken.create = originalCreate;
+    }
+  });
+
+  it('refuse le refresh si l’association du token n’existe plus', async () => {
+    await request(apiApp).post('/auth/register').send(account);
+    const login = await request(apiApp).post('/auth/login').send({
+      email: account.email,
+      password: account.password,
+      associationName: account.associationName,
+    });
+    const originalFindOne = Association.findOne;
+    Association.findOne = async () => null;
+
+    try {
+      const response = await request(apiApp).post('/auth/refresh').send({
+        refresh_token: login.body.refresh_token,
+      });
+      assert.strictEqual(response.status, 401);
+    } finally {
+      Association.findOne = originalFindOne;
+    }
+  });
+
+  it('liste l’association disponible via GET /association', async () => {
+    const response = await request(app).get('/association');
+
+    assert.strictEqual(response.status, 200);
+    assert.deepStrictEqual(
+      response.body.map(({ name, address }) => ({ name, address })),
+      [association],
+    );
+  });
+
   it('autorise une route uniquement au rôle demandé', async () => {
     const roleApp = express();
     roleApp.get('/trainers', authenticate, authorize('Entraineur'), (req, res) =>
@@ -362,13 +500,19 @@ describe('/auth', () => {
     );
     const userId = '6ac8c78e50318b28d457048f';
 
-    const visitorToken = signAccessToken({ _id: { toString: () => userId }, role: 'Visiteur' });
+    const visitorToken = signAccessToken(
+      { _id: { toString: () => userId }, role: 'Visiteur' },
+      association,
+    );
     const denied = await request(roleApp)
       .get('/trainers')
       .set('Authorization', `Bearer ${visitorToken}`);
     assert.strictEqual(denied.status, 403);
 
-    const trainerToken = signAccessToken({ _id: { toString: () => userId }, role: 'Entraineur' });
+    const trainerToken = signAccessToken(
+      { _id: { toString: () => userId }, role: 'Entraineur' },
+      association,
+    );
     const allowed = await request(roleApp)
       .get('/trainers')
       .set('Authorization', `Bearer ${trainerToken}`);
@@ -420,10 +564,13 @@ describe('/auth', () => {
   });
 
   it('transmet les erreurs de configuration JWT du middleware au gestionnaire Express', async () => {
-    const validToken = signAccessToken({
-      _id: { toString: () => '6ac8c78e50318b28d457048f' },
-      role: 'Visiteur',
-    });
+    const validToken = signAccessToken(
+      {
+        _id: { toString: () => '6ac8c78e50318b28d457048f' },
+        role: 'Visiteur',
+      },
+      association,
+    );
     process.env.JWT_SECRET = 'short';
 
     try {
@@ -443,10 +590,10 @@ describe('/auth', () => {
       role: 'Visiteur',
     };
     delete process.env.JWT_SECRET;
-    assert.throws(() => signAccessToken(user), /JWT_SECRET doit contenir/);
+    assert.throws(() => signAccessToken(user, association), /JWT_SECRET doit contenir/);
 
     process.env.JWT_SECRET = 'short';
-    assert.throws(() => signAccessToken(user), /JWT_SECRET doit contenir/);
+    assert.throws(() => signAccessToken(user, association), /JWT_SECRET doit contenir/);
     process.env.JWT_SECRET = 'test-secret-with-at-least-32-bytes-long';
   });
 
