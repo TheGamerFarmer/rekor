@@ -50,7 +50,13 @@ describe('AuthService', () => {
     vi.stubGlobal('localStorage', undefined);
 
     const service = TestBed.inject(AuthService);
-    service.login({ email: 'joueur@example.com', password: 'motdepasse' }).subscribe();
+    service
+      .login({
+        associationName: 'Gières Volley-Ball',
+        email: 'joueur@example.com',
+        password: 'motdepasse',
+      })
+      .subscribe();
     expect(service.isAuthenticated()).toBe(true);
 
     service.logout();

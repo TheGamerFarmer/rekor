@@ -159,6 +159,7 @@ describe('ComponentInscription', () => {
     expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
     expect(register).toHaveBeenCalledWith(
       expect.objectContaining({
+        associationName: 'Gières Volley-Ball',
         name: 'Lovelace',
         firstName: 'Ada',
         email: 'ada@example.com',

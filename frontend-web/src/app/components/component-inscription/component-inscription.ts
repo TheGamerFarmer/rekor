@@ -90,6 +90,7 @@ export class ComponentInscription {
 
     this.authenticationService
       .register({
+        associationName: values.associationName,
         name: values.lastName,
         firstName: values.firstName,
         email: values.email,
