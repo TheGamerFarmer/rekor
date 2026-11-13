@@ -22,7 +22,6 @@ export class ComponentConnexion {
   protected readonly loginForm = new FormBuilder().nonNullable.group({
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],
-    rememberMe: [false],
   });
 
   /** Marks the login attempt and exposes validation errors when needed. */

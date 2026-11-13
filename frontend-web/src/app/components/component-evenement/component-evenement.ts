@@ -4,7 +4,7 @@ import { toSignal } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
-import { getNomGymnase } from './evenements.data';
+import { getDateDuJour, getHeureEvenement, getNomGymnase } from './evenements.data';
 import { EvenementService } from '../../services/evenement.service';
 
 const PAGE_SIZE = 6;
@@ -53,12 +53,13 @@ export class ComponentEvenement {
     return getNomGymnase(adresse);
   }
 
+  /** Returns the hour stored in the event date-time value. */
+  protected getHeureEvenement(date: string): string {
+    return getHeureEvenement(date);
+  }
+
   /** Returns today's local date in the same format as stored event dates. */
   private getToday(): string {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return getDateDuJour();
   }
 }

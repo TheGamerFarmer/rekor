@@ -30,6 +30,9 @@ describe('ComponentInscription', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+    expect(fixture.nativeElement.textContent).toContain('Inscrivez-vous à l’association');
+    expect(fixture.nativeElement.textContent).toContain('Gières Volley-Ball');
+    expect(fixture.nativeElement.querySelector('[formControlName="associationName"]')).toBeNull();
   });
 
   it('shows validation errors when required fields are invalid', async () => {
@@ -152,6 +155,9 @@ describe('ComponentInscription', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+    expect(register).toHaveBeenCalledWith(
+      expect.objectContaining({ associationName: 'Gières Volley-Ball' }),
+    );
   });
 
   it('toggles password and confirmation visibility', () => {

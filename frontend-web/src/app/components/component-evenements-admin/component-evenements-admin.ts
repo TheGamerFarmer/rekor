@@ -5,10 +5,12 @@ import { interval } from 'rxjs';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
 import { EvenementService } from '../../services/evenement.service';
-import type {
-  Evenement,
-  Participant,
-  ParticipantStatus,
+import {
+  getDateDuJour,
+  getHeureEvenement,
+  type Evenement,
+  type Participant,
+  type ParticipantStatus,
 } from '../component-evenement/evenements.data';
 
 @Component({
@@ -42,6 +44,11 @@ export class ComponentEvenementsAdmin {
     return evenement.participants?.filter((participant) => participant.status === status) ?? [];
   }
 
+  /** Returns the hour stored in the event date-time value. */
+  protected getHeureEvenement(date: string): string {
+    return getHeureEvenement(date);
+  }
+
   /** Changes the active status filter in the administration list. */
   protected setFilter(filter: 'past' | 'upcoming'): void {
     this.eventFilter.set(filter);
@@ -49,11 +56,7 @@ export class ComponentEvenementsAdmin {
 
   /** Returns today's local date in the event storage format. */
   private getToday(): string {
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return getDateDuJour();
   }
 
   /** Deletes an event through the shared event service. */

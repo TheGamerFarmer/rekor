@@ -11,6 +11,7 @@ import { ComponentEvenement } from './components/component-evenement/component-e
 import { ComponentEvenementDetails } from './components/component-evenement-details/component-evenement-details';
 import { ComponentEvenementAdmin } from './components/component-evenement-admin/component-evenement-admin';
 import { ComponentEvenementsAdmin } from './components/component-evenements-admin/component-evenements-admin';
+import { ComponentRegles } from './components/component-regles/component-regles';
 
 export const routes: Routes = [
   { path: '', component: ComponentAccueil },
@@ -20,6 +21,7 @@ export const routes: Routes = [
   { path: 'actualites/:slug', component: ComponentActualiteDetail },
   { path: 'inscription', component: ComponentInscription },
   { path: 'presentation-club', component: ComponentClub },
+  { path: 'regles', component: ComponentRegles },
   { path: 'evenements', component: ComponentEvenement },
   { path: 'evenements/:slug', component: ComponentEvenementDetails },
   { path: 'admin/evenements', component: ComponentEvenementsAdmin },
