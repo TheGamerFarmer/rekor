@@ -1,5 +1,9 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/home_page.dart';
+
+import '../api/api_client.dart';
 
 class MyLoginPage extends StatefulWidget {
   const MyLoginPage({super.key});
@@ -24,7 +28,7 @@ class MyLoginPageState extends State<MyLoginPage> {
     super.dispose();
   }
 
-  void login() {
+  /*void login() {
     if (formKey.currentState!.validate()) {
       // Appelle backend pour se connecter
 
@@ -33,6 +37,45 @@ class MyLoginPageState extends State<MyLoginPage> {
         context,
         MaterialPageRoute(
           builder: (context) => const MyHomePage(title: 'Accueil'),
+        ),
+      );
+    }
+  }*/
+
+  Future<void> login() async {
+    if (!formKey.currentState!.validate()) return;
+
+    try {
+      final token = await ApiClient.instance
+          .login(emailController.text.trim(), passwordController.text)
+          .timeout(const Duration(seconds: 10));
+      // La connexion est réussie.
+      // Le token est déjà configuré dans ApiClient.
+
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const MyHomePage(title: 'Accueil'),
+        ),
+      );
+    } on TimeoutException {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Le serveur met trop de temps à répondre.'),
+        ),
+      );
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Adresse e-mail ou mot de passe incorrect.'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
         ),
       );
     }
