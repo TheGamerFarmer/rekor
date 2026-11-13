@@ -1,5 +1,6 @@
 import 'package:http/http.dart' as http;
 import 'package:rekor_api/api.dart' as generated;
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 /// Client du back-end, au-dessus du client généré depuis le contrat OpenAPI (api_client/).
 /// Ne modifie jamais le code généré : si le contrat change, relance `npm run clients:generate` dans backend/.
@@ -29,6 +30,8 @@ class ApiClient {
   late final generated.AuthenticationApi _auth;
   late final generated.UsersApi _users;
 
+  static const FlutterSecureStorage _storage = FlutterSecureStorage();
+
   /// Instance utilisée par l'application. Les tests peuvent la remplacer
   /// (par exemple par un client qui simule les réponses du back).
   static ApiClient instance = ApiClient(
@@ -57,7 +60,14 @@ class ApiClient {
     }
 
     setAccessToken(response.accessToken);
+
+    await _storage.write(key: 'refresh_token', value: response.refreshToken);
+
     return response.accessToken;
+  }
+
+  Future<String?> getRefreshToken() async {
+    return await _storage.read(key: 'refresh_token');
   }
 
   /// Configure le token utilisé pour les prochaines requêtes.

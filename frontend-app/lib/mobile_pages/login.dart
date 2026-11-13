@@ -46,12 +46,13 @@ class MyLoginPageState extends State<MyLoginPage> {
     if (!formKey.currentState!.validate()) return;
 
     try {
-      final token = await ApiClient.instance
-          .login(emailController.text.trim(), passwordController.text)
-          .timeout(const Duration(seconds: 10));
-      // La connexion est réussie.
-      // Le token est déjà configuré dans ApiClient.
+      final token = await ApiClient.instance.login(
+        emailController.text.trim(),
+        passwordController.text,
+      );
+      // Le token est configuré dans ApiClient.
 
+      // La connexion est réussie.
       if (!mounted) return;
 
       Navigator.pushReplacement(
@@ -61,6 +62,7 @@ class MyLoginPageState extends State<MyLoginPage> {
         ),
       );
     } on TimeoutException {
+      // La connexion met trop de temps
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -69,6 +71,7 @@ class MyLoginPageState extends State<MyLoginPage> {
         ),
       );
     } catch (e) {
+      // La connexion renvoie une erreur
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
@@ -115,9 +118,6 @@ class MyLoginPageState extends State<MyLoginPage> {
                     if (value == null || value.isEmpty) {
                       return 'Veuillez saisir votre e-mail';
                     }
-                    if (!value.contains('@')) {
-                      return 'Adresse e-mail invalide';
-                    }
                     return null;
                   },
                 ),
@@ -150,15 +150,6 @@ class MyLoginPageState extends State<MyLoginPage> {
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Veuillez saisir votre mot de passe';
-                    }
-                    if (value.length < 8) {
-                      return '8 caractères minimum';
-                    }
-                    if (!RegExp(r'[^a-zA-Z0-9]').hasMatch(value)) {
-                      return 'Veuillez saisir au moins un symbole';
-                    }
-                    if (!RegExp(r'[A-Z]').hasMatch(value)) {
-                      return 'Veuillez saisir au moins une majuscule';
                     }
                     return null;
                   },
