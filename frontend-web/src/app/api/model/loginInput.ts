@@ -10,7 +10,6 @@
 
 
 export interface LoginInput { 
-    associationName: string;
     email: string;
     password: string;
     /**
@@ -18,3 +17,4 @@ export interface LoginInput {
      */
     associationName: string;
 }
+
