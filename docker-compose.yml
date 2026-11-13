@@ -9,8 +9,11 @@ services:
       - MONGODB_USER=${DB_USER}
       - MONGODB_PASSWORD=${DB_PASSWORD}
       - JWT_SECRET=${JWT_SECRET}
+      - REDIS_URL=redis://redis:6379
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   frontend-web:
@@ -37,6 +40,14 @@ services:
       - mongo_data:/data/db
     ports:
       - "127.0.0.1:27017:27017"
+
+  redis:
+    image: redis:7-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
 
 volumes:
   mongo_data:

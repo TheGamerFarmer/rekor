@@ -4,24 +4,38 @@
   </a>
   <a class="club-name" href="/presentation-club">Gières Volley-Ball</a>
   <nav class="main-nav" aria-label="Navigation principale">
-    <a href="/evenements">Actus</a>
+    <a href="/actualites">Actus</a>
+    <a href="/evenements">Événements</a>
     <a href="/presentation-club">Le club</a>
-    <a href="/inscription">Inscription</a>
+    @if (authService.isAuthenticated()) {
+      <a href="/compte">Mon compte</a>
+    } @else {
+      <a href="/inscription">Inscription</a>
+    }
     <a href="/#regles">FAQ</a>
-    <app-button
-      class="login-link"
-      variant="outline"
-      size="small"
-      href="/connexion"
-      [text]="'Connexion'"
-    ></app-button>
+    @if (authService.isAuthenticated()) {
+      <app-button
+        class="login-link"
+        variant="outline"
+        size="small"
+        text="Déconnexion"
+        (click)="logout()"
+      ></app-button>
+    } @else {
+      <app-button
+        class="login-link"
+        variant="outline"
+        size="small"
+        href="/connexion"
+        text="Connexion"
+      ></app-button>
+    }
   </nav>
 </header>
 
 <router-outlet />
 
 <footer class="site-footer" id="contact">
-  <p class="backend-status" data-testid="backend-status">Backend : {{ backendStatus() }}</p>
   <div class="footer-content">
     <div class="footer-hours">
       <p><strong>Horaires séance</strong><br />Mardi 20h – 22h</p>
@@ -34,7 +48,8 @@
       </p>
     </div>
     <nav class="footer-links" aria-label="Liens du site">
-      <a href="/evenements">Actus</a>
+      <a href="/actualites">Actus</a>
+      <a href="/evenements">Événements</a>
       <a href="/presentation-club">Le club</a>
       <a href="/inscription">Inscription</a>
     </nav>

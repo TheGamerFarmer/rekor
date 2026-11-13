@@ -5,8 +5,14 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const { ObjectId } = require('mongodb');
 const db = require('../db/db');
 const app = require('../index');
-const { signAccessToken } = require('../controllers/services/auth-middleware');
+const RefreshToken = require('../db/models/refresh-token');
+const {
+  signAccessToken,
+  signRefreshToken,
+  hashRefreshToken,
+} = require('../controllers/services/auth-middleware');
 const { hashPassword, verifyPassword } = require('../controllers/services/password');
+const { clearRevokedSessions } = require('./helpers/redis');
 
 const ada = {
   name: 'Lovelace',
@@ -25,6 +31,7 @@ describe('/users (avec un vrai mongod)', () => {
   let adaId;
   let alanId;
   let adaToken;
+  let adaRefreshToken;
   const previousJwtSecret = process.env.JWT_SECRET;
 
   before(async () => {
@@ -44,6 +51,7 @@ describe('/users (avec un vrai mongod)', () => {
   });
 
   beforeEach(async () => {
+    clearRevokedSessions();
     const collection = db.getDb().collection('users');
     await collection.deleteMany({});
     adaId = new ObjectId('000000000000000000000001');
@@ -63,6 +71,14 @@ describe('/users (avec un vrai mongod)', () => {
       pronoun: 'Il',
     });
     adaToken = signAccessToken({ _id: adaId, role: ada.role });
+    const refresh = signRefreshToken({ _id: adaId, role: ada.role });
+    adaRefreshToken = refresh.token;
+    await RefreshToken.create({
+      _id: refresh.sessionId,
+      userId: adaId,
+      tokenHash: hashRefreshToken(refresh.token),
+      expiresAt: refresh.expiresAt,
+    });
   });
 
   it('GET /users liste les profils essentiels sans données privées', async () => {
@@ -185,6 +201,11 @@ describe('/users (avec un vrai mongod)', () => {
 
     assert.strictEqual(res.status, 204);
     assert.strictEqual(await db.getDb().collection('users').findOne({ _id: adaId }), null);
+    assert.strictEqual(await RefreshToken.findOne({ userId: adaId }), null);
+    const refreshAfterDelete = await request(app)
+      .post('/auth/refresh')
+      .send({ refresh_token: adaRefreshToken });
+    assert.strictEqual(refreshAfterDelete.status, 401);
     const subsequentGet = await request(app)
       .get('/users/me')
       .set('Authorization', `Bearer ${adaToken}`);
@@ -217,6 +238,11 @@ describe('/users (avec un vrai mongod)', () => {
     const stored = await db.getDb().collection('users').findOne({ _id: adaId });
     assert.strictEqual(await verifyPassword('ancien-mot-de-passe', stored.password), false);
     assert.strictEqual(await verifyPassword('nouveau-mot-de-passe', stored.password), true);
+    assert.strictEqual(await RefreshToken.findOne({ userId: adaId }), null);
+    const refreshAfterPasswordChange = await request(app)
+      .post('/auth/refresh')
+      .send({ refresh_token: adaRefreshToken });
+    assert.strictEqual(refreshAfterPasswordChange.status, 401);
   });
 
   it('PUT /users/me/password renvoie 404 si le compte n’existe plus', async () => {

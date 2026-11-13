@@ -1,0 +1,40 @@
+@if (evenement(); as currentEvenement) {
+  <app-component-banner
+    image="/images/volley2.jpg"
+    [title]="currentEvenement.name"
+    [subtitle]="currentEvenement.type"
+  />
+
+  <main class="event-detail">
+    <article class="detail-card">
+      <div class="detail-description">
+        <p>{{ currentEvenement.description }}</p>
+      </div>
+      <div class="detail-meta">
+        <span
+          ><img src="/icons/calendrier.png" alt="" />{{
+            currentEvenement.date | date: 'dd/MM/yyyy'
+          }}</span
+        >
+        <span><img src="/icons/horloge.png" alt="" />{{ currentEvenement.time }}</span>
+        <span><img src="/icons/map.png" alt="" />{{ currentEvenement.place }}</span>
+        <span><img src="/icons/user.png" alt="" />{{ currentEvenement.group }}</span>
+      </div>
+    </article>
+    <app-button
+      class="back-button"
+      variant="secondary"
+      href="/evenements"
+      text="Retour aux événements"
+    ></app-button>
+  </main>
+} @else {
+  <app-component-banner
+    image="/images/volley4.jpg"
+    title="Événement introuvable"
+    subtitle="Cet événement n'existe pas ou n'est plus disponible."
+  />
+  <main class="event-detail not-found">
+    <app-button variant="primary" href="/evenements" text="Voir tous les événements"></app-button>
+  </main>
+}

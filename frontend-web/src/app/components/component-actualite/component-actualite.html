@@ -1,0 +1,64 @@
+<app-component-banner
+  image="/images/volley2.jpg"
+  title="Actualités"
+  subtitle="Les nouvelles et les rendez-vous qui font vivre le Gières Volley-Ball."
+/>
+
+<main class="actualites-page">
+  <section class="news-list" aria-label="Actualités du club">
+    @for (actualite of visibleActualites(); track actualite.slug) {
+      <article
+        class="news-card"
+        [class.news-card-registration]="actualite.slug === 'inscriptions-ouvertes'"
+        [style.background-image]="'url(' + actualite.image + ')'"
+      >
+        <div class="news-content">
+          <h2>{{ actualite.titre }}</h2>
+          <p>{{ actualite.summary }}</p>
+        </div>
+        <app-button
+          class="news-link"
+          variant="outline"
+          [href]="'/actualites/' + actualite.slug"
+          text="Lire l’actualité"
+          [iconSrc]="'/icons/arrow.png'"
+          [iconVariant]="'light'"
+        ></app-button>
+      </article>
+    }
+  </section>
+
+  <nav class="pagination" aria-label="Navigation des pages d’actualités">
+    <app-button
+      class="pagination-previous"
+      variant="secondary"
+      size="small"
+      text="Précédent"
+      ariaLabel="Page précédente"
+      [disabled]="activePage() === 1"
+      (click)="goToPage(activePage() - 1)"
+    ></app-button>
+    <div class="pagination-pages">
+      @for (page of visiblePages(); track page) {
+        <app-button
+          class="pagination-page"
+          [variant]="page === activePage() ? 'primary' : 'secondary'"
+          size="small"
+          [text]="page.toString()"
+          [ariaLabel]="'Page ' + page"
+          [ariaCurrent]="page === activePage() ? 'page' : null"
+          (click)="goToPage(page)"
+        ></app-button>
+      }
+    </div>
+    <app-button
+      class="pagination-next"
+      variant="secondary"
+      size="small"
+      text="Suivant"
+      ariaLabel="Page suivante"
+      [disabled]="activePage() === pageCount()"
+      (click)="goToPage(activePage() + 1)"
+    ></app-button>
+  </nav>
+</main>
