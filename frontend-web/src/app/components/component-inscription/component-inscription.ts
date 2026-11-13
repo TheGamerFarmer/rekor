@@ -34,6 +34,7 @@ function maxPhoneDigits(control: AbstractControl): ValidationErrors | null {
   templateUrl: './component-inscription.html',
 })
 export class ComponentInscription {
+  private readonly associationName = 'Gières Volley-Ball';
   protected readonly showPassword = signal(false);
   protected readonly showConfirmation = signal(false);
   protected readonly submitted = signal(false);
@@ -45,6 +46,7 @@ export class ComponentInscription {
 
   protected readonly registrationForm = new FormBuilder().nonNullable.group(
     {
+      associationName: [this.associationName],
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
       pronoun: new FormControl<RegisterInput.PronounEnum | ''>('', {
@@ -88,6 +90,7 @@ export class ComponentInscription {
 
     this.inscriptionService
       .register({
+        associationName: values.associationName,
         firstName: values.firstName,
         lastName: values.lastName,
         email: values.email,

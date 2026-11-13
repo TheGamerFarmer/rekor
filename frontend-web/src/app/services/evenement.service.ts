@@ -66,7 +66,13 @@ export class EvenementService {
 
     try {
       const parsed: unknown = JSON.parse(stored);
-      return Array.isArray(parsed) && parsed.every(isEvenement) ? parsed : [...defaultEvenements];
+      if (!Array.isArray(parsed) || !parsed.every(isEvenement)) {
+        return [...defaultEvenements];
+      }
+
+      const events = parsed.map(normalizeStoredEvenement);
+      localStorage.setItem(EVENTS_STORAGE_KEY, JSON.stringify(events));
+      return events;
     } catch {
       return [...defaultEvenements];
     }
@@ -92,6 +98,20 @@ export class EvenementService {
   }
 }
 
+/** Migrates legacy stored events by moving their old time value into date. */
+function normalizeStoredEvenement(evenement: Evenement): Evenement {
+  const storedEvenement = evenement as Evenement & { time?: unknown };
+  const legacyTime = storedEvenement.time;
+  const date =
+    !evenement.date.includes('T') && typeof legacyTime === 'string'
+      ? `${evenement.date}T${legacyTime}`
+      : evenement.date;
+  const withoutTime = { ...storedEvenement };
+  delete withoutTime.time;
+
+  return { ...withoutTime, date };
+}
+
 /** Checks that persisted data has the complete event shape. */
 function isEvenement(value: unknown): value is Evenement {
   if (!value || typeof value !== 'object') {
@@ -106,7 +126,6 @@ function isEvenement(value: unknown): value is Evenement {
     typeof evenement['name'] === 'string' &&
     typeof evenement['type'] === 'string' &&
     typeof evenement['date'] === 'string' &&
-    typeof evenement['time'] === 'string' &&
     typeof evenement['place'] === 'string' &&
     typeof evenement['description'] === 'string' &&
     typeof evenement['group'] === 'string' &&

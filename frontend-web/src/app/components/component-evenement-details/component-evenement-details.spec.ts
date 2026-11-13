@@ -34,6 +34,7 @@ describe('ComponentEvenementDetails', () => {
   it('renders the event details with the formatted date and metadata', () => {
     expect(fixture.nativeElement.textContent).toContain('Match - Gières vs Grenoble');
     expect(fixture.nativeElement.textContent).toContain('28/11/2026');
+    expect(fixture.nativeElement.textContent).toContain('20:00');
     expect(fixture.nativeElement.textContent).toContain('Gymnase de Grenoble');
     expect(fixture.nativeElement.querySelector('.back-button a')?.getAttribute('href')).toBe(
       '/evenements',

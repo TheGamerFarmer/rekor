@@ -7,8 +7,7 @@ import {
 const eventValues: Omit<Evenement, 'id' | 'slug'> = {
   name: 'Événement spécial',
   type: 'Autre',
-  date: '2026-12-20',
-  time: '14:00',
+  date: '2026-12-20T14:00',
   place: 'Gymnase test, 1 Rue Test, Gières',
   description: 'Description test',
   group: 'Tous',
@@ -49,6 +48,20 @@ describe('EvenementService', () => {
 
     localStorage.setItem('rekor-evenements', '{invalid');
     expect(new EvenementService().evenements()).toEqual(defaultEvenements);
+  });
+
+  it('migrates legacy event times into the date field', () => {
+    const legacyEvent = {
+      ...defaultEvenements[0],
+      date: '2026-10-10',
+      time: '18:00',
+    };
+    localStorage.setItem('rekor-evenements', JSON.stringify([legacyEvent]));
+
+    const event = new EvenementService().evenements()[0];
+
+    expect(event.date).toBe('2026-10-10T18:00');
+    expect(event).not.toHaveProperty('time');
   });
 
   it('adds events with normalized unique slugs and persists them', () => {
