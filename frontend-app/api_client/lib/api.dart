@@ -30,12 +30,21 @@ part 'auth/http_bearer_auth.dart';
 
 part 'api/associations_api.dart';
 part 'api/authentication_api.dart';
+part 'api/events_api.dart';
+part 'api/groups_api.dart';
 part 'api/health_api.dart';
 part 'api/users_api.dart';
 
 part 'model/association.dart';
 part 'model/change_password_input.dart';
 part 'model/error_response.dart';
+part 'model/event_details.dart';
+part 'model/event_input.dart';
+part 'model/event_list_item.dart';
+part 'model/event_patch_input.dart';
+part 'model/group_details.dart';
+part 'model/group_input.dart';
+part 'model/group_patch_input.dart';
 part 'model/health_response.dart';
 part 'model/login_input.dart';
 part 'model/login_response.dart';
