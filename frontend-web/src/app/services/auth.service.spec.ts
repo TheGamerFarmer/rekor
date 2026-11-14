@@ -23,13 +23,20 @@ describe('AuthService', () => {
     const service = TestBed.inject(AuthService);
 
     expect(service.isAuthenticated()).toBe(false);
-    service.login({ email: 'joueur@example.com', password: 'motdepasse' }).subscribe();
+    service
+      .login({
+        email: 'joueur@example.com',
+        password: 'motdepasse',
+        associationName: 'Gières Volley-Ball',
+      })
+      .subscribe();
 
     const request = http.expectOne('/api/auth/login');
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({
       email: 'joueur@example.com',
       password: 'motdepasse',
+      associationName: 'Gières Volley-Ball',
     });
 
     request.flush({ access_token: 'token-123', refresh_token: 'refresh-123' });

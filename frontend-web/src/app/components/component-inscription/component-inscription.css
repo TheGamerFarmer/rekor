@@ -161,6 +161,19 @@ input[aria-invalid='true'] {
   border-color: #e53935;
 }
 
+.checkbox-field a {
+  color: #183567;
+  font-weight: 600;
+}
+
+.checkbox-field a.document-link-opened {
+  color: #2355c4;
+}
+
+.agreement-error {
+  margin: -0.5rem 0 0.9rem 1.65rem;
+}
+
 .error {
   color: #e53935;
   font-size: 0.8rem;
