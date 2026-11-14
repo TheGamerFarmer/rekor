@@ -2,6 +2,8 @@ analysis_options.yaml
 lib/api.dart
 lib/api/associations_api.dart
 lib/api/authentication_api.dart
+lib/api/events_api.dart
+lib/api/groups_api.dart
 lib/api/health_api.dart
 lib/api/users_api.dart
 lib/api_client.dart
@@ -15,6 +17,13 @@ lib/auth/oauth.dart
 lib/model/association.dart
 lib/model/change_password_input.dart
 lib/model/error_response.dart
+lib/model/event_details.dart
+lib/model/event_input.dart
+lib/model/event_list_item.dart
+lib/model/event_patch_input.dart
+lib/model/group_details.dart
+lib/model/group_input.dart
+lib/model/group_patch_input.dart
 lib/model/health_response.dart
 lib/model/login_input.dart
 lib/model/login_response.dart
