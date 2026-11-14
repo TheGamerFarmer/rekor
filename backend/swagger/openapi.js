@@ -5,6 +5,7 @@ const {
   OpenAPIRegistry,
   OpenApiGeneratorV3,
 } = require('@asteasolutions/zod-to-openapi');
+const { USER_ROLE, USER_PRONOUN } = require('../db/enums');
 const { version } = require('../package.json');
 
 extendZodWithOpenApi(z);
@@ -23,8 +24,8 @@ const UserId = z
   .regex(/^[0-9a-f]{24}$/)
   .openapi({ example: '6ac8c78e50318b28d457048f' });
 
-const Role = z.enum(['Entraineur', 'Capitaine', 'Adhérent', 'Visiteur']);
-const Pronoun = z.enum(['Il', 'Elle', 'Iel', 'Autre']);
+const Role = z.enum(Object.values(USER_ROLE));
+const Pronoun = z.enum(Object.values(USER_PRONOUN));
 
 const RegisterInput = z
   .object({
