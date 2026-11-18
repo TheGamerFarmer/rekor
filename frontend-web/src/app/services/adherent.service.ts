@@ -91,7 +91,8 @@ function migrateLegacyAdherent(value: unknown): unknown {
     return value;
   }
 
-  const { birthYear: _birthYear, ...legacyMember } = member;
+  const legacyMember = { ...member };
+  delete legacyMember['birthYear'];
   return { ...legacyMember, birthDate: null };
 }
 
