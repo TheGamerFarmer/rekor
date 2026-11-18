@@ -63,8 +63,11 @@ describe('ComponentEvenement', () => {
   });
 
   it('links each event to its detail page', () => {
+    events.set([{ ...defaultEvenements[0], date: '2999-01-01' }]);
+    fixture.detectChanges();
+
     const link = fixture.nativeElement.querySelector(
-      'a[href="/evenements/entrainement-2026-11-17"]',
+      'a[href="/evenements/match-amical-gieres-lyon"]',
     );
 
     expect(link).not.toBeNull();

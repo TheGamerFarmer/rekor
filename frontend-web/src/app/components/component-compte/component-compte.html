@@ -1,3 +1,9 @@
+<app-component-banner
+  image="/images/volley2.jpg"
+  title="Mon compte"
+  subtitle="Gérez vos informations personnelles."
+/>
+
 <main class="account-page">
   <section class="account-card" aria-labelledby="account-title">
     <header class="account-header">
@@ -106,6 +112,24 @@
         </label>
         <input id="birthday" type="date" formControlName="birthday" autocomplete="bday" />
       </div>
+
+      <label class="checkbox-field">
+        <input type="checkbox" formControlName="healthData" />
+        <span
+          >J’accepte que mon certificat médical soit collecté dans le cadre de mon inscription à
+          l’association.</span
+        >
+      </label>
+
+      <label class="checkbox-field">
+        <input type="checkbox" formControlName="imageRights" />
+        <span
+          >J’autorise l’association à utiliser et à diffuser les photos et vidéos sur lesquelles
+          j’apparais, prises dans le cadre de ses activités, sur son site internet et ses supports
+          de communication, selon les modalités précisées dans l’autorisation de droit à
+          l’image.</span
+        >
+      </label>
 
       @if (submitted() && accountForm.valid) {
         <p class="form-message" role="status">Vos informations ont été enregistrées.</p>

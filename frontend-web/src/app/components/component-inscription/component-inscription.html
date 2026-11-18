@@ -235,12 +235,27 @@
             required
             [class.invalid]="submitted() && registrationForm.controls.privacyPolicy.invalid"
             [attr.aria-invalid]="submitted() && registrationForm.controls.privacyPolicy.invalid"
+            (click)="rejectPrivacyPolicyBeforeOpening($event)"
           />
           <span>
-            J’ai pris connaissance de la politique de confidentialité de l’association.
+            J’ai pris connaissance de la
+            <a
+              href="/politique-confidentialite"
+              target="_blank"
+              rel="noopener"
+              [class.document-link-opened]="privacyPolicyLinkClicked()"
+              (click)="privacyPolicyLinkClicked.set(true)"
+              >politique de confidentialité</a
+            >
+            de l’association.
             <span class="required-marker" aria-hidden="true">*</span>
           </span>
         </label>
+        @if (privacyPolicyCheckboxAttempted() && !privacyPolicyLinkClicked()) {
+          <p class="error agreement-error" role="alert">
+            Veuillez ouvrir la politique de confidentialité avant de cocher cette case.
+          </p>
+        }
         <label class="checkbox-field">
           <input
             type="checkbox"
@@ -248,12 +263,27 @@
             required
             [class.invalid]="submitted() && registrationForm.controls.internalRules.invalid"
             [attr.aria-invalid]="submitted() && registrationForm.controls.internalRules.invalid"
+            (click)="rejectInternalRulesBeforeOpening($event)"
           />
           <span>
-            J’atteste avoir lu et accepté le règlement intérieur de l’association.
+            J’atteste avoir lu et accepté le
+            <a
+              href="/reglement-interieur"
+              target="_blank"
+              rel="noopener"
+              [class.document-link-opened]="internalRulesLinkClicked()"
+              (click)="internalRulesLinkClicked.set(true)"
+              >règlement intérieur</a
+            >
+            de l’association.
             <span class="required-marker" aria-hidden="true">*</span>
           </span>
         </label>
+        @if (internalRulesCheckboxAttempted() && !internalRulesLinkClicked()) {
+          <p class="error agreement-error" role="alert">
+            Veuillez ouvrir le règlement intérieur avant de cocher cette case.
+          </p>
+        }
         <label class="checkbox-field">
           <input type="checkbox" formControlName="healthData" />
           <span
