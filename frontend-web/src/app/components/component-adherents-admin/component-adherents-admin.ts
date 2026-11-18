@@ -47,6 +47,23 @@ export class ComponentAdherentsAdmin {
     this.adherents().filter((member) => member.registrationStatus === this.registrationFilter()),
   );
 
+  private readonly validateBirthDate = (
+    control: AbstractControl<string>,
+  ): ValidationErrors | null => {
+    const value = control.value;
+    if (!value) {
+      return null;
+    }
+
+    const date = new Date(`${value}T00:00:00`);
+    const [year, month, day] = value.split('-').map(Number);
+    const isValidDate =
+      date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+    return isValidDate && value >= '1900-01-01' && value <= this.currentDate
+      ? null
+      : { invalidBirthDate: true };
+  };
+
   protected readonly memberForm = new FormBuilder().nonNullable.group({
     lastName: ['', [Validators.required]],
     firstName: ['', [Validators.required]],
@@ -136,23 +153,6 @@ export class ComponentAdherentsAdmin {
     this.submitted.set(false);
     this.memberForm.reset();
   }
-
-  private readonly validateBirthDate = (
-    control: AbstractControl<string>,
-  ): ValidationErrors | null => {
-    const value = control.value;
-    if (!value) {
-      return null;
-    }
-
-    const date = new Date(`${value}T00:00:00`);
-    const [year, month, day] = value.split('-').map(Number);
-    const isValidDate =
-      date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
-    return isValidDate && value >= '1900-01-01' && value <= this.currentDate
-      ? null
-      : { invalidBirthDate: true };
-  };
 
   private formatDate(date: Date): string {
     const year = date.getFullYear();
