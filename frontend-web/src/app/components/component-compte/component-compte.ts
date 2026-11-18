@@ -84,6 +84,7 @@ export class ComponentCompte {
     }
 
     this.accountDeleted.set(true);
+    this.deleteConfirmed.set(false);
   }
 
   /** Returns the user to the home page. */

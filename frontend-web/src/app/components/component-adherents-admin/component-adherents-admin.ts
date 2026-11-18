@@ -137,7 +137,9 @@ export class ComponentAdherentsAdmin {
     this.memberForm.reset();
   }
 
-  private validateBirthDate(control: AbstractControl<string>): ValidationErrors | null {
+  private readonly validateBirthDate = (
+    control: AbstractControl<string>,
+  ): ValidationErrors | null => {
     const value = control.value;
     if (!value) {
       return null;
@@ -150,7 +152,7 @@ export class ComponentAdherentsAdmin {
     return isValidDate && value >= '1900-01-01' && value <= this.currentDate
       ? null
       : { invalidBirthDate: true };
-  }
+  };
 
   private formatDate(date: Date): string {
     const year = date.getFullYear();

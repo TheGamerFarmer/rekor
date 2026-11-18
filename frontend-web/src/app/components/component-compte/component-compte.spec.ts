@@ -131,7 +131,7 @@ describe('ComponentCompte', () => {
       '.delete-button button',
     ) as HTMLButtonElement;
     const confirmation = fixture.nativeElement.querySelector(
-      'input[type="checkbox"]',
+      '.account-danger input[type="checkbox"]',
     ) as HTMLInputElement;
 
     expect(deleteButton.disabled).toBe(true);
@@ -144,6 +144,7 @@ describe('ComponentCompte', () => {
 
     expect(deleteButton.disabled).toBe(true);
     expect(deleteButton.textContent).toContain('Compte supprimé');
+    expect(confirmation.checked).toBe(false);
   });
 
   it('navigates to the home page when logging out', async () => {
