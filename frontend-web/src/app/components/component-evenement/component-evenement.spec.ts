@@ -63,9 +63,7 @@ describe('ComponentEvenement', () => {
   });
 
   it('links each event to its detail page', () => {
-    const link = fixture.nativeElement.querySelector(
-      'a[href="/evenements/entrainement-2026-11-17"]',
-    );
+    const link = fixture.nativeElement.querySelector('a[href="/evenements/6"]');
 
     expect(link).not.toBeNull();
   });
@@ -76,7 +74,6 @@ describe('ComponentEvenement', () => {
       ...defaultEvenements.map((event, index) => ({
         ...event,
         id: event.id + 10 + index,
-        slug: `${event.slug}-copy`,
         date: '2026-12-01',
       })),
     ]);

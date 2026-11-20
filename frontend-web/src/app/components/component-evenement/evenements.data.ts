@@ -11,7 +11,6 @@ export interface Participant {
 
 export interface Evenement {
   id: number;
-  slug: string;
   name: string;
   type: EvenementType;
   date: string;
@@ -43,7 +42,6 @@ export function getDateDuJour(): string {
 export const defaultEvenements: readonly Evenement[] = [
   {
     id: 1,
-    slug: 'match-amical-gieres-lyon',
     name: 'Match amical - Gières vs Lyon',
     type: 'Match amical',
     date: '2026-10-10T18:00:00',
@@ -53,7 +51,6 @@ export const defaultEvenements: readonly Evenement[] = [
   },
   {
     id: 2,
-    slug: 'tournoi-jeunes',
     name: 'Tournoi jeunes',
     type: 'Match compétitif',
     date: '2026-10-18T09:00:00',
@@ -63,7 +60,6 @@ export const defaultEvenements: readonly Evenement[] = [
   },
   {
     id: 3,
-    slug: 'entrainement-2026-10-20',
     name: 'Entraînement',
     type: 'Entraînement',
     date: '2026-10-20T20:00:00',
@@ -73,7 +69,6 @@ export const defaultEvenements: readonly Evenement[] = [
   },
   {
     id: 4,
-    slug: 'entrainement-2026-11-17',
     name: 'Entraînement',
     type: 'Entraînement',
     date: '2026-11-17T20:00:00',
@@ -83,7 +78,6 @@ export const defaultEvenements: readonly Evenement[] = [
   },
   {
     id: 5,
-    slug: 'entrainement-jeunes-2026-11-21',
     name: 'Entraînement jeunes',
     type: 'Entraînement',
     date: '2026-11-21T10:00:00',
@@ -93,7 +87,6 @@ export const defaultEvenements: readonly Evenement[] = [
   },
   {
     id: 6,
-    slug: 'match-gieres-grenoble',
     name: 'Match - Gières vs Grenoble',
     type: 'Match compétitif',
     date: '2026-11-28T20:00:00',
@@ -103,7 +96,6 @@ export const defaultEvenements: readonly Evenement[] = [
   },
   {
     id: 7,
-    slug: 'gouter-du-club',
     name: 'Goûter du club',
     type: 'Autre',
     date: '2026-12-05T17:00:00',
