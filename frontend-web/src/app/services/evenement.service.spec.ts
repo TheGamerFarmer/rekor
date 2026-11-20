@@ -4,7 +4,7 @@ import {
   type Evenement,
 } from '../components/component-evenement/evenements.data';
 
-const eventValues: Omit<Evenement, 'id' | 'slug'> = {
+const eventValues: Omit<Evenement, 'id'> = {
   name: 'Événement spécial',
   type: 'Autre',
   date: '2026-12-20T14:00',
@@ -64,7 +64,7 @@ describe('EvenementService', () => {
     expect(event).not.toHaveProperty('time');
   });
 
-  it('adds events with normalized unique slugs and persists them', () => {
+  it('adds events with unique IDs and persists them', () => {
     const service = new EvenementService();
 
     service.add(eventValues);
@@ -72,11 +72,9 @@ describe('EvenementService', () => {
 
     expect(service.evenements().at(-2)).toMatchObject({
       id: 8,
-      slug: 'evenement-special',
     });
     expect(service.evenements().at(-1)).toMatchObject({
       id: 9,
-      slug: 'evenement-special-9',
     });
     expect(JSON.parse(localStorage.getItem('rekor-evenements') ?? '')).toEqual(
       service.evenements(),
@@ -86,16 +84,16 @@ describe('EvenementService', () => {
   it('updates, finds, and removes events', () => {
     const service = new EvenementService();
 
-    service.update('entrainement-2026-11-17', {
+    service.update(4, {
       ...eventValues,
       name: 'Entraînement modifié',
     });
-    expect(service.findBySlug('entrainement-2026-11-17')?.name).toBe('Entraînement modifié');
+    expect(service.findById(4)?.name).toBe('Entraînement modifié');
 
-    service.update('unknown-event', eventValues);
+    service.update(999, eventValues);
     service.remove(4);
 
-    expect(service.findBySlug('entrainement-2026-11-17')).toBeUndefined();
+    expect(service.findById(4)).toBeUndefined();
     expect(service.evenements()).toHaveLength(defaultEvenements.length - 1);
   });
 });

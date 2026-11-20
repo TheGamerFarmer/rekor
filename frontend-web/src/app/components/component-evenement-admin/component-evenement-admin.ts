@@ -37,8 +37,10 @@ export class ComponentEvenementAdmin {
 
   /** Initializes the form with the event addressed by the edit route. */
   constructor() {
-    const slug = this.route.snapshot.paramMap.get('slug');
-    const evenement = slug ? this.evenementService.findBySlug(slug) : undefined;
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const id = idParam === null ? null : Number(idParam);
+    const evenement =
+      id !== null && Number.isInteger(id) ? this.evenementService.findById(id) : undefined;
 
     if (evenement) {
       this.isEditing.set(true);
@@ -63,13 +65,14 @@ export class ComponentEvenementAdmin {
       date: `${date}T${time}`,
       type: values.type as EvenementType,
     };
-    const existingSlug = this.route.snapshot.paramMap.get('slug');
-    if (existingSlug) {
-      if (!this.evenementService.findBySlug(existingSlug)) {
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const existingId = idParam === null ? null : Number(idParam);
+    if (existingId !== null && Number.isInteger(existingId)) {
+      if (!this.evenementService.findById(existingId)) {
         void this.router.navigate(['/admin/evenements']);
         return;
       }
-      this.evenementService.update(existingSlug, eventValues);
+      this.evenementService.update(existingId, eventValues);
     } else {
       this.evenementService.add(eventValues);
     }

@@ -12,25 +12,24 @@ export class EvenementService {
   readonly evenements = this.events.asReadonly();
 
   /** Adds an event, assigns its identifier and persists the new collection. */
-  add(values: Omit<Evenement, 'id' | 'slug'>): void {
+  add(values: Omit<Evenement, 'id'>): void {
     const evenement: Evenement = {
       id: this.getNextId(),
-      slug: this.createSlug(values.name),
       ...values,
     };
     this.updateEvents([...this.events(), evenement]);
   }
 
   /** Updates an existing event without changing its stable identifier or URL. */
-  update(slug: string, values: Omit<Evenement, 'id' | 'slug'>): void {
-    const current = this.events().find((evenement) => evenement.slug === slug);
+  update(id: number, values: Omit<Evenement, 'id'>): void {
+    const current = this.events().find((evenement) => evenement.id === id);
     if (!current) {
       return;
     }
 
     this.updateEvents(
       this.events().map((evenement) =>
-        evenement.slug === slug ? { ...current, ...values } : evenement,
+        evenement.id === id ? { ...current, ...values } : evenement,
       ),
     );
   }
@@ -40,9 +39,9 @@ export class EvenementService {
     this.updateEvents(this.events().filter((evenement) => evenement.id !== id));
   }
 
-  /** Finds an event by its URL slug. */
-  findBySlug(slug: string): Evenement | undefined {
-    return this.events().find((evenement) => evenement.slug === slug);
+  /** Finds an event by its route identifier. */
+  findById(id: number): Evenement | undefined {
+    return this.events().find((evenement) => evenement.id === id);
   }
 
   /** Replaces the signal value and synchronizes browser storage. */
@@ -82,20 +81,6 @@ export class EvenementService {
   private getNextId(): number {
     return Math.max(0, ...this.events().map(({ id }) => id)) + 1;
   }
-
-  /** Creates a readable unique URL slug from an event name. */
-  private createSlug(name: string): string {
-    const baseSlug = name
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, '-')
-      .replace(/(^-|-$)/g, '');
-    const suffix = this.events().some((evenement) => evenement.slug === baseSlug)
-      ? `-${this.getNextId()}`
-      : '';
-    return `${baseSlug}${suffix}`;
-  }
 }
 
 /** Migrates legacy stored events by moving their old time value into date. */
@@ -106,10 +91,16 @@ function normalizeStoredEvenement(evenement: Evenement): Evenement {
     !evenement.date.includes('T') && typeof legacyTime === 'string'
       ? `${evenement.date}T${legacyTime}`
       : evenement.date;
-  const withoutTime = { ...storedEvenement };
-  delete withoutTime.time;
-
-  return { ...withoutTime, date };
+  return {
+    id: evenement.id,
+    name: evenement.name,
+    type: evenement.type,
+    date,
+    place: evenement.place,
+    description: evenement.description,
+    group: evenement.group,
+    participants: evenement.participants,
+  };
 }
 
 /** Checks that persisted data has the complete event shape. */
@@ -122,7 +113,6 @@ function isEvenement(value: unknown): value is Evenement {
   const participants = evenement['participants'];
   return (
     typeof evenement['id'] === 'number' &&
-    typeof evenement['slug'] === 'string' &&
     typeof evenement['name'] === 'string' &&
     typeof evenement['type'] === 'string' &&
     typeof evenement['date'] === 'string' &&
