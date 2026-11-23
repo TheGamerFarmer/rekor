@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ComponentEvenement } from './component-evenement';
-import { getDateDuJour, getHeureEvenement } from './evenements.data';
+import { defaultEvenements, getDateDuJour, getHeureEvenement } from './evenements.data';
 import { createTestEvenements, dateRelativeToToday } from './evenements.test-data';
 import { EvenementService } from '../../services/evenement.service';
 

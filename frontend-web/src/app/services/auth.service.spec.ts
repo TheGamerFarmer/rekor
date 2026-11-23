@@ -16,6 +16,7 @@ describe('AuthService', () => {
   });
 
   afterEach(() => {
+    vi.unstubAllGlobals();
     http.verify();
   });
 
@@ -67,11 +68,14 @@ describe('AuthService', () => {
         password: 'motdepasse',
       })
       .subscribe();
+    expect(service.isAuthenticated()).toBe(false);
+    http.expectOne('/api/auth/login').flush({
+      access_token: 'token-123',
+      refresh_token: 'refresh-123',
+    });
     expect(service.isAuthenticated()).toBe(true);
 
     service.logout();
     expect(service.isAuthenticated()).toBe(false);
-
-    vi.unstubAllGlobals();
   });
 });
