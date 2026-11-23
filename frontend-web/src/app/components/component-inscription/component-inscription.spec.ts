@@ -1,22 +1,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ComponentInscription } from './component-inscription';
 import { Router } from '@angular/router';
-import { InscriptionService } from '../../services/inscription.service';
 import { of, throwError } from 'rxjs';
+import { AuthenticationService } from '../../api';
 
 describe('ComponentInscription', () => {
   let component: ComponentInscription;
   let fixture: ComponentFixture<ComponentInscription>;
   let register: ReturnType<typeof vi.fn>;
+  let navigate: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     register = vi.fn().mockReturnValue(of(undefined));
+    navigate = vi.fn();
     await TestBed.configureTestingModule({
       imports: [ComponentInscription],
       providers: [
-        { provide: Router, useValue: { navigate: vi.fn() } },
+        { provide: Router, useValue: { navigate } },
         {
-          provide: InscriptionService,
+          provide: AuthenticationService,
           useValue: { register },
         },
       ],
@@ -156,8 +158,84 @@ describe('ComponentInscription', () => {
 
     expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
     expect(register).toHaveBeenCalledWith(
-      expect.objectContaining({ associationName: 'Gières Volley-Ball' }),
+      expect.objectContaining({
+        associationName: 'Gières Volley-Ball',
+        name: 'Lovelace',
+        firstName: 'Ada',
+        email: 'ada@example.com',
+        pronoun: 'Elle',
+        phoneNumber: '0600000000',
+        password: 'Motdepasse1!',
+      }),
     );
+  });
+
+  it('navigates to /connexion after successful registration', async () => {
+    component['registrationForm'].patchValue({
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      pronoun: 'Elle',
+      email: 'ada@example.com',
+      phone: '0600000000',
+      password: 'Motdepasse1!',
+      confirmPassword: 'Motdepasse1!',
+      internalRules: true,
+      privacyPolicy: true,
+    });
+
+    component['submit']();
+    await fixture.whenStable();
+
+    expect(navigate).toHaveBeenCalledWith(['/connexion']);
+  });
+
+  it('includes birthday when provided', async () => {
+    component['registrationForm'].patchValue({
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      pronoun: 'Elle',
+      birthday: '1815-12-10',
+      email: 'ada@example.com',
+      phone: '0600000000',
+      password: 'Motdepasse1!',
+      confirmPassword: 'Motdepasse1!',
+      internalRules: true,
+      privacyPolicy: true,
+    });
+
+    component['submit']();
+    await fixture.whenStable();
+
+    expect(register).toHaveBeenCalledWith(expect.objectContaining({ birthday: '1815-12-10' }));
+  });
+
+  it('marks required agreement checkboxes as invalid and does not submit when unchecked', async () => {
+    component['registrationForm'].patchValue({
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      pronoun: 'Elle',
+      email: 'ada@example.com',
+      phone: '0600000000',
+      password: 'Motdepasse1!',
+      confirmPassword: 'Motdepasse1!',
+      internalRules: false,
+      privacyPolicy: false,
+    });
+
+    fixture.nativeElement.querySelector('button[type="submit"]').click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const privacyCheckbox = fixture.nativeElement.querySelector(
+      '[formControlName="privacyPolicy"]',
+    ) as HTMLInputElement;
+    const internalRulesCheckbox = fixture.nativeElement.querySelector(
+      '[formControlName="internalRules"]',
+    ) as HTMLInputElement;
+
+    expect(privacyCheckbox.getAttribute('aria-invalid')).toBe('true');
+    expect(internalRulesCheckbox.getAttribute('aria-invalid')).toBe('true');
+    expect(register).not.toHaveBeenCalled();
   });
 
   it('toggles password and confirmation visibility', () => {
@@ -185,6 +263,38 @@ describe('ComponentInscription', () => {
     fixture.detectChanges();
     expect(password.type).toBe('password');
     expect(confirmation.type).toBe('password');
+  });
+
+  it('shows an error when confirmPassword is left empty after interaction', () => {
+    const confirmPassword = fixture.nativeElement.querySelector(
+      '#confirmPassword',
+    ) as HTMLInputElement;
+    confirmPassword.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Confirmez votre mot de passe.');
+  });
+
+  it('does not call register when pronoun is empty despite form being valid', () => {
+    component['registrationForm'].patchValue({
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      pronoun: 'Elle',
+      email: 'ada@example.com',
+      phone: '0600000000',
+      password: 'Motdepasse1!',
+      confirmPassword: 'Motdepasse1!',
+      internalRules: true,
+      privacyPolicy: true,
+    });
+    const pronounControl = component['registrationForm'].controls.pronoun;
+    pronounControl.clearValidators();
+    pronounControl.setValue('');
+    pronounControl.updateValueAndValidity();
+
+    component['submit']();
+
+    expect(register).not.toHaveBeenCalled();
   });
 
   it.each([

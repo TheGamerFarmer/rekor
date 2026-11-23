@@ -47,4 +47,11 @@ describe('ComponentEvenementDetails', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Événement introuvable');
   });
+
+  it('shows a fallback when the route has no slug parameter', () => {
+    params.next(convertToParamMap({}));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Événement introuvable');
+  });
 });
