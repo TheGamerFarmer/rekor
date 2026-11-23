@@ -3,6 +3,7 @@ import 'package:frontend_app/mobile_pages/arbitrage.dart';
 
 import '../mobile_pages/covoiturage_page.dart';
 import '../mobile_pages/evenement_page.dart';
+import '../mobile_pages/gestion.dart';
 import '../mobile_pages/groupe.dart';
 import '../mobile_pages/home_page.dart';
 
@@ -20,7 +21,7 @@ class AppMenu extends StatelessWidget {
       (Icons.chat, 'Discussions'),
       (Icons.directions_car, 'Covoiturage'),
       (Icons.calendar_month, 'Évènements'),
-      (Icons.emoji_events, 'Compétition'),
+      (Icons.emoji_events, 'Gestion'),
       (Icons.sports, 'Arbitrage'),
       (Icons.bar_chart, 'Statistiques'),
       (Icons.campaign, 'News'),
@@ -129,6 +130,12 @@ void naviguerVersPage(BuildContext context, String page) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const GroupesPage()),
+    );
+  }
+  if (page == 'Gestion') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const GestionPage()),
     );
   }
 }
