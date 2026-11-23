@@ -1,3 +1,4 @@
+export * from './association';
 export * from './changePasswordInput';
 export * from './errorResponse';
 export * from './healthResponse';

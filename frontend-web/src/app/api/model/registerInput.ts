@@ -14,6 +14,10 @@ export interface RegisterInput {
     firstName: string;
     email: string;
     password: string;
+    /**
+     * Nom de l’association
+     */
+    associationName: string;
     pronoun: RegisterInput.PronounEnum;
     phoneNumber?: string;
     birthday?: string;

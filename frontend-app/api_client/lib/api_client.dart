@@ -183,6 +183,8 @@ class ApiClient {
           return valueString == 'true' || valueString == '1';
         case 'DateTime':
           return value is DateTime ? value : DateTime.tryParse(value);
+        case 'Association':
+          return Association.fromJson(value);
         case 'ChangePasswordInput':
           return ChangePasswordInput.fromJson(value);
         case 'ErrorResponse':

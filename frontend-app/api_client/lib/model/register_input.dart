@@ -17,6 +17,7 @@ class RegisterInput {
     required this.firstName,
     required this.email,
     required this.password,
+    required this.associationName,
     required this.pronoun,
     this.phoneNumber,
     this.birthday,
@@ -29,6 +30,9 @@ class RegisterInput {
   String email;
 
   String password;
+
+  /// Nom de l’association
+  String associationName;
 
   RegisterInputPronounEnum pronoun;
 
@@ -54,6 +58,7 @@ class RegisterInput {
     other.firstName == firstName &&
     other.email == email &&
     other.password == password &&
+    other.associationName == associationName &&
     other.pronoun == pronoun &&
     other.phoneNumber == phoneNumber &&
     other.birthday == birthday;
@@ -65,12 +70,13 @@ class RegisterInput {
     (firstName.hashCode) +
     (email.hashCode) +
     (password.hashCode) +
+    (associationName.hashCode) +
     (pronoun.hashCode) +
     (phoneNumber == null ? 0 : phoneNumber!.hashCode) +
     (birthday == null ? 0 : birthday!.hashCode);
 
   @override
-  String toString() => 'RegisterInput[name=$name, firstName=$firstName, email=$email, password=$password, pronoun=$pronoun, phoneNumber=$phoneNumber, birthday=$birthday]';
+  String toString() => 'RegisterInput[name=$name, firstName=$firstName, email=$email, password=$password, associationName=$associationName, pronoun=$pronoun, phoneNumber=$phoneNumber, birthday=$birthday]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -78,6 +84,7 @@ class RegisterInput {
       json[r'firstName'] = this.firstName;
       json[r'email'] = this.email;
       json[r'password'] = this.password;
+      json[r'associationName'] = this.associationName;
       json[r'pronoun'] = this.pronoun;
     if (this.phoneNumber != null) {
       json[r'phoneNumber'] = this.phoneNumber;
@@ -111,6 +118,8 @@ class RegisterInput {
         assert(json[r'email'] != null, 'Required key "RegisterInput[email]" has a null value in JSON.');
         assert(json.containsKey(r'password'), 'Required key "RegisterInput[password]" is missing from JSON.');
         assert(json[r'password'] != null, 'Required key "RegisterInput[password]" has a null value in JSON.');
+        assert(json.containsKey(r'associationName'), 'Required key "RegisterInput[associationName]" is missing from JSON.');
+        assert(json[r'associationName'] != null, 'Required key "RegisterInput[associationName]" has a null value in JSON.');
         assert(json.containsKey(r'pronoun'), 'Required key "RegisterInput[pronoun]" is missing from JSON.');
         assert(json[r'pronoun'] != null, 'Required key "RegisterInput[pronoun]" has a null value in JSON.');
         return true;
@@ -121,6 +130,7 @@ class RegisterInput {
         firstName: mapValueOfType<String>(json, r'firstName')!,
         email: mapValueOfType<String>(json, r'email')!,
         password: mapValueOfType<String>(json, r'password')!,
+        associationName: mapValueOfType<String>(json, r'associationName')!,
         pronoun: RegisterInputPronounEnum.fromJson(json[r'pronoun'])!,
         phoneNumber: mapValueOfType<String>(json, r'phoneNumber'),
         birthday: mapDateTime(json, r'birthday', r''),
@@ -175,6 +185,7 @@ class RegisterInput {
     'firstName',
     'email',
     'password',
+    'associationName',
     'pronoun',
   };
 }
