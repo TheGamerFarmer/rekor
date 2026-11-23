@@ -44,6 +44,9 @@ describe('App', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Connexion');
     expect(fixture.nativeElement.textContent).toContain('Inscription');
+    expect(
+      fixture.nativeElement.querySelector('.footer-links a[href="/politique-confidentialite"]'),
+    ).not.toBeNull();
   });
 
   it('shows account and logs out when logged in', () => {

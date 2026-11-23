@@ -39,6 +39,10 @@ export class ComponentInscription {
   protected readonly showConfirmation = signal(false);
   protected readonly submitted = signal(false);
   protected readonly registrationError = signal<string | null>(null);
+  protected readonly privacyPolicyLinkClicked = signal(false);
+  protected readonly internalRulesLinkClicked = signal(false);
+  protected readonly privacyPolicyCheckboxAttempted = signal(false);
+  protected readonly internalRulesCheckboxAttempted = signal(false);
   protected readonly pronouns = Object.values(RegisterInput.PronounEnum);
 
   private readonly authenticationService = inject(AuthenticationService);
@@ -72,6 +76,20 @@ export class ComponentInscription {
     },
     { validators: passwordsMatch },
   );
+
+  protected rejectPrivacyPolicyBeforeOpening(event: MouseEvent): void {
+    if (!this.privacyPolicyLinkClicked()) {
+      event.preventDefault();
+      this.privacyPolicyCheckboxAttempted.set(true);
+    }
+  }
+
+  protected rejectInternalRulesBeforeOpening(event: MouseEvent): void {
+    if (!this.internalRulesLinkClicked()) {
+      event.preventDefault();
+      this.internalRulesCheckboxAttempted.set(true);
+    }
+  }
 
   /** Validates the form and delegates registration to the inscription service. */
   protected submit(): void {

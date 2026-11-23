@@ -58,6 +58,12 @@ describe('ComponentConnexion', () => {
     await fixture.whenStable();
     fixture.detectChanges();
 
+    expect(login).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'joueur@example.com',
+        password: 'motdepasse',
+      }),
+    );
     expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
     expect(login).toHaveBeenCalledWith(
       expect.objectContaining({ associationName: 'Gières Volley-Ball' }),
