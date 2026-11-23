@@ -19,6 +19,8 @@ const userSchema = new Schema(
       enum: Object.values(USER_PRONOUN),
       required: true,
     },
+    checkboxBirthdayCertificate: { type: Boolean, required: true },
+    checkboxRightOfPublicity: { type: Boolean, required: true },
   },
   { collection: 'users', versionKey: false },
 );
