@@ -3,7 +3,11 @@ import 'package:flutter/material.dart';
 import '../layouts/main_layout.dart';
 import '../../convoiturage.dart';
 import '../../covoiturage_card.dart';
+import 'cout_page.dart';
 import 'creationconvoiturage.dart';
+
+// Les trois onglets de la page
+enum _Onglet { tout, mes, couts }
 
 class CovoituragePage extends StatefulWidget {
   const CovoituragePage({super.key});
@@ -13,10 +17,21 @@ class CovoituragePage extends StatefulWidget {
 }
 
 class _CovoituragePageState extends State<CovoituragePage> {
-  // La liste des covoiturages affichés sur la page
-
   final Color jaune = const Color(0xFFFFDA1A);
-  final List<Covoiturage> _covoiturages = [];
+
+  // Onglet sélectionné
+  _Onglet _onglet = _Onglet.tout;
+
+  // Liste affichée selon le filtre (onglets TOUT / MES COVOITURAGES)
+  List<Covoiturage> get _affiches => _onglet == _Onglet.mes
+      ? CovoiturageRepository.liste
+            .where(
+              (c) =>
+                  c.conducteur == utilisateurActuel ||
+                  c.estInscrit(utilisateurActuel),
+            )
+            .toList()
+      : CovoiturageRepository.liste;
 
   // Ouvre la page de création et attend le résultat
   Future<void> _ouvrirCreation() async {
@@ -28,13 +43,15 @@ class _CovoituragePageState extends State<CovoituragePage> {
     // Si l'utilisateur a validé, on ajoute la carte en haut de la liste
     if (nouveau != null) {
       setState(() {
-        _covoiturages.insert(0, nouveau);
+        CovoiturageRepository.liste.insert(0, nouveau);
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final affiches = _affiches;
+
     return MainLayout(
       child: SingleChildScrollView(
         child: Padding(
@@ -63,8 +80,21 @@ class _CovoituragePageState extends State<CovoituragePage> {
                 runSpacing: 10,
                 crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  _boutonNavigation('TOUT'),
-                  _boutonNavigation('MES COVOITURAGES'),
+                  _boutonNavigation(
+                    'TOUT',
+                    actif: _onglet == _Onglet.tout,
+                    onPressed: () => setState(() => _onglet = _Onglet.tout),
+                  ),
+                  _boutonNavigation(
+                    'MES COVOITURAGES',
+                    actif: _onglet == _Onglet.mes,
+                    onPressed: () => setState(() => _onglet = _Onglet.mes),
+                  ),
+                  _boutonNavigation(
+                    'MES COÛTS',
+                    actif: _onglet == _Onglet.couts,
+                    onPressed: () => setState(() => _onglet = _Onglet.couts),
+                  ),
                   OutlinedButton(
                     onPressed: _ouvrirCreation,
                     style: OutlinedButton.styleFrom(
@@ -84,8 +114,10 @@ class _CovoituragePageState extends State<CovoituragePage> {
 
               const SizedBox(height: 25),
 
-              // LISTE DES CARTES
-              if (_covoiturages.isEmpty)
+              // CONTENU SELON L'ONGLET
+              if (_onglet == _Onglet.couts)
+                MesCoutsView(onChange: () => setState(() {}))
+              else if (affiches.isEmpty)
                 const Padding(
                   padding: EdgeInsets.symmetric(horizontal: 7),
                   child: Text(
@@ -99,11 +131,16 @@ class _CovoituragePageState extends State<CovoituragePage> {
                   ),
                 )
               else
-                for (final c in _covoiturages)
+                for (final c in affiches)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 15),
-                    child: CovoiturageCard(covoiturage: c),
+                    child: CovoiturageCard(
+                      key: ValueKey(c.id),
+                      covoiturage: c,
+                      onChange: () => setState(() {}),
+                    ),
                   ),
+              const SizedBox(height: 2000),
             ],
           ),
         ),
@@ -111,12 +148,17 @@ class _CovoituragePageState extends State<CovoituragePage> {
     );
   }
 
-  Widget _boutonNavigation(String texte) {
+  // Bouton de filtre : le bouton actif est entouré en jaune
+  Widget _boutonNavigation(
+    String texte, {
+    required bool actif,
+    required VoidCallback onPressed,
+  }) {
     return OutlinedButton(
-      onPressed: () {},
+      onPressed: onPressed,
       style: OutlinedButton.styleFrom(
-        foregroundColor: Colors.white,
-        side: const BorderSide(color: Colors.white, width: 2),
+        foregroundColor: actif ? jaune : Colors.white,
+        side: BorderSide(color: actif ? jaune : Colors.white, width: 2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(40)),
       ),
       child: Text(texte, style: const TextStyle(fontFamily: 'Poppins')),

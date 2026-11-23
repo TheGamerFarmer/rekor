@@ -42,8 +42,58 @@ class _EvenementpageState extends State<Evenementpage> {
   static const _optionsTri = ['Type', 'Date croissante', 'Date décroissante'];
 
   String _tri = 'Date croissante';
+  bool _afficherTermines = false; // false = À venir, true = Terminés
 
-  bool _afficherTermines = false;
+  final List<Evenement> _evenements = [
+    Evenement(
+      nom: 'Match amical',
+      type: 'Match amical',
+      dateTime: DateTime(2026, 10, 20, 20, 0), // passé → Terminés
+      date: '20 oct.',
+      heureDebut: '18:00',
+      heureFin: '20:00',
+      lieu: 'Gymnase Jean Moulin',
+      ville: 'Grenoble',
+      equipe1: 'Les Aigles',
+      equipe2: 'Les Lions',
+      arbitre: 'Paul Martin',
+      presents: ['Alice', 'Bob', 'Chloé'],
+      absents: ['David'],
+    ),
+    Evenement(
+      nom: 'Match amical',
+      type: 'Match amical',
+      dateTime: DateTime(2026, 12, 15, 20, 0), // futur → À venir
+      date: '15 déc.',
+      heureDebut: '18:00',
+      heureFin: '20:00',
+      lieu: 'Gymnase Jean Moulin',
+      ville: 'Grenoble',
+      equipe1: 'Les Aigles',
+      equipe2: 'Les Tigres',
+      arbitre: 'Sophie Durand',
+      presents: ['Alice', 'Bob'],
+      absents: ['Chloé', 'David'],
+    ),
+    Evenement(
+      nom: 'Réunion',
+      type: 'Réunion',
+      description: 'Bilan de la saison et préparation du prochain tournoi.',
+      dateTime: DateTime(2026, 11, 5, 19, 0), // passé → Terminés
+      date: '5 nov.',
+      heureDebut: '18:00',
+      heureFin: '19:00',
+      lieu: 'Salle des fêtes',
+      ville: 'Grenoble',
+      equipe1: '',
+      equipe2: '',
+      arbitre: '',
+      presents: ['Alice', 'Bob', 'Chloé'],
+      absents: ['David'],
+    ),
+  ];
+
+  // ---------- TRI ----------
 
   List<Evenement> _trier(List<Evenement> liste) {
     switch (_tri) {
@@ -62,54 +112,7 @@ class _EvenementpageState extends State<Evenementpage> {
     return liste;
   }
 
-  final List<Evenement> _evenements = [
-    Evenement(
-      nom: 'Match amical',
-      type: 'Match amical',
-      dateTime: DateTime(2026, 10, 20, 20, 0),
-      date: '20 oct.',
-      heureDebut: '18:00',
-      heureFin: '20:00',
-      lieu: 'Gymnase Jean Moulin',
-      ville: 'Grenoble',
-      equipe1: 'Les Aigles',
-      equipe2: 'Les Lions',
-      arbitre: 'Paul Martin',
-      presents: ['Alice', 'Bob', 'Chloé'],
-      absents: ['David'],
-    ),
-    Evenement(
-      nom: 'Match amical',
-      type: 'Match amical',
-      dateTime: DateTime(2026, 12, 15, 20, 0),
-      date: '15 déc.',
-      heureDebut: '18:00',
-      heureFin: '20:00',
-      lieu: 'Gymnase Jean Moulin',
-      ville: 'Grenoble',
-      equipe1: 'Les Aigles',
-      equipe2: 'Les Tigres',
-      arbitre: 'Sophie Durand',
-      presents: ['Alice', 'Bob'],
-      absents: ['Chloé', 'David'],
-    ),
-    Evenement(
-      nom: 'Réunion',
-      type: 'Réunion',
-      description: 'Bilan de la saison et préparation du prochain tournoi.',
-      dateTime: DateTime(2026, 11, 5, 19, 0),
-      date: '5 nov.',
-      heureDebut: '18:00',
-      heureFin: '19:00',
-      lieu: 'Salle des fêtes',
-      ville: 'Grenoble',
-      equipe1: '',
-      equipe2: '',
-      arbitre: '',
-      presents: ['Alice', 'Bob', 'Chloé'],
-      absents: ['David'],
-    ),
-  ];
+  // ---------- PAGE ----------
 
   @override
   Widget build(BuildContext context) {
@@ -233,6 +236,7 @@ class _EvenementpageState extends State<Evenementpage> {
       ),
     );
   }
+
   // ---------- LISTE ----------
 
   Widget _carte(Evenement evenement) {
@@ -242,7 +246,10 @@ class _EvenementpageState extends State<Evenementpage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => EvenementDetailPage(evenement: evenement),
+            builder: (context) => EvenementDetailPage(
+              evenement: evenement,
+              onModifier: _modifierEvenement,
+            ),
           ),
         );
       },
@@ -273,7 +280,7 @@ class _EvenementpageState extends State<Evenementpage> {
     );
   }
 
-  // ---------- FORMULAIRE ----------
+  // ---------- AJOUT / MODIFICATION ----------
 
   String _formatHeure(TimeOfDay t) =>
       '${t.hour.toString().padLeft(2, '0')}:${t.minute.toString().padLeft(2, '0')}';
@@ -306,25 +313,75 @@ class _EvenementpageState extends State<Evenementpage> {
     );
   }
 
+  // Bouton +
   Future<void> _ajouterEvenement() async {
-    final nomCtrl = TextEditingController();
-    final descriptionCtrl = TextEditingController();
-    final equipe1Ctrl = TextEditingController();
-    final equipe2Ctrl = TextEditingController();
-    final lieuCtrl = TextEditingController();
-    final villeCtrl = TextEditingController();
-    final arbitreCtrl = TextEditingController();
-    final dateCtrl = TextEditingController();
-    final debutCtrl = TextEditingController();
-    final finCtrl = TextEditingController();
-    final pageCtrl = PageController(viewportFraction: 0.55);
+    final nouveau = await _formulaire();
+    if (nouveau != null) {
+      setState(() => _evenements.add(nouveau));
+    }
+  }
 
-    int typeIndex = 0;
+  // Bouton MODIFIER (page détails)
+  Future<Evenement?> _modifierEvenement(Evenement ancien) async {
+    final modifie = await _formulaire(existant: ancien);
+    if (modifie == null) return null;
+
+    setState(() {
+      final i = _evenements.indexOf(ancien);
+      if (i != -1) _evenements[i] = modifie;
+    });
+    return modifie;
+  }
+
+  // Formulaire commun : création (existant == null) ou modification
+  Future<Evenement?> _formulaire({Evenement? existant}) async {
+    final modif = existant != null;
+
+    TimeOfDay? lireHeure(String h) {
+      final p = h.split(':');
+      if (p.length != 2) return null;
+      final heure = int.tryParse(p[0]);
+      final minute = int.tryParse(p[1]);
+      if (heure == null || minute == null) return null;
+      return TimeOfDay(hour: heure, minute: minute);
+    }
+
+    final nomCtrl = TextEditingController(
+      text: (existant != null && existant.type == 'Autres') ? existant.nom : '',
+    );
+    final descriptionCtrl = TextEditingController(
+      text: existant?.description ?? '',
+    );
+    final equipe1Ctrl = TextEditingController(text: existant?.equipe1 ?? '');
+    final equipe2Ctrl = TextEditingController(text: existant?.equipe2 ?? '');
+    final lieuCtrl = TextEditingController(text: existant?.lieu ?? '');
+    final villeCtrl = TextEditingController(text: existant?.ville ?? '');
+    final arbitreCtrl = TextEditingController(text: existant?.arbitre ?? '');
+    final dateCtrl = TextEditingController();
+    final debutCtrl = TextEditingController(text: existant?.heureDebut ?? '');
+    final finCtrl = TextEditingController(text: existant?.heureFin ?? '');
+
+    int typeIndex = existant != null ? _types.indexOf(existant.type) : 0;
+    if (typeIndex < 0) typeIndex = 0;
+
+    final pageCtrl = PageController(
+      viewportFraction: 0.55,
+      initialPage: typeIndex,
+    );
+
     DateTime? date;
     TimeOfDay? debut;
     TimeOfDay? fin;
 
-    final Evenement? nouveau = await showModalBottomSheet<Evenement>(
+    if (existant != null) {
+      final dt = existant.dateTime;
+      date = DateTime(dt.year, dt.month, dt.day);
+      dateCtrl.text = '${dt.day} ${_mois[dt.month - 1]} ${dt.year}';
+      debut = lireHeure(existant.heureDebut);
+      fin = lireHeure(existant.heureFin);
+    }
+
+    return showModalBottomSheet<Evenement>(
       context: context,
       isScrollControlled: true,
       backgroundColor: const Color(0xFF303030),
@@ -353,7 +410,7 @@ class _EvenementpageState extends State<Evenementpage> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      'Créer un évènement',
+                      modif ? 'Modifier l’évènement' : 'Créer un évènement',
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 18,
@@ -455,7 +512,7 @@ class _EvenementpageState extends State<Evenementpage> {
                     if (aNom)
                       _ligne('Nom :', _champTexte(nomCtrl, 'insérer un texte')),
 
-                    // ÉQUIPES (uniquement pour les matchs)
+                    // ÉQUIPES (matchs uniquement)
                     if (estMatch) ...[
                       _ligne(
                         'Équipe 1 :',
@@ -473,7 +530,7 @@ class _EvenementpageState extends State<Evenementpage> {
                       _champTexte(villeCtrl, 'insérer un texte'),
                     ),
 
-                    // ARBITRE (uniquement pour les matchs)
+                    // ARBITRE (matchs uniquement)
                     if (estMatch)
                       _ligne(
                         'Arbitre :',
@@ -512,7 +569,7 @@ class _EvenementpageState extends State<Evenementpage> {
                         onTap: () async {
                           final choix = await showTimePicker(
                             context: ctx,
-                            initialTime: TimeOfDay.now(),
+                            initialTime: debut ?? TimeOfDay.now(),
                             initialEntryMode: TimePickerEntryMode.input,
                             builder: _themeSombre,
                           );
@@ -533,7 +590,7 @@ class _EvenementpageState extends State<Evenementpage> {
                         onTap: () async {
                           final choix = await showTimePicker(
                             context: ctx,
-                            initialTime: TimeOfDay.now(),
+                            initialTime: fin ?? TimeOfDay.now(),
                             initialEntryMode: TimePickerEntryMode.input,
                             builder: _themeSombre,
                           );
@@ -569,7 +626,7 @@ class _EvenementpageState extends State<Evenementpage> {
                         children: [
                           _boutonAction('ANNULER', () => Navigator.pop(ctx)),
                           const SizedBox(width: 8),
-                          _boutonAction('VALIDER', () {
+                          _boutonAction(modif ? 'ENREGISTRER' : 'VALIDER', () {
                             final manque =
                                 (aNom && nomCtrl.text.trim().isEmpty) ||
                                 (estMatch &&
@@ -625,8 +682,9 @@ class _EvenementpageState extends State<Evenementpage> {
                                 arbitre: estMatch
                                     ? arbitreCtrl.text.trim()
                                     : '',
-                                presents: [],
-                                absents: [],
+                                // on garde les réponses existantes
+                                presents: List.of(existant?.presents ?? []),
+                                absents: List.of(existant?.absents ?? []),
                               ),
                             );
                           }),
@@ -641,10 +699,6 @@ class _EvenementpageState extends State<Evenementpage> {
         );
       },
     );
-
-    if (nouveau != null) {
-      setState(() => _evenements.add(nouveau));
-    }
   }
 
   // ---------- WIDGETS RÉUTILISABLES (style covoiturage) ----------

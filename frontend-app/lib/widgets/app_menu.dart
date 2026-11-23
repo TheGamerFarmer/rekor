@@ -6,6 +6,7 @@ import '../mobile_pages/evenement_page.dart';
 import '../mobile_pages/gestion.dart';
 import '../mobile_pages/groupe.dart';
 import '../mobile_pages/home_page.dart';
+import '../mobile_pages/statistique_page.dart';
 
 // Menu de l'application mobile avec la navigation vers les différentes pages
 class AppMenu extends StatelessWidget {
@@ -124,6 +125,12 @@ void naviguerVersPage(BuildContext context, String page) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ArbitragePage()),
+    );
+  }
+  if (page == 'Statistiques') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const StatistiquePage()),
     );
   }
   if (page == 'Discussions') {
