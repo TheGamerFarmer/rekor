@@ -21,24 +21,23 @@ void main() {
   });
 
   // Une entrée par écran de l'application.
-  testWidgets("la page d'accueil respecte les consignes d'accessibilité", (
-    tester,
-  ) async {
-    final semantics = tester.ensureSemantics();
-    await tester.pumpWidget(const MyApp());
-    await tester.pumpAndSettle();
+  testWidgets(
+    "la page d'accueil respecte les consignes d'accessibilité",
+        (tester) async {
+      final semantics = tester.ensureSemantics();
 
-    // On analyse la page une fois affichée, pas pendant le chargement.
-    //expect(find.text('Bienvenue sur la page d’accueil'), findsOneWidget);
+      await tester.pumpWidget(
+        MyApp(sessionFuture: Future.value(true)),
+      );
 
-    // Zones tactiles assez grandes (48 dp sur Android, 44 pt sur iOS)
-    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-    await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
-    // Chaque élément cliquable a un libellé que lira un lecteur d'écran
-    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-    // Contraste suffisant entre le texte et son fond
-    await expectLater(tester, meetsGuideline(textContrastGuideline));
+      await tester.pumpAndSettle();
 
-    semantics.dispose();
-  });
+      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+      await expectLater(tester, meetsGuideline(textContrastGuideline));
+
+      semantics.dispose();
+    },
+  );
 }

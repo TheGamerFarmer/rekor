@@ -74,7 +74,22 @@ class ApiClient {
 
   /// Récupère le profil de l'utilisateur connecté.
   Future<generated.UserDetails?> getMyProfile() {
-    return _users.getMyProfile();
+    return authenticatedRequest(
+          () => _users.getMyProfile(),
+    );
+  }
+
+  /// Restaure la session utilisateur au démarrage de l'application.
+  Future<bool> restoreSession() async {
+    final refreshToken = await getRefreshToken();
+
+    // Aucun utilisateur précédemment connecté.
+    if (refreshToken == null || refreshToken.isEmpty) {
+      return false;
+    }
+
+    // Tentative de renouvellement des tokens.
+    return await refreshAccessToken();
   }
 
   /*/// Déconnecte localement l'utilisateur.
@@ -84,9 +99,9 @@ class ApiClient {
 
   /// Déconnecte l'utilisateur côté serveur et localement.
   Future<void> logout() async {
-    final refreshToken = await getRefreshToken();
-
     try {
+      final refreshToken = await getRefreshToken();
+
       if (refreshToken != null && refreshToken.isNotEmpty) {
         await _auth.logout(
           generated.RefreshTokenInput(refreshToken: refreshToken),
@@ -94,8 +109,7 @@ class ApiClient {
       }
     } catch (e) {
       debugPrint('Erreur lors de la déconnexion serveur : $e');
-      // La déconnexion locale doit fonctionner même si
-      // le serveur est inaccessible ou le token invalide.
+      // La déconnexion locale doit fonctionner même si le serveur est inaccessible ou le token invalide.
     } finally {
       // Suppression de l'access token en mémoire.
       _bearerAuth.accessToken = '';
@@ -108,5 +122,69 @@ class ApiClient {
   /// Récupre le refresh token
   Future<String?> getRefreshToken() async {
     return await _storage.read(key: 'refresh_token');
+  }
+
+  /// Renouvelle les deux tokens à partir du refresh token enregistré.
+  Future<bool> refreshAccessToken() async {
+    final refreshToken = await _storage.read(key: 'refresh_token');
+
+    if (refreshToken == null || refreshToken.isEmpty) {
+      return false;
+    }
+
+    try {
+      final response = await _auth.refreshTokens(
+        generated.RefreshTokenInput(refreshToken: refreshToken),
+      );
+
+      if (response == null ||
+          response.accessToken.isEmpty ||
+          response.refreshToken.isEmpty) {
+        return false;
+      }
+
+      // Mise à jour de l'access token.
+      setAccessToken(response.accessToken);
+
+      // Remplacement du refresh token.
+      await _storage.write(
+        key: 'refresh_token',
+        value: response.refreshToken,
+      );
+
+      return true;
+    } on generated.ApiException catch (e) {
+      debugPrint('Erreur API lors du renouvellement : $e');
+
+      // Le refresh token est invalide ou expiré.
+      if (e.code == 401) {
+        await logout();
+      }
+
+      return false;
+    } catch (e) {
+      debugPrint('Erreur lors du renouvellement des tokens : $e');
+      return false;
+    }
+  }
+
+  /// Exécute une requête et renouvelle le token si nécessaire.
+  Future<T> authenticatedRequest<T>(
+      Future<T> Function() request,
+      ) async {
+    try {
+      return await request();
+    } on generated.ApiException catch (e) {
+      // Vérification de l'expiration de l'access token.
+      if (e.code != 401) rethrow;
+
+      // Tentative de renouvellement.
+      final refreshed = await refreshAccessToken();
+
+      if (!refreshed) rethrow;
+
+      // Nouvelle tentative avec le nouvel access token.
+      return await request();
+    }
   }
 }
