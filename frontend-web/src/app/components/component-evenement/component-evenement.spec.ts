@@ -42,6 +42,9 @@ describe('ComponentEvenement', () => {
   });
 
   it('renders upcoming events by default', () => {
+    events.set([{ ...defaultEvenements[3], date: '2999-01-01T20:00:00' }]);
+    fixture.detectChanges();
+
     expect(fixture.nativeElement.textContent).toContain('Entraînement');
     expect(fixture.nativeElement.querySelector('.event-list')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('a[href="/admin/evenements"]')).not.toBeNull();

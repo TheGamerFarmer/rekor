@@ -91,6 +91,100 @@ describe('ComponentAdherentsAdmin', () => {
     );
   });
 
+  it('shows the empty state when a registration category has no members', () => {
+    const pendingFilter = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.registration-filters button',
+      ) as NodeListOf<HTMLButtonElement>,
+    ).find((button) => button.textContent?.includes('En cours de validation'));
+    pendingFilter?.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'Aucun adhérent dans cette catégorie d’inscription.',
+    );
+  });
+
+  it('shows the missing-birth-date state and leaves the edit field empty', () => {
+    const memberWithoutBirthDate: Adherent = {
+      ...toValidateMember,
+      id: 3,
+      firstName: 'Noé',
+      birthDate: null,
+    };
+    members.set([...members(), memberWithoutBirthDate]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Date de naissance à compléter');
+
+    const editButton = fixture.nativeElement.querySelector(
+      '[aria-label="Modifier Noé Durand"]',
+    ) as HTMLButtonElement;
+    editButton.click();
+    fixture.detectChanges();
+
+    expect((fixture.nativeElement.querySelector('#birth-date') as HTMLInputElement).value).toBe('');
+  });
+
+  it('updates role selections through the checkbox controls', () => {
+    const editButton = fixture.nativeElement.querySelector(
+      '[aria-label="Modifier Sam Durand"]',
+    ) as HTMLButtonElement;
+    editButton.click();
+    fixture.detectChanges();
+
+    const roleCheckboxes = fixture.nativeElement.querySelectorAll(
+      '.role-options input[type="checkbox"]',
+    ) as NodeListOf<HTMLInputElement>;
+    const coachRole = roleCheckboxes[1];
+    const memberRole = roleCheckboxes[3];
+
+    coachRole.click();
+    memberRole.click();
+    fixture.detectChanges();
+
+    expect(coachRole.checked).toBe(true);
+    expect(memberRole.checked).toBe(false);
+  });
+
+  it('shows validation errors and does not save an invalid form', () => {
+    const editButton = fixture.nativeElement.querySelector(
+      '[aria-label="Modifier Sam Durand"]',
+    ) as HTMLButtonElement;
+    editButton.click();
+    fixture.detectChanges();
+
+    const lastName = fixture.nativeElement.querySelector('#last-name') as HTMLInputElement;
+    lastName.value = '';
+    lastName.dispatchEvent(new Event('input', { bubbles: true }));
+    const birthDate = fixture.nativeElement.querySelector('#birth-date') as HTMLInputElement;
+    birthDate.value = '1899-12-31';
+    birthDate.dispatchEvent(new Event('input', { bubbles: true }));
+    const phone = fixture.nativeElement.querySelector('#phone') as HTMLInputElement;
+    phone.value = 'invalid';
+    phone.dispatchEvent(new Event('input', { bubbles: true }));
+    const email = fixture.nativeElement.querySelector('#email') as HTMLInputElement;
+    email.value = 'invalid';
+    email.dispatchEvent(new Event('input', { bubbles: true }));
+    const roleCheckboxes = fixture.nativeElement.querySelectorAll(
+      '.role-options input[type="checkbox"]',
+    ) as NodeListOf<HTMLInputElement>;
+    const memberRole = roleCheckboxes[3];
+    memberRole.click();
+
+    fixture.nativeElement
+      .querySelector('form')
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    fixture.detectChanges();
+
+    expect(update).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.textContent).toContain('Le nom est obligatoire.');
+    expect(fixture.nativeElement.textContent).toContain('Saisissez une date de naissance valide.');
+    expect(fixture.nativeElement.textContent).toContain('Saisissez un numéro de téléphone valide.');
+    expect(fixture.nativeElement.textContent).toContain('Saisissez une adresse e-mail valide.');
+    expect(fixture.nativeElement.textContent).toContain('Sélectionnez au moins un rôle.');
+  });
+
   it('saves changes to the selected member', () => {
     const validatedFilter = Array.from(
       fixture.nativeElement.querySelectorAll(
