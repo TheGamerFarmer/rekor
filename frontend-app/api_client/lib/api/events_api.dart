@@ -112,7 +112,7 @@ class EventsApi {
     }
   }
 
-  /// Retrieves an event by its identifier (user must be a member of the event group)
+  /// Retrieves an event by its identifier
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -146,7 +146,7 @@ class EventsApi {
     );
   }
 
-  /// Retrieves an event by its identifier (user must be a member of the event group)
+  /// Retrieves an event by its identifier
   ///
   /// Parameters:
   ///
@@ -166,7 +166,7 @@ class EventsApi {
     return null;
   }
 
-  /// Lists events belonging to groups the authenticated user is a member of
+  /// Lists events
   ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> listEventsWithHttpInfo({ Future<void>? abortTrigger, }) async {
@@ -195,7 +195,7 @@ class EventsApi {
     );
   }
 
-  /// Lists events belonging to groups the authenticated user is a member of
+  /// Lists events
   Future<List<EventListItem>?> listEvents({ Future<void>? abortTrigger, }) async {
     final response = await listEventsWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {

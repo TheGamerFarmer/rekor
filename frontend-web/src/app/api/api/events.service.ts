@@ -176,7 +176,7 @@ export class EventsService extends BaseService {
     }
 
     /**
-     * Retrieves an event by its identifier (user must be a member of the event group)
+     * Retrieves an event by its identifier
      * @endpoint get /event/{id}
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -235,7 +235,7 @@ export class EventsService extends BaseService {
     }
 
     /**
-     * Lists events belonging to groups the authenticated user is a member of
+     * Lists events
      * @endpoint get /event
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.

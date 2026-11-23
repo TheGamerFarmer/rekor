@@ -398,7 +398,7 @@ registry.registerPath({
   path: '/event',
   operationId: 'listEvents',
   tags: ['Events'],
-  summary: 'Lists events belonging to groups the authenticated user is a member of',
+  summary: 'Lists events',
   security: [{ BearerAuth: [] }],
   responses: {
     200: { description: 'The events', content: json(z.array(EventListItem)) },
@@ -414,7 +414,7 @@ registry.registerPath({
   path: '/event/{id}',
   operationId: 'getEvent',
   tags: ['Events'],
-  summary: 'Retrieves an event by its identifier (user must be a member of the event group)',
+  summary: 'Retrieves an event by its identifier',
   security: [{ BearerAuth: [] }],
   request: { params: z.object({ id: EventId }) },
   responses: {

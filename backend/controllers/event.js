@@ -46,7 +46,7 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
   router.get(
     '/',
     authenticate,
-    authorize(USER_ROLE.ADHERENT),
+    authorize(USER_ROLE.VISITEUR),
     wrapAsync(async (req, res) => {
       const docs = await Event.find();
 
@@ -61,7 +61,7 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
   router.get(
     '/:id',
     authenticate,
-    authorize(USER_ROLE.ADHERENT),
+    authorize(USER_ROLE.VISITEUR),
     wrapAsync(async (req, res) => {
       if (!isValidObjectId(req.params.id)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
