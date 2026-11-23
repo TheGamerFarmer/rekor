@@ -45,6 +45,7 @@ describe('/event (avec un vrai mongod)', () => {
   let mongod;
   let groupId;
   let eventId;
+  let visiteurToken;
   let adherentToken;
   let entraineurToken;
   let directApp;
@@ -95,6 +96,7 @@ describe('/event (avec un vrai mongod)', () => {
     // userId is a member of groupId; outsiderId is not.
     await groupMemberCollection.insertOne({ group: groupId, user: userId });
 
+    visiteurToken = signAccessToken({ _id: userId, role: 'Visiteur' }, association);
     adherentToken = signAccessToken({ _id: userId, role: 'Adhérent' }, association);
     entraineurToken = signAccessToken({ _id: userId, role: 'Entraineur' }, association);
   });
@@ -102,7 +104,7 @@ describe('/event (avec un vrai mongod)', () => {
   // ── GET /event ──────────────────────────────────────────────────────────────
 
   it('GET /event lists events with essential fields', async () => {
-    const res = await request(app).get('/event').set('Authorization', `Bearer ${adherentToken}`);
+    const res = await request(app).get('/event').set('Authorization', `Bearer ${visiteurToken}`);
 
     assert.strictEqual(res.status, 200);
     assert.ok(Array.isArray(res.body));
@@ -122,7 +124,7 @@ describe('/event (avec un vrai mongod)', () => {
   it('GET /event/:id returns event details', async () => {
     const res = await request(app)
       .get(`/event/${eventId}`)
-      .set('Authorization', `Bearer ${adherentToken}`);
+      .set('Authorization', `Bearer ${visiteurToken}`);
 
     assert.strictEqual(res.status, 200);
     assert.strictEqual(res.body.id, eventId.toString());
@@ -132,7 +134,7 @@ describe('/event (avec un vrai mongod)', () => {
   it('GET /event/:id returns 404 when event does not exist', async () => {
     const res = await request(app)
       .get(`/event/${UNKNOWN_ID}`)
-      .set('Authorization', `Bearer ${adherentToken}`);
+      .set('Authorization', `Bearer ${visiteurToken}`);
 
     assert.strictEqual(res.status, 404);
   });
@@ -140,7 +142,7 @@ describe('/event (avec un vrai mongod)', () => {
   it('GET /event/:id returns 400 for a malformed identifier', async () => {
     const res = await request(app)
       .get('/event/pas-un-id')
-      .set('Authorization', `Bearer ${adherentToken}`);
+      .set('Authorization', `Bearer ${visiteurToken}`);
 
     assert.strictEqual(res.status, 400);
   });
