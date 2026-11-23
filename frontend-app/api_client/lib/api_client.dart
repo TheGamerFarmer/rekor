@@ -195,6 +195,8 @@ class ApiClient {
           return LoginInput.fromJson(value);
         case 'LoginResponse':
           return LoginResponse.fromJson(value);
+        case 'Publication':
+          return Publication.fromJson(value);
         case 'RefreshTokenInput':
           return RefreshTokenInput.fromJson(value);
         case 'RegisterInput':

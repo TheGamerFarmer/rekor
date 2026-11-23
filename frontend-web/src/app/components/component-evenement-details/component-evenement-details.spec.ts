@@ -54,4 +54,11 @@ describe('ComponentEvenementDetails', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Événement introuvable');
   });
+
+  it('shows a fallback for a non-numeric event ID', () => {
+    params.next(convertToParamMap({ id: 'invalid' }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Événement introuvable');
+  });
 });

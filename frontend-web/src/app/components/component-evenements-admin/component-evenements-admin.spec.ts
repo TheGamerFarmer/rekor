@@ -2,15 +2,19 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ComponentEvenementsAdmin } from './component-evenements-admin';
 import { EvenementService } from '../../services/evenement.service';
-import { defaultEvenements, type Evenement } from '../component-evenement/evenements.data';
+import { type Evenement } from '../component-evenement/evenements.data';
+import {
+  createTestEvenements,
+  dateRelativeToToday,
+} from '../component-evenement/evenements.test-data';
 
 describe('ComponentEvenementsAdmin', () => {
   let fixture: ComponentFixture<ComponentEvenementsAdmin>;
   let remove: ReturnType<typeof vi.fn>;
-  let events = signal(defaultEvenements);
+  let events = signal(createTestEvenements());
 
   beforeEach(async () => {
-    events = signal(defaultEvenements);
+    events = signal(createTestEvenements());
     remove = vi.fn();
     await TestBed.configureTestingModule({
       imports: [ComponentEvenementsAdmin],
@@ -46,8 +50,8 @@ describe('ComponentEvenementsAdmin', () => {
 
   it('displays participants grouped by attendance status', () => {
     const eventWithParticipants: Evenement = {
-      ...defaultEvenements[0],
-      date: '2099-01-01',
+      ...createTestEvenements()[0],
+      date: `${dateRelativeToToday(1)}T20:00:00`,
       participants: [
         { id: 1, name: 'Alice Martin', status: 'present' },
         { id: 2, name: 'Bob Durand', status: 'absent' },
