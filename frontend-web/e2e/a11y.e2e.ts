@@ -17,7 +17,7 @@ const pages = [
 for (const { name, path, ready } of pages) {
   test(`accessibilité : ${name}`, async ({ page, arrange }) => {
     await arrange({
-      mock: (p) => p.route('**/api/', (route) => route.fulfill({ json: { status: 'ok' } })),
+      //mock: (p) => p.route('**/api/', (route) => route.fulfill({ json: { status: 'ok' } })),
     });
     await page.goto(path);
     await ready(page);
