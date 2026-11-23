@@ -69,9 +69,7 @@ describe('ComponentEvenement', () => {
     events.set([{ ...defaultEvenements[0], date: '2999-01-01' }]);
     fixture.detectChanges();
 
-    const link = fixture.nativeElement.querySelector(
-      'a[href="/evenements/match-amical-gieres-lyon"]',
-    );
+    const link = fixture.nativeElement.querySelector('a[href="/evenements/1"]');
 
     expect(link).not.toBeNull();
   });
@@ -82,7 +80,6 @@ describe('ComponentEvenement', () => {
       ...defaultEvenements.map((event, index) => ({
         ...event,
         id: event.id + 10 + index,
-        slug: `${event.slug}-copy`,
         date: '2026-12-01',
       })),
     ]);
