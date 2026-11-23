@@ -46,7 +46,7 @@ class MyLoginPageState extends State<MyLoginPage> {
     if (!formKey.currentState!.validate()) return;
 
     try {
-      final token = await ApiClient.instance.login(
+      await ApiClient.instance.login(
         emailController.text.trim(),
         passwordController.text,
       );
