@@ -1,1 +1,7 @@
-<p>component-faq works!</p>
+<main>
+  @for (titreCour of titres; track titres) {
+    <app-component-faq-categorie-question
+      [titre]="titreCour"
+    ></app-component-faq-categorie-question>
+  }
+</main>

@@ -1,0 +1,15 @@
+<section>
+  <div class="titre-categorie">
+    <h2>{{ titre() }}</h2>
+    <button (click)="onClickListener()">
+      <span>+</span>
+    </button>
+  </div>
+  <div id="q-r-container">
+    @if (estSelectBool) {
+      @for (questionrep of qr; track $index) {
+        <app-component-faq-question [qr]="questionrep"></app-component-faq-question>
+      }
+    }
+  </div>
+</section>
