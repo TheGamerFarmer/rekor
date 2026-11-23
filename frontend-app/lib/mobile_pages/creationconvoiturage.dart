@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../layouts/main_layout.dart';
 import '../../convoiturage.dart';
+import '../listevenement.dart';
 
 class CreationCovoituragePage extends StatefulWidget {
   const CreationCovoituragePage({super.key});
@@ -19,17 +20,18 @@ class _CreationCovoituragePageState extends State<CreationCovoituragePage> {
   final TextEditingController _lieuArriveeCtrl = TextEditingController();
   final TextEditingController _heureDepartCtrl = TextEditingController();
   final TextEditingController _heureArriveeCtrl = TextEditingController();
+  final TextEditingController _coutCtrl = TextEditingController();
 
   // Valeurs des listes déroulantes
-  String? _evenement;
+  Evenement? _evenement;
   String _carburant = 'ESSENCE SP95';
   int _places = 1;
 
   // Case d'assurance
   bool _assuranceCochee = false;
 
-  // Listes de choix (à remplacer par tes vraies données)
-  final List<String> _evenements = ['Match1', 'Match2'];
+  // Listes de choix
+  final List<Evenement> _evenements = evenements; // ta vraie liste
   final List<String> _carburants = [
     'ESSENCE SP95',
     'ESSENCE SP98',
@@ -45,6 +47,7 @@ class _CreationCovoituragePageState extends State<CreationCovoituragePage> {
     _lieuArriveeCtrl.dispose();
     _heureDepartCtrl.dispose();
     _heureArriveeCtrl.dispose();
+    _coutCtrl.dispose();
     super.dispose();
   }
 
@@ -58,8 +61,12 @@ class _CreationCovoituragePageState extends State<CreationCovoituragePage> {
       return;
     }
 
+    final cout = double.tryParse(_coutCtrl.text.replaceAll(',', '.'));
+
     // Vérifie que les champs importants sont remplis
-    if (_lieuDepartCtrl.text.trim().isEmpty ||
+    if (_evenement == null ||
+        cout == null ||
+        _lieuDepartCtrl.text.trim().isEmpty ||
         _lieuArriveeCtrl.text.trim().isEmpty ||
         _heureDepartCtrl.text.isEmpty ||
         _heureArriveeCtrl.text.isEmpty) {
@@ -70,15 +77,17 @@ class _CreationCovoituragePageState extends State<CreationCovoituragePage> {
     }
 
     final nouveau = Covoiturage(
-      evenement: _evenement,
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      evenement: _evenement!,
       lieuDepart: _lieuDepartCtrl.text.trim(),
       lieuArrivee: _lieuArriveeCtrl.text.trim(),
       heureDepart: _heureDepartCtrl.text,
       heureArrivee: _heureArriveeCtrl.text,
       carburant: _carburant,
-      placesDisponibles: _places,
-      conducteur: 'Moi',
-      date: DateTime.now(),
+      placesTotales: _places,
+      coutTotal: cout,
+      conducteur: utilisateurActuel,
+      date: _evenement!.dateTime,
     );
 
     // On renvoie le covoiturage à la page précédente
@@ -187,7 +196,7 @@ class _CreationCovoituragePageState extends State<CreationCovoituragePage> {
               // CHAMPS DU FORMULAIRE
               _ligne(
                 'Évènement correspondant :',
-                _listeDeroulante<String>(
+                _listeDeroulante<Evenement>(
                   valeur: _evenement,
                   items: _evenements,
                   indice: 'choisir un évènement',
@@ -247,6 +256,17 @@ class _CreationCovoituragePageState extends State<CreationCovoituragePage> {
                 ),
                 flexLabel: 6,
                 flexChamp: 3,
+              ),
+
+              _ligne(
+                'Coût total du trajet (€) :',
+                _champTexte(
+                  _coutCtrl,
+                  'ex : 20',
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                ),
               ),
 
               const SizedBox(height: 8),
@@ -358,6 +378,7 @@ class _CreationCovoituragePageState extends State<CreationCovoituragePage> {
     String indice, {
     bool lectureSeule = false,
     VoidCallback? onTap,
+    TextInputType? keyboardType,
   }) {
     final bordure = OutlineInputBorder(
       borderRadius: BorderRadius.circular(20),
@@ -368,6 +389,7 @@ class _CreationCovoituragePageState extends State<CreationCovoituragePage> {
       height: 34,
       child: TextField(
         controller: controller,
+        keyboardType: keyboardType,
         readOnly: lectureSeule,
         onTap: onTap,
         style: const TextStyle(
@@ -445,6 +467,7 @@ class _CreationCovoituragePageState extends State<CreationCovoituragePage> {
                   alignment: rempli ? Alignment.center : Alignment.centerLeft,
                   child: Text(
                     e.toString(),
+                    overflow: TextOverflow.ellipsis,
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -460,6 +483,7 @@ class _CreationCovoituragePageState extends State<CreationCovoituragePage> {
                   Expanded(
                     child: Text(
                       e.toString(),
+                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         fontFamily: 'Poppins',
                         fontSize: 12,

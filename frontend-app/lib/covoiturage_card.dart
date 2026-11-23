@@ -3,23 +3,49 @@ import 'package:flutter/material.dart';
 import 'convoiturage.dart';
 
 // Une carte = un covoiturage.
-// C'est ta carte d'origine, mais les textes viennent de l'objet "covoiturage".
+// Les textes viennent de l'objet "covoiturage".
 class CovoiturageCard extends StatefulWidget {
   final Covoiturage covoiturage;
 
-  const CovoiturageCard({super.key, required this.covoiturage});
+  // Appelé après une inscription / désinscription
+  // pour que la page parente se rafraîchisse
+  final VoidCallback onChange;
+
+  const CovoiturageCard({
+    super.key,
+    required this.covoiturage,
+    required this.onChange,
+  });
 
   @override
   State<CovoiturageCard> createState() => _CovoiturageCardState();
 }
 
 class _CovoiturageCardState extends State<CovoiturageCard> {
-  int _placesReservees = 1;
+  // Si déjà inscrit, on reprend le nombre de places réservées
+  late int _placesReservees =
+      widget.covoiturage.passagers[utilisateurActuel] ?? 1;
   int? _boutonSelectionne;
 
   final Color jaune = const Color(0xFFFFDA1A);
   final Color bleu = const Color(0xFF2864D7);
   final Color grisBouton = const Color(0xFFCCCCCC);
+
+  bool get _inscrit => widget.covoiturage.estInscrit(utilisateurActuel);
+
+  // S'inscrire ou annuler son inscription
+  void _toggleInscription() {
+    final c = widget.covoiturage;
+    setState(() {
+      if (_inscrit) {
+        c.passagers.remove(utilisateurActuel);
+        _placesReservees = 1;
+      } else if (c.placesDisponibles >= _placesReservees) {
+        c.passagers[utilisateurActuel] = _placesReservees;
+      }
+    });
+    widget.onChange();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -70,21 +96,36 @@ class _CovoiturageCardState extends State<CovoiturageCard> {
                           vertical: 3,
                         ),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF494000),
+                          // Fond bleu transparent
+                          color: bleu.withValues(alpha: 0.25),
                           borderRadius: BorderRadius.circular(10),
                         ),
                         child: Text(
                           c.placesDisponibles > 1
                               ? '${c.placesDisponibles} places'
                               : '${c.placesDisponibles} place',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontFamily: 'Poppins',
                             fontSize: 10,
-                            color: Color(0xFFFFDA1A),
+                            fontWeight: FontWeight.bold,
+                            color: bleu,
                           ),
                         ),
                       ),
                     ],
+                  ),
+
+                  // NOM DE L'ÉVÈNEMENT LIÉ
+                  const SizedBox(height: 6),
+                  Text(
+                    c.evenement.nom,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      color: jaune,
+                    ),
                   ),
 
                   const SizedBox(height: 10),
@@ -127,34 +168,40 @@ class _CovoiturageCardState extends State<CovoiturageCard> {
                       ),
                       const SizedBox(width: 2),
 
-                      // BOUTON MOINS
+                      // BOUTON MOINS (désactivé une fois inscrit)
                       SizedBox(
                         width: 15,
                         height: 15,
                         child: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _boutonSelectionne = 0;
-                              if (_placesReservees > 1) {
-                                _placesReservees--;
-                              }
-                            });
-                          },
+                          // Grisé si inscrit ou si on est au minimum (1 place)
+                          onPressed: (_inscrit || _placesReservees <= 1)
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _boutonSelectionne = 0;
+                                    _placesReservees--;
+                                  });
+                                },
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints.tightFor(
                             width: 20,
                             height: 22,
                           ),
                           visualDensity: VisualDensity.compact,
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.remove,
                             size: 13,
-                            color: Colors.white,
+                            color: (_inscrit || _placesReservees <= 1)
+                                ? Colors.white38
+                                : Colors.white,
                           ),
                           style: IconButton.styleFrom(
                             backgroundColor: _boutonSelectionne == 0
                                 ? bleu
                                 : grisBouton,
+                            disabledBackgroundColor: grisBouton.withValues(
+                              alpha: 0.4,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5),
                             ),
@@ -175,35 +222,45 @@ class _CovoiturageCardState extends State<CovoiturageCard> {
                         ),
                       ),
 
-                      // BOUTON PLUS
+                      // BOUTON PLUS (désactivé une fois inscrit)
                       SizedBox(
                         width: 15,
                         height: 15,
                         child: IconButton(
-                          onPressed: () {
-                            setState(() {
-                              _boutonSelectionne = 1;
-                              // On ne dépasse pas les places disponibles
-                              if (_placesReservees < c.placesDisponibles) {
-                                _placesReservees++;
-                              }
-                            });
-                          },
+                          // Grisé si inscrit ou si on est au maximum
+                          // (places disponibles)
+                          onPressed:
+                              (_inscrit ||
+                                  _placesReservees >= c.placesDisponibles)
+                              ? null
+                              : () {
+                                  setState(() {
+                                    _boutonSelectionne = 1;
+                                    _placesReservees++;
+                                  });
+                                },
                           padding: EdgeInsets.zero,
                           constraints: const BoxConstraints.tightFor(
                             width: 20,
                             height: 22,
                           ),
                           visualDensity: VisualDensity.compact,
-                          icon: const Icon(
+                          icon: Icon(
                             Icons.add,
                             size: 13,
-                            color: Colors.white,
+                            color:
+                                (_inscrit ||
+                                    _placesReservees >= c.placesDisponibles)
+                                ? Colors.white38
+                                : Colors.white,
                           ),
                           style: IconButton.styleFrom(
                             backgroundColor: _boutonSelectionne == 1
                                 ? bleu
                                 : grisBouton,
+                            disabledBackgroundColor: grisBouton.withValues(
+                              alpha: 0.4,
+                            ),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5),
                             ),
@@ -213,7 +270,29 @@ class _CovoiturageCardState extends State<CovoiturageCard> {
                     ],
                   ),
 
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 8),
+
+                  // COÛT
+                  Text(
+                    'Coût : ${c.coutParPersonne.toStringAsFixed(2)} € / personne',
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 11,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  Text(
+                    'Total à rembourser : '
+                    '${(c.coutParPersonne * _placesReservees).toStringAsFixed(2)} €',
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: jaune,
+                    ),
+                  ),
+
+                  const SizedBox(height: 6),
 
                   // PHRASE D'ENGAGEMENT
                   const Text(
@@ -228,28 +307,40 @@ class _CovoiturageCardState extends State<CovoiturageCard> {
                     ),
                   ),
 
-                  // BOUTON VALIDER
+                  const SizedBox(height: 15),
+                  // BOUTON S'INSCRIRE / ANNULER / COMPLET
                   Align(
                     alignment: Alignment.centerRight,
                     child: SizedBox(
-                      width: 80,
-                      height: 35,
+                      width: 70,
+                      height: 20,
                       child: OutlinedButton(
-                        onPressed: () {},
+                        onPressed: (!_inscrit && c.placesDisponibles == 0)
+                            ? null
+                            : _toggleInscription,
                         style: OutlinedButton.styleFrom(
                           backgroundColor: Colors.transparent,
-                          foregroundColor: Colors.white,
-                          side: const BorderSide(color: Colors.white, width: 1),
+                          foregroundColor: _inscrit
+                              ? Colors.redAccent
+                              : Colors.white,
+                          side: BorderSide(
+                            color: _inscrit ? Colors.redAccent : Colors.white,
+                            width: 1,
+                          ),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(12),
                           ),
                           padding: EdgeInsets.zero,
                         ),
-                        child: const Text(
-                          'VALIDER',
-                          style: TextStyle(
+                        child: Text(
+                          _inscrit
+                              ? 'ANNULER'
+                              : (c.placesDisponibles == 0
+                                    ? 'COMPLET'
+                                    : 'S’INSCRIRE'),
+                          style: const TextStyle(
                             fontFamily: 'Poppins',
-                            fontSize: 10,
+                            fontSize: 9,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
@@ -271,86 +362,75 @@ class _CovoiturageCardState extends State<CovoiturageCard> {
             Expanded(
               flex: 2,
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // DÉPART
+                  // DÉPART : heure puis lieu (le lieu peut passer sur
+                  // plusieurs lignes, plus de "...")
                   Row(
                     children: [
+                      Icon(Icons.stop_rounded, color: jaune, size: 10),
+                      const SizedBox(width: 3),
                       Text(
                         c.heureDepart,
                         style: TextStyle(
                           fontFamily: 'Poppins',
-                          fontSize: 10,
+                          fontSize: 11,
                           color: jaune,
                         ),
                       ),
-                      const SizedBox(width: 4),
-                      Icon(Icons.stop_rounded, color: jaune, size: 10),
-                      const SizedBox(width: 3),
-                      Expanded(
-                        child: Text(
-                          c.lieuDepart,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 12,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
                     ],
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    c.lieuDepart,
+                    softWrap: true,
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      color: Colors.white,
+                    ),
                   ),
 
                   // LIGNE POINTILLÉE ET FLÈCHE
                   Padding(
-                    padding: const EdgeInsets.only(left: 30, top: 3, bottom: 3),
-                    child: Align(
-                      alignment: Alignment.centerLeft,
-                      child: Column(
-                        children: [
-                          ...List.generate(
-                            10,
-                            (index) => Container(
-                              width: 5,
-                              height: 7,
-                              margin: const EdgeInsets.only(bottom: 4),
-                              decoration: BoxDecoration(
-                                color: jaune,
-                                shape: BoxShape.circle,
-                              ),
+                    padding: const EdgeInsets.only(left: 2, top: 6, bottom: 3),
+                    child: Column(
+                      children: [
+                        ...List.generate(
+                          9,
+                          (index) => Container(
+                            width: 5,
+                            height: 7,
+                            margin: const EdgeInsets.only(bottom: 4),
+                            decoration: BoxDecoration(
+                              color: jaune,
+                              shape: BoxShape.circle,
                             ),
                           ),
-                          Icon(Icons.arrow_downward, color: jaune, size: 10),
-                        ],
-                      ),
+                        ),
+                        Icon(Icons.arrow_downward, color: jaune, size: 10),
+                      ],
                     ),
                   ),
 
-                  // ARRIVÉE
-                  Row(
-                    children: [
-                      Text(
-                        c.heureArrivee,
-                        style: TextStyle(
-                          fontFamily: 'Poppins',
-                          fontSize: 12,
-                          color: jaune,
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      Expanded(
-                        child: Text(
-                          c.lieuArrivee,
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: const TextStyle(
-                            fontFamily: 'Poppins',
-                            fontSize: 12,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                    ],
+                  // ARRIVÉE : heure puis lieu
+                  Text(
+                    c.heureArrivee,
+                    style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 11,
+                      color: jaune,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    c.lieuArrivee,
+                    softWrap: true,
+                    style: const TextStyle(
+                      fontFamily: 'Poppins',
+                      fontSize: 12,
+                      color: Colors.white,
+                    ),
                   ),
                 ],
               ),
