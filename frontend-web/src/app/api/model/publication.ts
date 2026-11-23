@@ -11,7 +11,6 @@
 
 export interface Publication { 
     _id: string;
-    id: number;
     titre: string;
     summary: string;
     corps: string;

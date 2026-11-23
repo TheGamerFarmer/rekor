@@ -14,7 +14,6 @@ class Publication {
   /// Returns a new [Publication] instance.
   Publication({
     required this.id,
-    required this.id,
     required this.titre,
     required this.summary,
     required this.corps,
@@ -23,8 +22,6 @@ class Publication {
   });
 
   String id;
-
-  int id;
 
   String titre;
 
@@ -39,7 +36,6 @@ class Publication {
   @override
   bool operator ==(Object other) => identical(this, other) || other is Publication &&
     other.id == id &&
-    other.id == id &&
     other.titre == titre &&
     other.summary == summary &&
     other.corps == corps &&
@@ -50,7 +46,6 @@ class Publication {
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (id.hashCode) +
-    (id.hashCode) +
     (titre.hashCode) +
     (summary.hashCode) +
     (corps.hashCode) +
@@ -58,12 +53,11 @@ class Publication {
     (association.hashCode);
 
   @override
-  String toString() => 'Publication[id=$id, id=$id, titre=$titre, summary=$summary, corps=$corps, date=$date, association=$association]';
+  String toString() => 'Publication[id=$id, titre=$titre, summary=$summary, corps=$corps, date=$date, association=$association]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'_id'] = this.id;
-      json[r'id'] = this.id;
       json[r'titre'] = this.titre;
       json[r'summary'] = this.summary;
       json[r'corps'] = this.corps;
@@ -85,8 +79,6 @@ class Publication {
       assert(() {
         assert(json.containsKey(r'_id'), 'Required key "Publication[_id]" is missing from JSON.');
         assert(json[r'_id'] != null, 'Required key "Publication[_id]" has a null value in JSON.');
-        assert(json.containsKey(r'id'), 'Required key "Publication[id]" is missing from JSON.');
-        assert(json[r'id'] != null, 'Required key "Publication[id]" has a null value in JSON.');
         assert(json.containsKey(r'titre'), 'Required key "Publication[titre]" is missing from JSON.');
         assert(json[r'titre'] != null, 'Required key "Publication[titre]" has a null value in JSON.');
         assert(json.containsKey(r'summary'), 'Required key "Publication[summary]" is missing from JSON.');
@@ -102,7 +94,6 @@ class Publication {
 
       return Publication(
         id: mapValueOfType<String>(json, r'_id')!,
-        id: mapValueOfType<int>(json, r'id')!,
         titre: mapValueOfType<String>(json, r'titre')!,
         summary: mapValueOfType<String>(json, r'summary')!,
         corps: mapValueOfType<String>(json, r'corps')!,
@@ -156,7 +147,6 @@ class Publication {
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
     '_id',
-    'id',
     'titre',
     'summary',
     'corps',

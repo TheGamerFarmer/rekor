@@ -19,7 +19,7 @@ const HealthResponse = z
   })
   .openapi('HealthResponse');
 
-const UserId = z
+const Id = z
   .string()
   .regex(/^[0-9a-f]{24}$/)
   .openapi({ example: '6ac8c78e50318b28d457048f' });
@@ -79,7 +79,7 @@ const ChangePasswordInput = z
 
 const UserListItem = z
   .object({
-    id: UserId,
+    id: Id,
     name: z.string(),
     firstName: z.string().optional(),
     email: z.email(),
@@ -95,7 +95,7 @@ const UserDetails = UserListItem.extend({
 
 const Association = z
   .object({
-    _id: UserId,
+    _id: Id,
     name: z.string(),
     address: z.string(),
   })
@@ -103,13 +103,12 @@ const Association = z
 
 const Publication = z
   .object({
-    _id: UserId,
-    id: z.number().int(),
+    _id: Id,
     titre: z.string(),
     summary: z.string(),
     corps: z.string(),
     date: z.iso.datetime(),
-    association: UserId,
+    association: Id,
   })
   .openapi('Publication');
 registry.register('Publication', Publication);
@@ -255,7 +254,7 @@ registry.registerPath({
   operationId: 'getUser',
   tags: ['Users'],
   summary: 'Récupère un utilisateur par son identifiant',
-  request: { params: z.object({ id: UserId }) },
+  request: { params: z.object({ id: Id }) },
   responses: {
     200: { description: "L'utilisateur", content: json(UserDetails) },
     400: failure('Identifiant invalide'),

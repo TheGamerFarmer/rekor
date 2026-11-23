@@ -27,9 +27,6 @@
             "pattern": "^[0-9a-f]{24}$",
             "example": "6ac8c78e50318b28d457048f"
           },
-          "id": {
-            "type": "integer"
-          },
           "titre": {
             "type": "string"
           },
@@ -51,7 +48,6 @@
         },
         "required": [
           "_id",
-          "id",
           "titre",
           "summary",
           "corps",
