@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:rekor_api/api.dart' as generated;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
@@ -66,10 +67,6 @@ class ApiClient {
     return response.accessToken;
   }
 
-  Future<String?> getRefreshToken() async {
-    return await _storage.read(key: 'refresh_token');
-  }
-
   /// Configure le token utilisé pour les prochaines requêtes.
   void setAccessToken(String token) {
     _bearerAuth.accessToken = token;
@@ -80,8 +77,36 @@ class ApiClient {
     return _users.getMyProfile();
   }
 
-  /// Déconnecte localement l'utilisateur.
+  /*/// Déconnecte localement l'utilisateur.
   void logout() {
     _bearerAuth.accessToken = null;
+  }*/
+
+  /// Déconnecte l'utilisateur côté serveur et localement.
+  Future<void> logout() async {
+    final refreshToken = await getRefreshToken();
+
+    try {
+      if (refreshToken != null && refreshToken.isNotEmpty) {
+        await _auth.logout(
+          generated.RefreshTokenInput(refreshToken: refreshToken),
+        );
+      }
+    } catch (e) {
+      debugPrint('Erreur lors de la déconnexion serveur : $e');
+      // La déconnexion locale doit fonctionner même si
+      // le serveur est inaccessible ou le token invalide.
+    } finally {
+      // Suppression de l'access token en mémoire.
+      _bearerAuth.accessToken = '';
+
+      // Suppression du refresh token sécurisé.
+      await _storage.delete(key: 'refresh_token');
+    }
+  }
+
+  /// Récupre le refresh token
+  Future<String?> getRefreshToken() async {
+    return await _storage.read(key: 'refresh_token');
   }
 }
