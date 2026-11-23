@@ -40,7 +40,6 @@ test('GET /api-docs.json documente le résumé des publications', async () => {
   assert.strictEqual(res.status, 200);
   assert.deepStrictEqual(res.body.components.schemas.Publication.required, [
     '_id',
-    'id',
     'titre',
     'summary',
     'corps',

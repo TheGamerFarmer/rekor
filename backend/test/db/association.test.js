@@ -157,7 +157,7 @@ describe('collections association.js', () => {
       await assert.doesNotReject(Publication.create(valid()));
     });
 
-    for (const field of ['id', 'titre', 'summary', 'corps', 'date', 'association']) {
+    for (const field of ['titre', 'summary', 'corps', 'date', 'association']) {
       it(`refuse sans ${field}`, async () => {
         const doc = valid();
         delete doc[field];
