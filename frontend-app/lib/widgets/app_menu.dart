@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/arbitrage.dart';
+import 'package:frontend_app/mobile_pages/parametres_page.dart';
 
 import '../mobile_pages/covoiturage_page.dart';
 import '../mobile_pages/evenement_page.dart';
@@ -143,6 +144,12 @@ void naviguerVersPage(BuildContext context, String page) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const GestionPage()),
+    );
+  }
+  if (page == 'Paramètres') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ParametresPage()),
     );
   }
 }

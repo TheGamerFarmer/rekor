@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/home_page.dart';
 import 'package:frontend_app/mobile_pages/login.dart';
+import 'package:frontend_app/mobile_pages/parametres_page.dart';
 
 class AppHeader extends StatelessWidget {
   const AppHeader({super.key});
@@ -64,6 +65,12 @@ class AppHeader extends StatelessWidget {
             onSelected: (value) {
               if (value == 'profil') {
                 // Lien vers profil détaillé.
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const ParametresPage(),
+                  ),
+                );
               } else if (value == 'deconnexion') {
                 // Déconnexion.
                 // Appelle backend pour se déconnecter, puis
