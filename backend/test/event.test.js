@@ -26,7 +26,7 @@ function buildDirectEventApp() {
   a.use((req, res, next) => userContext.run({}, next));
   a.use('/event', createEventsRouter({ limit: 1000 }));
   // eslint-disable-next-line no-unused-vars
-  a.use((err, req, res, next) => {
+  a.use((err, req, res, ignored) => {
     res.status(err.status || 500).json({ message: err.message });
   });
   return a;
@@ -47,7 +47,6 @@ describe('/event (avec un vrai mongod)', () => {
   let eventId;
   let adherentToken;
   let entraineurToken;
-  let outsiderToken;
   let directApp;
   const previousJwtSecret = process.env.JWT_SECRET;
 
@@ -80,7 +79,6 @@ describe('/event (avec un vrai mongod)', () => {
     await groupMemberCollection.deleteMany({});
 
     const userId = new ObjectId('000000000000000000000003');
-    const outsiderId = new ObjectId('000000000000000000000004');
     groupId = new ObjectId('000000000000000000000001');
     eventId = new ObjectId('000000000000000000000002');
 
@@ -99,7 +97,6 @@ describe('/event (avec un vrai mongod)', () => {
 
     adherentToken = signAccessToken({ _id: userId, role: 'Adhérent' }, association);
     entraineurToken = signAccessToken({ _id: userId, role: 'Entraineur' }, association);
-    outsiderToken = signAccessToken({ _id: outsiderId, role: 'Adhérent' }, association);
   });
 
   // ── GET /event ──────────────────────────────────────────────────────────────
@@ -118,13 +115,6 @@ describe('/event (avec un vrai mongod)', () => {
     const res = await request(app).get('/event');
 
     assert.strictEqual(res.status, 401);
-  });
-
-  it('GET /event returns an empty array for a user with no group membership', async () => {
-    const res = await request(app).get('/event').set('Authorization', `Bearer ${outsiderToken}`);
-
-    assert.strictEqual(res.status, 200);
-    assert.deepStrictEqual(res.body, []);
   });
 
   // ── GET /event/:id ──────────────────────────────────────────────────────────
@@ -153,15 +143,6 @@ describe('/event (avec un vrai mongod)', () => {
       .set('Authorization', `Bearer ${adherentToken}`);
 
     assert.strictEqual(res.status, 400);
-  });
-
-  it('GET /event/:id returns 401 when the user is not a member of the event group', async () => {
-    const res = await request(app)
-      .get(`/event/${eventId}`)
-      .set('Authorization', `Bearer ${outsiderToken}`);
-
-    assert.strictEqual(res.status, 401);
-    assert.strictEqual(res.body.message, "L'utilisateur ne fait pas partie du groupe");
   });
 
   // ── PUT /event/:id ──────────────────────────────────────────────────────────

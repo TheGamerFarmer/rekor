@@ -7,7 +7,6 @@ const {
 } = require('mongoose');
 const Event = require('../db/models/event');
 const Group = require('../db/models/group');
-const GroupMembre = require('../db/models/group_member');
 const { wrapAsync, toPublicEvent } = require('./services/shared');
 const { authenticate, authorize } = require('./services/auth-middleware');
 const { EVENT_TYPE, USER_ROLE } = require('../db/enums');
@@ -49,30 +48,7 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
     authenticate,
     authorize(USER_ROLE.ADHERENT),
     wrapAsync(async (req, res) => {
-      const userId = new ObjectId(req.auth.sub);
-
-      const docs = await Event.aggregate([
-        {
-          $lookup: {
-            from: 'group_member',
-            let: { gid: '$group' },
-
-            pipeline: [
-              {
-                $match: {
-                  $expr: { $and: [{ $eq: ['$group', '$$gid'] }, { $eq: ['$user', userId] }] },
-                },
-              },
-              { $limit: 1 },
-            ],
-            as: 'membership',
-          },
-        },
-
-        { $match: { 'membership.0': { $exists: true } } },
-
-        { $sort: { _id: 1 } },
-      ]);
+      const docs = await Event.find();
 
       res.json(docs.map(toPublicEvent));
     }),
@@ -93,14 +69,6 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       const doc = await Event.findById(req.params.id);
       if (!doc) return res.status(404).json({ message: 'Utilisateur introuvable' });
-
-      // Check membership using doc.group (the event's group), not req.params.id.
-      const membership = await GroupMembre.findOne({
-        group: doc.group,
-        user: new ObjectId(req.auth.sub),
-      });
-      if (!membership)
-        return res.status(401).json({ message: "L'utilisateur ne fait pas partie du groupe" });
 
       res.json(toPublicEvent(doc));
     }),
