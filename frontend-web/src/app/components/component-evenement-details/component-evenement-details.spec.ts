@@ -10,7 +10,7 @@ describe('ComponentEvenementDetails', () => {
   let params: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   beforeEach(async () => {
-    params = new BehaviorSubject(convertToParamMap({ slug: 'match-gieres-grenoble' }));
+    params = new BehaviorSubject(convertToParamMap({ id: '6' }));
     await TestBed.configureTestingModule({
       imports: [ComponentEvenementDetails],
       providers: [
@@ -21,7 +21,7 @@ describe('ComponentEvenementDetails', () => {
         {
           provide: EvenementService,
           useValue: {
-            findBySlug: (slug: string) => defaultEvenements.find((event) => event.slug === slug),
+            findById: (id: number) => defaultEvenements.find((event) => event.id === id),
           },
         },
       ],
@@ -41,8 +41,15 @@ describe('ComponentEvenementDetails', () => {
     );
   });
 
-  it('shows a fallback for an unknown event slug', () => {
-    params.next(convertToParamMap({ slug: 'unknown' }));
+  it('shows a fallback for an unknown event ID', () => {
+    params.next(convertToParamMap({ id: '999' }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Événement introuvable');
+  });
+
+  it('shows a fallback when the route has no slug parameter', () => {
+    params.next(convertToParamMap({}));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Événement introuvable');

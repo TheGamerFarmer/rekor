@@ -36,4 +36,13 @@ describe('Button', () => {
     expect(link.getAttribute('href')).toBe('/actualites');
     expect(link.classList).toContain('button-outline');
   });
+
+  it('renders an icon inside a button element', () => {
+    fixture.componentRef.setInput('iconSrc', '/icons/arrow.png');
+    fixture.detectChanges();
+
+    const icon = fixture.nativeElement.querySelector('button .button-icon') as HTMLImageElement;
+    expect(icon).not.toBeNull();
+    expect(icon.getAttribute('src')).toBe('/icons/arrow.png');
+  });
 });
