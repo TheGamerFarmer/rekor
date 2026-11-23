@@ -2,7 +2,6 @@ const { Schema, model } = require('mongoose');
 
 const publicationSchema = new Schema(
   {
-    id: { type: Number, required: true, unique: true },
     titre: { type: String, required: true },
     summary: { type: String, required: true },
     corps: { type: String, required: true },
