@@ -19,6 +19,42 @@
       }
     },
     "schemas": {
+      "Publication": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          },
+          "titre": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "corps": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "association": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          }
+        },
+        "required": [
+          "_id",
+          "titre",
+          "summary",
+          "corps",
+          "date",
+          "association"
+        ]
+      },
       "HealthResponse": {
         "type": "object",
         "properties": {

@@ -1,15 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ComponentEvenement } from './component-evenement';
-import { defaultEvenements, getDateDuJour, getHeureEvenement } from './evenements.data';
+import { getDateDuJour, getHeureEvenement } from './evenements.data';
+import { createTestEvenements, dateRelativeToToday } from './evenements.test-data';
 import { EvenementService } from '../../services/evenement.service';
 
 describe('ComponentEvenement', () => {
   let fixture: ComponentFixture<ComponentEvenement>;
-  let events = signal(defaultEvenements);
+  let events = signal(createTestEvenements());
 
   beforeEach(async () => {
-    events = signal(defaultEvenements);
+    events = signal(createTestEvenements());
     await TestBed.configureTestingModule({
       imports: [ComponentEvenement],
       providers: [
@@ -70,11 +71,11 @@ describe('ComponentEvenement', () => {
 
   it('shows pagination and clamps navigation to the available pages', () => {
     events.set([
-      ...defaultEvenements,
-      ...defaultEvenements.map((event, index) => ({
+      ...createTestEvenements(),
+      ...createTestEvenements().map((event, index) => ({
         ...event,
         id: event.id + 10 + index,
-        date: '2026-12-01',
+        date: `${dateRelativeToToday(14)}T20:00:00`,
       })),
     ]);
     fixture.detectChanges();
@@ -91,6 +92,14 @@ describe('ComponentEvenement', () => {
     previous.click();
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Page 1 sur 2');
+
+    fixture.componentInstance['goToPage'](0);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Page 1 sur 2');
+
+    fixture.componentInstance['goToPage'](3);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Page 2 sur 2');
   });
 
   it('shows an empty state when no events match the filter', () => {

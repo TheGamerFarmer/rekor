@@ -11,6 +11,7 @@ export * from './groupPatchInput';
 export * from './healthResponse';
 export * from './loginInput';
 export * from './loginResponse';
+export * from './publication';
 export * from './refreshTokenInput';
 export * from './registerInput';
 export * from './updateProfileInput';

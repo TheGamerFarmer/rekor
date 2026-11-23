@@ -56,4 +56,11 @@ describe('ComponentActualiteDetail', () => {
     expect(fixture.nativeElement.textContent).toContain('Actualité introuvable');
     expect(fixture.nativeElement.querySelector('a[href="/actualites"]')).not.toBeNull();
   });
+
+  it('provides a fallback for a non-numeric actualite ID', () => {
+    params.next(convertToParamMap({ id: 'invalid' }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Actualité introuvable');
+  });
 });
