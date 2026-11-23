@@ -18,7 +18,7 @@ class UpdateProfileInput {
     this.phoneNumber,
     this.birthday,
     this.pronoun,
-    this.birthdayCertificate,
+    this.medicalCertificate,
     this.rightOfPublicity,
   });
 
@@ -62,7 +62,7 @@ class UpdateProfileInput {
   /// source code must fall back to having a nullable type.
   /// Consider adding a "default:" property in the specification file to hide this note.
   ///
-  bool? birthdayCertificate;
+  bool? medicalCertificate;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -79,7 +79,7 @@ class UpdateProfileInput {
     other.phoneNumber == phoneNumber &&
     other.birthday == birthday &&
     other.pronoun == pronoun &&
-    other.birthdayCertificate == birthdayCertificate &&
+    other.medicalCertificate == medicalCertificate &&
     other.rightOfPublicity == rightOfPublicity;
 
   @override
@@ -90,11 +90,11 @@ class UpdateProfileInput {
     (phoneNumber == null ? 0 : phoneNumber!.hashCode) +
     (birthday == null ? 0 : birthday!.hashCode) +
     (pronoun == null ? 0 : pronoun!.hashCode) +
-    (birthdayCertificate == null ? 0 : birthdayCertificate!.hashCode) +
+    (medicalCertificate == null ? 0 : medicalCertificate!.hashCode) +
     (rightOfPublicity == null ? 0 : rightOfPublicity!.hashCode);
 
   @override
-  String toString() => 'UpdateProfileInput[name=$name, firstName=$firstName, phoneNumber=$phoneNumber, birthday=$birthday, pronoun=$pronoun, birthdayCertificate=$birthdayCertificate, rightOfPublicity=$rightOfPublicity]';
+  String toString() => 'UpdateProfileInput[name=$name, firstName=$firstName, phoneNumber=$phoneNumber, birthday=$birthday, pronoun=$pronoun, medicalCertificate=$medicalCertificate, rightOfPublicity=$rightOfPublicity]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -123,10 +123,10 @@ class UpdateProfileInput {
     } else {
       json[r'pronoun'] = null;
     }
-    if (this.birthdayCertificate != null) {
-      json[r'birthdayCertificate'] = this.birthdayCertificate;
+    if (this.medicalCertificate != null) {
+      json[r'medicalCertificate'] = this.medicalCertificate;
     } else {
-      json[r'birthdayCertificate'] = null;
+      json[r'medicalCertificate'] = null;
     }
     if (this.rightOfPublicity != null) {
       json[r'rightOfPublicity'] = this.rightOfPublicity;
@@ -156,7 +156,7 @@ class UpdateProfileInput {
         phoneNumber: mapValueOfType<String>(json, r'phoneNumber'),
         birthday: mapDateTime(json, r'birthday', r''),
         pronoun: UpdateProfileInputPronounEnum.fromJson(json[r'pronoun']),
-        birthdayCertificate: mapValueOfType<bool>(json, r'birthdayCertificate'),
+        medicalCertificate: mapValueOfType<bool>(json, r'medicalCertificate'),
         rightOfPublicity: mapValueOfType<bool>(json, r'rightOfPublicity'),
       );
     }

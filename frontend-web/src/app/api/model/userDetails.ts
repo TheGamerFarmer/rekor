@@ -18,7 +18,7 @@ export interface UserDetails {
     pronoun: UserDetails.PronounEnum;
     phoneNumber?: string;
     birthday?: string;
-    birthdayCertificate: boolean;
+    medicalCertificate: boolean;
     rightOfPublicity: boolean;
 }
 export namespace UserDetails {

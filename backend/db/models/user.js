@@ -19,7 +19,7 @@ const userSchema = new Schema(
       enum: Object.values(USER_PRONOUN),
       required: true,
     },
-    birthdayCertificate: { type: Boolean, required: true },
+    medicalCertificate: { type: Boolean, required: true },
     rightOfPublicity: { type: Boolean, required: true },
   },
   { collection: 'users', versionKey: false },

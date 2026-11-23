@@ -13,7 +13,7 @@ const valid = {
   password: 'motdepasse',
   role: USER_ROLE.ADHERENT,
   pronoun: USER_PRONOUN.ELLE,
-  birthdayCertificate: false,
+  medicalCertificate: false,
   rightOfPublicity: false,
 };
 
@@ -53,7 +53,7 @@ describe('collection user', () => {
     'password',
     'role',
     'pronoun',
-    'birthdayCertificate',
+    'medicalCertificate',
     'rightOfPublicity',
   ]) {
     it(`refuse sans ${field}`, async () => {

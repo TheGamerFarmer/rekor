@@ -158,7 +158,7 @@
                 "type": "string",
                 "format": "date-time"
               },
-              "birthdayCertificate": {
+              "medicalCertificate": {
                 "type": "boolean"
               },
               "rightOfPublicity": {
@@ -168,7 +168,7 @@
             "required": [
               "role",
               "pronoun",
-              "birthdayCertificate",
+              "medicalCertificate",
               "rightOfPublicity"
             ]
           }
@@ -201,7 +201,7 @@
               "Autre"
             ]
           },
-          "birthdayCertificate": {
+          "medicalCertificate": {
             "type": "boolean"
           },
           "rightOfPublicity": {
@@ -274,7 +274,7 @@
             "format": "date",
             "example": "1815-12-10"
           },
-          "birthdayCertificate": {
+          "medicalCertificate": {
             "type": "boolean"
           },
           "rightOfPublicity": {
@@ -288,7 +288,7 @@
           "password",
           "associationName",
           "pronoun",
-          "birthdayCertificate",
+          "medicalCertificate",
           "rightOfPublicity"
         ]
       },

@@ -15,7 +15,7 @@ export interface UpdateProfileInput {
     phoneNumber?: string;
     birthday?: string;
     pronoun?: UpdateProfileInput.PronounEnum;
-    birthdayCertificate?: boolean;
+    medicalCertificate?: boolean;
     rightOfPublicity?: boolean;
 }
 export namespace UpdateProfileInput {

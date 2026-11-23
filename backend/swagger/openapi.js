@@ -40,7 +40,7 @@ const RegisterInput = z
     pronoun: Pronoun.openapi({ example: 'Elle' }),
     phoneNumber: z.string().optional().openapi({ example: '0612345678' }),
     birthday: z.iso.date().optional().openapi({ example: '1815-12-10' }),
-    birthdayCertificate: z.boolean(),
+    medicalCertificate: z.boolean(),
     rightOfPublicity: z.boolean(),
   })
   .openapi('RegisterInput');
@@ -52,7 +52,7 @@ const UpdateProfileInput = z
     phoneNumber: z.string().optional(),
     birthday: z.iso.date().optional(),
     pronoun: Pronoun.optional(),
-    birthdayCertificate: z.boolean().optional(),
+    medicalCertificate: z.boolean().optional(),
     rightOfPublicity: z.boolean().optional(),
   })
   .openapi('UpdateProfileInput');
@@ -95,7 +95,7 @@ const UserDetails = UserListItem.extend({
   pronoun: Pronoun,
   phoneNumber: z.string().optional(),
   birthday: z.iso.datetime().optional(),
-  birthdayCertificate: z.boolean(),
+  medicalCertificate: z.boolean(),
   rightOfPublicity: z.boolean(),
 }).openapi('UserDetails');
 

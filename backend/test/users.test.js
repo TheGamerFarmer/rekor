@@ -23,7 +23,7 @@ const ada = {
   pronoun: 'Elle',
   phoneNumber: '0612345678',
   birthday: new Date('1815-12-10T00:00:00.000Z'),
-  birthdayCertificate: false,
+  medicalCertificate: false,
   rightOfPublicity: true,
 };
 const UNKNOWN_ID = '000000000000000000000000';
@@ -119,7 +119,7 @@ describe('/users (avec un vrai mongod)', () => {
       pronoun: 'Elle',
       phoneNumber: '0612345678',
       birthday: '1815-12-10T00:00:00.000Z',
-      birthdayCertificate: false,
+      medicalCertificate: false,
       rightOfPublicity: true,
     });
   });
@@ -150,7 +150,7 @@ describe('/users (avec un vrai mongod)', () => {
       pronoun: 'Elle',
       phoneNumber: '0612345678',
       birthday: '1815-12-10T00:00:00.000Z',
-      birthdayCertificate: false,
+      medicalCertificate: false,
       rightOfPublicity: true,
     });
     assert.strictEqual('password' in res.body, false);
@@ -179,7 +179,7 @@ describe('/users (avec un vrai mongod)', () => {
         phoneNumber: '0600000000',
         birthday: '1815-12-11',
         pronoun: 'Iel',
-        birthdayCertificate: true,
+        medicalCertificate: true,
         rightOfPublicity: false,
       });
 
@@ -190,7 +190,7 @@ describe('/users (avec un vrai mongod)', () => {
     assert.strictEqual(updated.phoneNumber, '0600000000');
     assert.strictEqual(updated.birthday.toISOString(), '1815-12-11T00:00:00.000Z');
     assert.strictEqual(updated.pronoun, 'Iel');
-    assert.strictEqual(updated.birthdayCertificate, true);
+    assert.strictEqual(updated.medicalCertificate, true);
     assert.strictEqual(updated.rightOfPublicity, false);
     assert.strictEqual(updated.email, ada.email);
     assert.strictEqual(updated.role, ada.role);

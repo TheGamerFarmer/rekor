@@ -21,7 +21,7 @@ class UserDetails {
     required this.pronoun,
     this.phoneNumber,
     this.birthday,
-    required this.birthdayCertificate,
+    required this.medicalCertificate,
     required this.rightOfPublicity,
   });
 
@@ -59,7 +59,7 @@ class UserDetails {
   ///
   DateTime? birthday;
 
-  bool birthdayCertificate;
+  bool medicalCertificate;
 
   bool rightOfPublicity;
 
@@ -73,7 +73,7 @@ class UserDetails {
     other.pronoun == pronoun &&
     other.phoneNumber == phoneNumber &&
     other.birthday == birthday &&
-    other.birthdayCertificate == birthdayCertificate &&
+    other.medicalCertificate == medicalCertificate &&
     other.rightOfPublicity == rightOfPublicity;
 
   @override
@@ -87,11 +87,11 @@ class UserDetails {
     (pronoun.hashCode) +
     (phoneNumber == null ? 0 : phoneNumber!.hashCode) +
     (birthday == null ? 0 : birthday!.hashCode) +
-    (birthdayCertificate.hashCode) +
+    (medicalCertificate.hashCode) +
     (rightOfPublicity.hashCode);
 
   @override
-  String toString() => 'UserDetails[id=$id, name=$name, firstName=$firstName, email=$email, role=$role, pronoun=$pronoun, phoneNumber=$phoneNumber, birthday=$birthday, birthdayCertificate=$birthdayCertificate, rightOfPublicity=$rightOfPublicity]';
+  String toString() => 'UserDetails[id=$id, name=$name, firstName=$firstName, email=$email, role=$role, pronoun=$pronoun, phoneNumber=$phoneNumber, birthday=$birthday, medicalCertificate=$medicalCertificate, rightOfPublicity=$rightOfPublicity]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -115,7 +115,7 @@ class UserDetails {
     } else {
       json[r'birthday'] = null;
     }
-      json[r'birthdayCertificate'] = this.birthdayCertificate;
+      json[r'medicalCertificate'] = this.medicalCertificate;
       json[r'rightOfPublicity'] = this.rightOfPublicity;
     return json;
   }
@@ -141,8 +141,8 @@ class UserDetails {
         assert(json[r'role'] != null, 'Required key "UserDetails[role]" has a null value in JSON.');
         assert(json.containsKey(r'pronoun'), 'Required key "UserDetails[pronoun]" is missing from JSON.');
         assert(json[r'pronoun'] != null, 'Required key "UserDetails[pronoun]" has a null value in JSON.');
-        assert(json.containsKey(r'birthdayCertificate'), 'Required key "UserDetails[birthdayCertificate]" is missing from JSON.');
-        assert(json[r'birthdayCertificate'] != null, 'Required key "UserDetails[birthdayCertificate]" has a null value in JSON.');
+        assert(json.containsKey(r'medicalCertificate'), 'Required key "UserDetails[medicalCertificate]" is missing from JSON.');
+        assert(json[r'medicalCertificate'] != null, 'Required key "UserDetails[medicalCertificate]" has a null value in JSON.');
         assert(json.containsKey(r'rightOfPublicity'), 'Required key "UserDetails[rightOfPublicity]" is missing from JSON.');
         assert(json[r'rightOfPublicity'] != null, 'Required key "UserDetails[rightOfPublicity]" has a null value in JSON.');
         return true;
@@ -157,7 +157,7 @@ class UserDetails {
         pronoun: UserDetailsPronounEnum.fromJson(json[r'pronoun'])!,
         phoneNumber: mapValueOfType<String>(json, r'phoneNumber'),
         birthday: mapDateTime(json, r'birthday', r''),
-        birthdayCertificate: mapValueOfType<bool>(json, r'birthdayCertificate')!,
+        medicalCertificate: mapValueOfType<bool>(json, r'medicalCertificate')!,
         rightOfPublicity: mapValueOfType<bool>(json, r'rightOfPublicity')!,
       );
     }
@@ -211,7 +211,7 @@ class UserDetails {
     'email',
     'role',
     'pronoun',
-    'birthdayCertificate',
+    'medicalCertificate',
     'rightOfPublicity',
   };
 }

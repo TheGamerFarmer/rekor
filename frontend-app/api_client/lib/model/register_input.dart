@@ -21,7 +21,7 @@ class RegisterInput {
     required this.pronoun,
     this.phoneNumber,
     this.birthday,
-    required this.birthdayCertificate,
+    required this.medicalCertificate,
     required this.rightOfPublicity,
   });
 
@@ -54,7 +54,7 @@ class RegisterInput {
   ///
   DateTime? birthday;
 
-  bool birthdayCertificate;
+  bool medicalCertificate;
 
   bool rightOfPublicity;
 
@@ -68,7 +68,7 @@ class RegisterInput {
     other.pronoun == pronoun &&
     other.phoneNumber == phoneNumber &&
     other.birthday == birthday &&
-    other.birthdayCertificate == birthdayCertificate &&
+    other.medicalCertificate == medicalCertificate &&
     other.rightOfPublicity == rightOfPublicity;
 
   @override
@@ -82,11 +82,11 @@ class RegisterInput {
     (pronoun.hashCode) +
     (phoneNumber == null ? 0 : phoneNumber!.hashCode) +
     (birthday == null ? 0 : birthday!.hashCode) +
-    (birthdayCertificate.hashCode) +
+    (medicalCertificate.hashCode) +
     (rightOfPublicity.hashCode);
 
   @override
-  String toString() => 'RegisterInput[name=$name, firstName=$firstName, email=$email, password=$password, associationName=$associationName, pronoun=$pronoun, phoneNumber=$phoneNumber, birthday=$birthday, birthdayCertificate=$birthdayCertificate, rightOfPublicity=$rightOfPublicity]';
+  String toString() => 'RegisterInput[name=$name, firstName=$firstName, email=$email, password=$password, associationName=$associationName, pronoun=$pronoun, phoneNumber=$phoneNumber, birthday=$birthday, medicalCertificate=$medicalCertificate, rightOfPublicity=$rightOfPublicity]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -106,7 +106,7 @@ class RegisterInput {
     } else {
       json[r'birthday'] = null;
     }
-      json[r'birthdayCertificate'] = this.birthdayCertificate;
+      json[r'medicalCertificate'] = this.medicalCertificate;
       json[r'rightOfPublicity'] = this.rightOfPublicity;
     return json;
   }
@@ -134,8 +134,8 @@ class RegisterInput {
         assert(json[r'associationName'] != null, 'Required key "RegisterInput[associationName]" has a null value in JSON.');
         assert(json.containsKey(r'pronoun'), 'Required key "RegisterInput[pronoun]" is missing from JSON.');
         assert(json[r'pronoun'] != null, 'Required key "RegisterInput[pronoun]" has a null value in JSON.');
-        assert(json.containsKey(r'birthdayCertificate'), 'Required key "RegisterInput[birthdayCertificate]" is missing from JSON.');
-        assert(json[r'birthdayCertificate'] != null, 'Required key "RegisterInput[birthdayCertificate]" has a null value in JSON.');
+        assert(json.containsKey(r'medicalCertificate'), 'Required key "RegisterInput[medicalCertificate]" is missing from JSON.');
+        assert(json[r'medicalCertificate'] != null, 'Required key "RegisterInput[medicalCertificate]" has a null value in JSON.');
         assert(json.containsKey(r'rightOfPublicity'), 'Required key "RegisterInput[rightOfPublicity]" is missing from JSON.');
         assert(json[r'rightOfPublicity'] != null, 'Required key "RegisterInput[rightOfPublicity]" has a null value in JSON.');
         return true;
@@ -150,7 +150,7 @@ class RegisterInput {
         pronoun: RegisterInputPronounEnum.fromJson(json[r'pronoun'])!,
         phoneNumber: mapValueOfType<String>(json, r'phoneNumber'),
         birthday: mapDateTime(json, r'birthday', r''),
-        birthdayCertificate: mapValueOfType<bool>(json, r'birthdayCertificate')!,
+        medicalCertificate: mapValueOfType<bool>(json, r'medicalCertificate')!,
         rightOfPublicity: mapValueOfType<bool>(json, r'rightOfPublicity')!,
       );
     }
@@ -205,7 +205,7 @@ class RegisterInput {
     'password',
     'associationName',
     'pronoun',
-    'birthdayCertificate',
+    'medicalCertificate',
     'rightOfPublicity',
   };
 }

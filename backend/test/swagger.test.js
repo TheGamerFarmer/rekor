@@ -13,14 +13,14 @@ test('GET /api-docs.json expose la spec OpenAPI avec la route /', async () => {
     ...Object.values(USER_ROLE),
   ]);
   assert.strictEqual(
-    res.body.components.schemas.UserDetails.allOf[1].properties.birthdayCertificate.type,
+    res.body.components.schemas.UserDetails.allOf[1].properties.medicalCertificate.type,
     'boolean',
   );
   assert.strictEqual(
     res.body.components.schemas.UserDetails.allOf[1].properties.rightOfPublicity.type,
     'boolean',
   );
-  assert.ok(res.body.components.schemas.RegisterInput.required.includes('birthdayCertificate'));
+  assert.ok(res.body.components.schemas.RegisterInput.required.includes('medicalCertificate'));
   assert.ok(res.body.components.schemas.RegisterInput.required.includes('rightOfPublicity'));
 });
 

@@ -56,7 +56,7 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         birthday,
         pronoun,
         associationName,
-        birthdayCertificate,
+        medicalCertificate,
         rightOfPublicity,
       } = req.body;
 
@@ -79,7 +79,7 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
           role: 'Visiteur',
           ...(birthday ? { birthday: new Date(`${birthday}T00:00:00.000Z`) } : {}),
           pronoun,
-          birthdayCertificate,
+          medicalCertificate,
           rightOfPublicity,
         });
       } catch (error) {

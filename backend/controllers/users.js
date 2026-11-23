@@ -46,7 +46,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
         phoneNumber,
         birthday,
         pronoun,
-        birthdayCertificate,
+        medicalCertificate,
         rightOfPublicity,
       } = req.body;
 
@@ -55,8 +55,8 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
       if (name !== undefined && name !== null) changes.name = name;
       if (phoneNumber !== undefined && phoneNumber !== null) changes.phoneNumber = phoneNumber;
       if (pronoun !== undefined && pronoun !== null) changes.pronoun = pronoun;
-      if (birthdayCertificate !== undefined && birthdayCertificate !== null) {
-        changes.birthdayCertificate = birthdayCertificate;
+      if (medicalCertificate !== undefined && medicalCertificate !== null) {
+        changes.medicalCertificate = medicalCertificate;
       }
       if (rightOfPublicity !== undefined && rightOfPublicity !== null) {
         changes.rightOfPublicity = rightOfPublicity;

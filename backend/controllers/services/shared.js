@@ -30,7 +30,7 @@ const toPublicUser = (user) => {
     role,
     birthday,
     pronoun,
-    birthdayCertificate,
+    medicalCertificate,
     rightOfPublicity,
   } = user;
   const doc = {
@@ -40,7 +40,7 @@ const toPublicUser = (user) => {
     email,
     role,
     pronoun,
-    birthdayCertificate,
+    medicalCertificate,
     rightOfPublicity,
   };
 

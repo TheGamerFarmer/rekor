@@ -33,7 +33,7 @@ const account = {
   firstName: 'Lovelace',
   password: 'mot-de-passe',
   pronoun: 'Elle',
-  birthdayCertificate: false,
+  medicalCertificate: false,
   rightOfPublicity: false,
   associationName: 'Gières Volley-Ball',
 };
@@ -113,7 +113,7 @@ describe('/auth', () => {
     const stored = await db.getDb().collection('users').findOne({ email: account.email });
     assert.notStrictEqual(stored.password, account.password);
     assert.strictEqual(stored.password.split(':')[0].length, 32);
-    assert.strictEqual(stored.birthdayCertificate, false);
+    assert.strictEqual(stored.medicalCertificate, false);
     assert.strictEqual(stored.rightOfPublicity, false);
     const registration = await Registration.findOne({
       association: (await Association.findOne())._id,

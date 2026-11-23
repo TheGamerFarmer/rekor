@@ -98,7 +98,7 @@ export class ComponentInscription {
         pronoun: values.pronoun,
         phoneNumber: values.phone,
         birthday: values.birthday,
-        birthdayCertificate: values.healthData,
+        medicalCertificate: values.healthData,
         rightOfPublicity: values.imageRights,
       })
       .subscribe({
