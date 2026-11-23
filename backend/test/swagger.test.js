@@ -12,6 +12,16 @@ test('GET /api-docs.json expose la spec OpenAPI avec la route /', async () => {
   assert.deepStrictEqual(res.body.components.schemas.UserDetails.allOf[1].properties.role.enum, [
     ...Object.values(USER_ROLE),
   ]);
+  assert.strictEqual(
+    res.body.components.schemas.UserDetails.allOf[1].properties.birthdayCertificate.type,
+    'boolean',
+  );
+  assert.strictEqual(
+    res.body.components.schemas.UserDetails.allOf[1].properties.rightOfPublicity.type,
+    'boolean',
+  );
+  assert.ok(res.body.components.schemas.RegisterInput.required.includes('birthdayCertificate'));
+  assert.ok(res.body.components.schemas.RegisterInput.required.includes('rightOfPublicity'));
 });
 
 test('GET /api-docs.json documente les associations et leur usage en authentification', async () => {

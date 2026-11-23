@@ -40,13 +40,27 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      const { name, firstName, phoneNumber, birthday, pronoun } = req.body;
+      const {
+        name,
+        firstName,
+        phoneNumber,
+        birthday,
+        pronoun,
+        birthdayCertificate,
+        rightOfPublicity,
+      } = req.body;
 
       const changes = {};
       if (firstName !== undefined && firstName !== null) changes.firstName = firstName;
       if (name !== undefined && name !== null) changes.name = name;
       if (phoneNumber !== undefined && phoneNumber !== null) changes.phoneNumber = phoneNumber;
       if (pronoun !== undefined && pronoun !== null) changes.pronoun = pronoun;
+      if (birthdayCertificate !== undefined && birthdayCertificate !== null) {
+        changes.birthdayCertificate = birthdayCertificate;
+      }
+      if (rightOfPublicity !== undefined && rightOfPublicity !== null) {
+        changes.rightOfPublicity = rightOfPublicity;
+      }
       if (birthday !== undefined && birthday !== null) {
         changes.birthday = new Date(`${birthday}T00:00:00.000Z`);
       }

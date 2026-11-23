@@ -18,6 +18,8 @@ class UpdateProfileInput {
     this.phoneNumber,
     this.birthday,
     this.pronoun,
+    this.birthdayCertificate,
+    this.rightOfPublicity,
   });
 
   ///
@@ -54,13 +56,31 @@ class UpdateProfileInput {
 
   UpdateProfileInputPronounEnum? pronoun;
 
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? birthdayCertificate;
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  bool? rightOfPublicity;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateProfileInput &&
     other.name == name &&
     other.firstName == firstName &&
     other.phoneNumber == phoneNumber &&
     other.birthday == birthday &&
-    other.pronoun == pronoun;
+    other.pronoun == pronoun &&
+    other.birthdayCertificate == birthdayCertificate &&
+    other.rightOfPublicity == rightOfPublicity;
 
   @override
   int get hashCode =>
@@ -69,10 +89,12 @@ class UpdateProfileInput {
     (firstName == null ? 0 : firstName!.hashCode) +
     (phoneNumber == null ? 0 : phoneNumber!.hashCode) +
     (birthday == null ? 0 : birthday!.hashCode) +
-    (pronoun == null ? 0 : pronoun!.hashCode);
+    (pronoun == null ? 0 : pronoun!.hashCode) +
+    (birthdayCertificate == null ? 0 : birthdayCertificate!.hashCode) +
+    (rightOfPublicity == null ? 0 : rightOfPublicity!.hashCode);
 
   @override
-  String toString() => 'UpdateProfileInput[name=$name, firstName=$firstName, phoneNumber=$phoneNumber, birthday=$birthday, pronoun=$pronoun]';
+  String toString() => 'UpdateProfileInput[name=$name, firstName=$firstName, phoneNumber=$phoneNumber, birthday=$birthday, pronoun=$pronoun, birthdayCertificate=$birthdayCertificate, rightOfPublicity=$rightOfPublicity]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -101,6 +123,16 @@ class UpdateProfileInput {
     } else {
       json[r'pronoun'] = null;
     }
+    if (this.birthdayCertificate != null) {
+      json[r'birthdayCertificate'] = this.birthdayCertificate;
+    } else {
+      json[r'birthdayCertificate'] = null;
+    }
+    if (this.rightOfPublicity != null) {
+      json[r'rightOfPublicity'] = this.rightOfPublicity;
+    } else {
+      json[r'rightOfPublicity'] = null;
+    }
     return json;
   }
 
@@ -124,6 +156,8 @@ class UpdateProfileInput {
         phoneNumber: mapValueOfType<String>(json, r'phoneNumber'),
         birthday: mapDateTime(json, r'birthday', r''),
         pronoun: UpdateProfileInputPronounEnum.fromJson(json[r'pronoun']),
+        birthdayCertificate: mapValueOfType<bool>(json, r'birthdayCertificate'),
+        rightOfPublicity: mapValueOfType<bool>(json, r'rightOfPublicity'),
       );
     }
     return null;

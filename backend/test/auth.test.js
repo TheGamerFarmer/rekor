@@ -33,6 +33,8 @@ const account = {
   firstName: 'Lovelace',
   password: 'mot-de-passe',
   pronoun: 'Elle',
+  birthdayCertificate: false,
+  rightOfPublicity: false,
   associationName: 'Gières Volley-Ball',
 };
 const association = { name: account.associationName, address: '1 Rue des Sports 38610 Gières' };
@@ -111,6 +113,8 @@ describe('/auth', () => {
     const stored = await db.getDb().collection('users').findOne({ email: account.email });
     assert.notStrictEqual(stored.password, account.password);
     assert.strictEqual(stored.password.split(':')[0].length, 32);
+    assert.strictEqual(stored.birthdayCertificate, false);
+    assert.strictEqual(stored.rightOfPublicity, false);
     const registration = await Registration.findOne({
       association: (await Association.findOne())._id,
     });

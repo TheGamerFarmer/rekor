@@ -21,6 +21,8 @@ export interface RegisterInput {
     pronoun: RegisterInput.PronounEnum;
     phoneNumber?: string;
     birthday?: string;
+    birthdayCertificate: boolean;
+    rightOfPublicity: boolean;
 }
 export namespace RegisterInput {
     export const PronounEnum = {
