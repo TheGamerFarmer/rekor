@@ -1,9 +1,21 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend_app/api/api_client.dart';
 import 'package:frontend_app/mobile_pages/login.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend_app/widgets/app_header.dart';
 
 void main() {
   group('AppLogin', () {
+    late ApiClient originalApiClient;
+
+    setUp(() {
+      originalApiClient = ApiClient.instance;
+      ApiClient.instance = FakeApiClient();
+    });
+
+    tearDown(() {
+      ApiClient.instance = originalApiClient;
+    });
     testWidgets('Affiche l\'icone et le texte Connexion', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(home: Scaffold(body: MyLoginPage())),
@@ -72,5 +84,87 @@ void main() {
       expect(find.text('Veuillez saisir votre e-mail'), findsOneWidget);
       expect(find.text('Veuillez saisir votre mot de passe'), findsOneWidget);
     });
+
+    testWidgets(
+      'Affiche les messages d\'erreur si mauvais e-mail ou mot de passe',
+      (tester) async {
+        await tester.pumpWidget(
+          const MaterialApp(home: Scaffold(body: MyLoginPage())),
+        );
+
+        await tester.enterText(
+          find.byType(TextFormField).at(0),
+          'ada@exemple.fr',
+        );
+        await tester.enterText(find.byType(TextFormField).at(1), 'motdep@sse');
+
+        await tester.tap(find.text('Se connecter'));
+        await tester.pumpAndSettle();
+
+        expect(find.text('E-mail ou mot de passe incorrect'), findsOneWidget);
+      },
+    );
+
+    testWidgets('Vérifie que la connexion marche', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: MyLoginPage())),
+      );
+
+      await tester.enterText(
+        find.byType(TextFormField).at(0),
+        'ada@exemple.fr',
+      );
+      await tester.enterText(find.byType(TextFormField).at(1), 'motdepasse');
+
+      await tester.tap(find.text('Se connecter'));
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.account_circle), findsOneWidget);
+    });
+
+    testWidgets('Vérifie que la déconnexion renvoie sur la page de connexion', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: MyLoginPage())),
+      );
+
+      await tester.enterText(
+        find.byType(TextFormField).at(0),
+        'ada@exemple.fr',
+      );
+      await tester.enterText(find.byType(TextFormField).at(1), 'motdepasse');
+
+      await tester.tap(find.text('Se connecter'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AppHeader), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.account_circle));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Déconnexion'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Connexion'), findsOneWidget);
+    });
   });
+}
+
+class FakeApiClient extends ApiClient {
+  FakeApiClient() : super('http://localhost:3000');
+
+  @override
+  Future<String> login(String email, String password) async {
+    if (email == 'ada@exemple.fr' && password == 'motdepasse') {
+      return 'fake-access-token';
+    }
+
+    throw Exception('Identifiants incorrects');
+  }
+
+  @override
+  Future<void> logout() async {
+    // Simulation d'une déconnexion réussie.
+  }
 }

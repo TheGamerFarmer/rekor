@@ -6,7 +6,7 @@ import 'package:frontend_app/api/api_client.dart';
 class MyApp extends StatefulWidget {
   final Future<bool>? sessionFuture;
 
-  const MyApp({super.key, this.sessionFuture,});
+  const MyApp({super.key, this.sessionFuture});
 
   @override
   State<MyApp> createState() => _MyAppState();

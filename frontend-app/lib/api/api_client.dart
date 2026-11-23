@@ -74,9 +74,7 @@ class ApiClient {
 
   /// Récupère le profil de l'utilisateur connecté.
   Future<generated.UserDetails?> getMyProfile() {
-    return authenticatedRequest(
-          () => _users.getMyProfile(),
-    );
+    return authenticatedRequest(() => _users.getMyProfile());
   }
 
   /// Restaure la session utilisateur au démarrage de l'application.
@@ -147,10 +145,7 @@ class ApiClient {
       setAccessToken(response.accessToken);
 
       // Remplacement du refresh token.
-      await _storage.write(
-        key: 'refresh_token',
-        value: response.refreshToken,
-      );
+      await _storage.write(key: 'refresh_token', value: response.refreshToken);
 
       return true;
     } on generated.ApiException catch (e) {
@@ -169,9 +164,7 @@ class ApiClient {
   }
 
   /// Exécute une requête et renouvelle le token si nécessaire.
-  Future<T> authenticatedRequest<T>(
-      Future<T> Function() request,
-      ) async {
+  Future<T> authenticatedRequest<T>(Future<T> Function() request) async {
     try {
       return await request();
     } on generated.ApiException catch (e) {

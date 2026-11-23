@@ -1,7 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend_app/api/api_client.dart';
 import 'package:frontend_app/main.dart';
-//import 'package:frontend_app/mobile_pages/home_page.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/testing.dart';
 
@@ -21,23 +20,20 @@ void main() {
   });
 
   // Une entrée par écran de l'application.
-  testWidgets(
-    "la page d'accueil respecte les consignes d'accessibilité",
-        (tester) async {
-      final semantics = tester.ensureSemantics();
+  testWidgets("la page d'accueil respecte les consignes d'accessibilité", (
+    tester,
+  ) async {
+    final semantics = tester.ensureSemantics();
 
-      await tester.pumpWidget(
-        MyApp(sessionFuture: Future.value(true)),
-      );
+    await tester.pumpWidget(MyApp(sessionFuture: Future.value(true)));
 
-      await tester.pumpAndSettle();
+    await tester.pumpAndSettle();
 
-      await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
-      await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
-      await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
-      await expectLater(tester, meetsGuideline(textContrastGuideline));
+    await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(iOSTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(labeledTapTargetGuideline));
+    await expectLater(tester, meetsGuideline(textContrastGuideline));
 
-      semantics.dispose();
-    },
-  );
+    semantics.dispose();
+  });
 }
