@@ -22,7 +22,7 @@ describe('ComponentEvenementAdmin', () => {
         { provide: Router, useValue: { navigate: vi.fn() } },
         {
           provide: EvenementService,
-          useValue: { findBySlug: () => undefined, add, update },
+          useValue: { findById: () => undefined, add, update },
         },
       ],
     }).compileComponents();
@@ -65,12 +65,12 @@ describe('ComponentEvenementAdmin', () => {
       providers: [
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: { get: () => event.slug } } },
+          useValue: { snapshot: { paramMap: { get: () => String(event.id) } } },
         },
         { provide: Router, useValue: { navigate: vi.fn() } },
         {
           provide: EvenementService,
-          useValue: { findBySlug: () => event, add, update },
+          useValue: { findById: () => event, add, update },
         },
       ],
     }).compileComponents();
@@ -95,12 +95,12 @@ describe('ComponentEvenementAdmin', () => {
       providers: [
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: { get: () => event.slug } } },
+          useValue: { snapshot: { paramMap: { get: () => String(event.id) } } },
         },
         { provide: Router, useValue: { navigate: vi.fn() } },
         {
           provide: EvenementService,
-          useValue: { findBySlug: () => event, add, update: updateExisting },
+          useValue: { findById: () => event, add, update: updateExisting },
         },
       ],
     }).compileComponents();
@@ -111,7 +111,7 @@ describe('ComponentEvenementAdmin', () => {
     fixture.nativeElement.querySelector('button[type="submit"]').click();
 
     expect(updateExisting).toHaveBeenCalledWith(
-      event.slug,
+      event.id,
       expect.objectContaining({ date: '2026-10-10T21:15' }),
     );
     expect(updateExisting.mock.calls[0][1]).not.toHaveProperty('time');
@@ -125,12 +125,12 @@ describe('ComponentEvenementAdmin', () => {
       providers: [
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { paramMap: { get: () => 'missing-event' } } },
+          useValue: { snapshot: { paramMap: { get: () => '999' } } },
         },
         { provide: Router, useValue: { navigate } },
         {
           provide: EvenementService,
-          useValue: { findBySlug: () => undefined, add, update },
+          useValue: { findById: () => undefined, add, update },
         },
       ],
     }).compileComponents();

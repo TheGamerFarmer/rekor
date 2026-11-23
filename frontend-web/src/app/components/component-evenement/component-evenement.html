@@ -24,7 +24,7 @@
   </div>
 
   <section class="event-list" aria-label="Liste des événements">
-    @for (evenement of visibleEvenements(); track evenement.slug) {
+    @for (evenement of visibleEvenements(); track evenement.id) {
       <article class="event-card">
         <div class="event-date" aria-label="Date de l'événement">
           <strong>{{ evenement.date | date: 'dd' }}</strong>
@@ -44,7 +44,7 @@
         </div>
         <app-button
           variant="outline"
-          [href]="'/evenements/' + evenement.slug"
+          [href]="'/evenements/' + evenement.id"
           text="Voir le détail"
         ></app-button>
       </article>

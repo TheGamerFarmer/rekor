@@ -23,8 +23,8 @@ describe('ComponentActualite', () => {
     expect(fixture.nativeElement.textContent).toContain('Nouvelle règle de jeu');
     expect(fixture.nativeElement.textContent).toContain('Collecte solidaire');
     expect(Array.from(links, (link: Element) => link.getAttribute('href'))).toEqual([
-      '/actualites/nouvelle-regle-de-jeu',
-      '/actualites/collecte-solidaire-du-club',
+      '/actualites/1',
+      '/actualites/2',
     ]);
     expect(cards[0].getAttribute('style')).toContain('/images/volley7.jpg');
     expect(fixture.nativeElement.querySelector('.pagination')?.textContent).toContain('1');
@@ -41,7 +41,7 @@ describe('ComponentActualite', () => {
   it('shows at most two actualités and navigates between pages', () => {
     const additionalActualites: Actualite[] = Array.from({ length: 9 }, (_, index) => ({
       ...actualites[0],
-      slug: `actualite-${index + 1}`,
+      id: index + 10,
       titre: `Actualité ${index + 1}`,
     }));
     fixture.componentRef.setInput('actualites', [...actualites, ...additionalActualites]);

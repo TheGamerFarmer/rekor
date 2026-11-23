@@ -6,10 +6,10 @@
 
 <main class="actualites-page">
   <section class="news-list" aria-label="Actualités du club">
-    @for (actualite of visibleActualites(); track actualite.slug) {
+    @for (actualite of visibleActualites(); track actualite.id) {
       <article
         class="news-card"
-        [class.news-card-registration]="actualite.slug === 'inscriptions-ouvertes'"
+        [class.news-card-registration]="actualite.id === 3"
         [style.background-image]="'url(' + actualite.image + ')'"
       >
         <div class="news-content">
@@ -19,7 +19,7 @@
         <app-button
           class="news-link"
           variant="outline"
-          [href]="'/actualites/' + actualite.slug"
+          [href]="'/actualites/' + actualite.id"
           text="Lire l’actualité"
           [iconSrc]="'/icons/arrow.png'"
           [iconVariant]="'light'"

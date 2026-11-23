@@ -1,6 +1,5 @@
 export interface Actualite {
   id: number;
-  slug: string;
   titre: string;
   summary: string;
   image: string;
@@ -12,7 +11,6 @@ export interface Actualite {
 export const actualites: Actualite[] = [
   {
     id: 1,
-    slug: 'nouvelle-regle-de-jeu',
     titre: 'Nouvelle règle de jeu',
     summary: 'Une nouvelle règle de jeu entre en vigueur.',
     image: '/images/volley7.jpg',
@@ -25,7 +23,6 @@ export const actualites: Actualite[] = [
   },
   {
     id: 2,
-    slug: 'collecte-solidaire-du-club',
     titre: 'Collecte solidaire organisée par le club',
     summary: 'Grande collecte solidaire organisée par le club !',
     image: '/images/collecte.png',
@@ -37,7 +34,6 @@ export const actualites: Actualite[] = [
   },
   {
     id: 3,
-    slug: 'inscriptions-ouvertes',
     titre: 'Les inscriptions sont ouvertes !',
     summary: 'Rejoignez le Gières Volley-Ball pour la nouvelle saison !',
     image: '/images/volley_ball1.jpg',
@@ -50,7 +46,6 @@ export const actualites: Actualite[] = [
   },
   {
     id: 4,
-    slug: 'vacances-dete',
     titre: 'Le club part en vacances !',
     summary: 'On se retrouve à la rentrée pour une nouvelle saison pleine de projets !',
     image: '/images/vacances.jpg',

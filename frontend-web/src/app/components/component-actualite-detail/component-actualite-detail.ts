@@ -16,9 +16,9 @@ export class ComponentActualiteDetail {
   private readonly route = inject(ActivatedRoute);
   private readonly params = toSignal(this.route.paramMap);
 
-  /** Resolves the news item identified by the route slug. */
+  /** Resolves the news item identified by the route ID. */
   protected readonly actualite = computed(() => {
-    const slug = this.params()?.get('slug');
-    return actualites.find((actualite) => actualite.slug === slug);
+    const id = Number(this.params()?.get('id'));
+    return Number.isInteger(id) ? actualites.find((actualite) => actualite.id === id) : undefined;
   });
 }
