@@ -15,6 +15,7 @@ model/healthResponse.ts
 model/loginInput.ts
 model/loginResponse.ts
 model/models.ts
+model/publication.ts
 model/refreshTokenInput.ts
 model/registerInput.ts
 model/updateProfileInput.ts

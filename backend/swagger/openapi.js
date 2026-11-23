@@ -101,6 +101,19 @@ const Association = z
   })
   .openapi('Association');
 
+const Publication = z
+  .object({
+    _id: UserId,
+    id: z.number().int(),
+    titre: z.string(),
+    summary: z.string(),
+    corps: z.string(),
+    date: z.iso.datetime(),
+    association: UserId,
+  })
+  .openapi('Publication');
+registry.register('Publication', Publication);
+
 const LoginResponse = z
   .object({
     access_token: z.string(),

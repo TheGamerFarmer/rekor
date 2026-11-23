@@ -4,6 +4,7 @@ const publicationSchema = new Schema(
   {
     id: { type: Number, required: true, unique: true },
     titre: { type: String, required: true },
+    summary: { type: String, required: true },
     corps: { type: String, required: true },
     date: { type: Date, required: true },
     association: { type: Schema.Types.ObjectId, ref: 'Association', required: true },

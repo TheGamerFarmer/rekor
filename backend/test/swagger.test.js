@@ -35,6 +35,21 @@ test('GET /api-docs.json documente les associations et leur usage en authentific
   assert.ok(res.body.paths['/auth/login'].post.responses['404']);
 });
 
+test('GET /api-docs.json documente le résumé des publications', async () => {
+  const res = await request(app).get('/api-docs.json');
+  assert.strictEqual(res.status, 200);
+  assert.deepStrictEqual(res.body.components.schemas.Publication.required, [
+    '_id',
+    'id',
+    'titre',
+    'summary',
+    'corps',
+    'date',
+    'association',
+  ]);
+  assert.strictEqual(res.body.components.schemas.Publication.properties.summary.type, 'string');
+});
+
 test("GET /api-docs/ sert l'interface swagger UI", async () => {
   const res = await request(app).get('/api-docs/');
   assert.strictEqual(res.status, 200);

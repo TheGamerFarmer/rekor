@@ -147,6 +147,7 @@ describe('collections association.js', () => {
     const valid = () => ({
       id: 1,
       titre: 'Tournoi',
+      summary: 'Présentation du prochain tournoi',
       corps: 'Infos...',
       date: new Date(),
       association: new ObjectId(),
@@ -156,7 +157,7 @@ describe('collections association.js', () => {
       await assert.doesNotReject(Publication.create(valid()));
     });
 
-    for (const field of ['id', 'titre', 'corps', 'date', 'association']) {
+    for (const field of ['id', 'titre', 'summary', 'corps', 'date', 'association']) {
       it(`refuse sans ${field}`, async () => {
         const doc = valid();
         delete doc[field];
