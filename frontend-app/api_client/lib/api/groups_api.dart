@@ -43,7 +43,7 @@ class GroupsApi {
 
     return apiClient.invokeAPI(
       path,
-      'PUT',
+      'POST',
       queryParams,
       postBody,
       headerParams,
@@ -93,7 +93,7 @@ class GroupsApi {
 
     return apiClient.invokeAPI(
       path,
-      'PUT',
+      'POST',
       queryParams,
       postBody,
       headerParams,

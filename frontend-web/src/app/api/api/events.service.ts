@@ -45,7 +45,7 @@ export class EventsService extends BaseService {
 
     /**
      * Creates a new event (requires Entraineur role or above)
-     * @endpoint put /event/{id}
+     * @endpoint post /event/{id}
      * @param id 
      * @param eventInput 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -102,7 +102,7 @@ export class EventsService extends BaseService {
 
         let localVarPath = `/event/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<any>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<any>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: eventInput,

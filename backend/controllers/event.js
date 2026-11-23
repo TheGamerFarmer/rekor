@@ -77,7 +77,7 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
   // Creates a new event from the request body. All fields (date, place, type, name,
   // description, group) are required. The :id path parameter is validated but not used
   // in the creation. Returns 201 on success, 409 if an identical event already exists.
-  router.put(
+  router.post(
     '/:id',
     authenticate,
     authorize(USER_ROLE.ENTRAINEUR),

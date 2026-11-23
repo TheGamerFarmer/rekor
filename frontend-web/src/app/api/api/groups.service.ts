@@ -45,7 +45,7 @@ export class GroupsService extends BaseService {
 
     /**
      * Adds a user to a group (requires Entraineur role or above)
-     * @endpoint put /group/{id}/members/{userId}
+     * @endpoint post /group/{id}/members/{userId}
      * @param id 
      * @param userId 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -93,7 +93,7 @@ export class GroupsService extends BaseService {
 
         let localVarPath = `/group/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}/members/${this.configuration.encodeParam({name: "userId", value: userId, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<any>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<any>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 responseType: <any>responseType_,
@@ -108,7 +108,7 @@ export class GroupsService extends BaseService {
 
     /**
      * Creates a new group (requires Entraineur role or above)
-     * @endpoint put /group/{id}
+     * @endpoint post /group/{id}
      * @param id 
      * @param groupInput 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -165,7 +165,7 @@ export class GroupsService extends BaseService {
 
         let localVarPath = `/group/${this.configuration.encodeParam({name: "id", value: id, in: "path", style: "simple", explode: false, dataType: "string", dataFormat: undefined})}`;
         const { basePath, withCredentials } = this.configuration;
-        return this.httpClient.request<any>('put', `${basePath}${localVarPath}`,
+        return this.httpClient.request<any>('post', `${basePath}${localVarPath}`,
             {
                 context: localVarHttpContext,
                 body: groupInput,

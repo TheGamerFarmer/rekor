@@ -429,7 +429,7 @@ registry.registerPath({
 });
 
 registry.registerPath({
-  method: 'put',
+  method: 'post',
   path: '/event/{id}',
   operationId: 'createEvent',
   tags: ['Events'],
@@ -512,7 +512,7 @@ registry.registerPath({
 });
 
 registry.registerPath({
-  method: 'put',
+  method: 'post',
   path: '/group/{id}',
   operationId: 'createGroup',
   tags: ['Groups'],
@@ -595,7 +595,7 @@ registry.registerPath({
 });
 
 registry.registerPath({
-  method: 'put',
+  method: 'post',
   path: '/group/{id}/members/{userId}',
   operationId: 'addGroupMember',
   tags: ['Groups'],

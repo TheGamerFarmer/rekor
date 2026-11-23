@@ -145,20 +145,20 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 400);
   });
 
-  // ── PUT /event/:id ──────────────────────────────────────────────────────────
+  // ── POST /event/:id ──────────────────────────────────────────────────────────
 
-  it('PUT /event/:id creates a new event and returns 201', async () => {
+  it('POST /event/:id creates a new event and returns 201', async () => {
     const res = await request(app)
-      .put(`/event/${UNKNOWN_ID}`)
+      .post(`/event/${UNKNOWN_ID}`)
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ ...validEventBody, group: groupId.toString() });
 
     assert.strictEqual(res.status, 201);
   });
 
-  it('PUT /event/:id returns 400 when a required field is missing', async () => {
+  it('POST /event/:id returns 400 when a required field is missing', async () => {
     const res = await request(app)
-      .put(`/event/${UNKNOWN_ID}`)
+      .post(`/event/${UNKNOWN_ID}`)
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         place: validEventBody.place,
@@ -171,27 +171,27 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 400);
   });
 
-  it('PUT /event/:id returns 400 for an invalid event type', async () => {
+  it('POST /event/:id returns 400 for an invalid event type', async () => {
     const res = await request(app)
-      .put(`/event/${UNKNOWN_ID}`)
+      .post(`/event/${UNKNOWN_ID}`)
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ ...validEventBody, type: 'TypeInvalide', group: groupId.toString() });
 
     assert.strictEqual(res.status, 400);
   });
 
-  it('PUT /event/:id returns 404 when the group does not exist', async () => {
+  it('POST /event/:id returns 404 when the group does not exist', async () => {
     const res = await request(app)
-      .put(`/event/${UNKNOWN_ID}`)
+      .post(`/event/${UNKNOWN_ID}`)
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ ...validEventBody, group: UNKNOWN_ID });
 
     assert.strictEqual(res.status, 404);
   });
 
-  it('PUT /event/:id returns 409 when the event already exists', async () => {
+  it('POST /event/:id returns 409 when the event already exists', async () => {
     const res = await request(app)
-      .put(`/event/${UNKNOWN_ID}`)
+      .post(`/event/${UNKNOWN_ID}`)
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         date: '2025-03-15',
@@ -205,17 +205,17 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 409);
   });
 
-  it('PUT /event/:id returns 401 without authentication', async () => {
+  it('POST /event/:id returns 401 without authentication', async () => {
     const res = await request(app)
-      .put(`/event/${UNKNOWN_ID}`)
+      .post(`/event/${UNKNOWN_ID}`)
       .send({ ...validEventBody, group: groupId.toString() });
 
     assert.strictEqual(res.status, 401);
   });
 
-  it('PUT /event/:id returns 403 for an Adhérent role', async () => {
+  it('POST /event/:id returns 403 for an Adhérent role', async () => {
     const res = await request(app)
-      .put(`/event/${UNKNOWN_ID}`)
+      .post(`/event/${UNKNOWN_ID}`)
       .set('Authorization', `Bearer ${adherentToken}`)
       .send({ ...validEventBody, group: groupId.toString() });
 
@@ -295,11 +295,11 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 403);
   });
 
-  // ── PUT validation branches (bypass OpenAPI validator via directApp) ─────────
+  // ── POST validation branches (bypass OpenAPI validator via directApp) ─────────
 
-  it('PUT /event/pas-un-id returns 400 for a malformed identifier (direct router)', async () => {
+  it('POST /event/pas-un-id returns 400 for a malformed identifier (direct router)', async () => {
     const res = await request(directApp)
-      .put('/event/pas-un-id')
+      .post('/event/pas-un-id')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ ...validEventBody, group: groupId.toString() });
 
@@ -307,9 +307,9 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'Identifiant invalide');
   });
 
-  it('PUT /event/:id returns 400 when date is missing (direct router)', async () => {
+  it('POST /event/:id returns 400 when date is missing (direct router)', async () => {
     const res = await request(directApp)
-      .put(`/event/${UNKNOWN_ID}`)
+      .post(`/event/${UNKNOWN_ID}`)
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         place: validEventBody.place,
@@ -323,9 +323,9 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'Date invalide');
   });
 
-  it('PUT /event/:id returns 400 when place is missing (direct router)', async () => {
+  it('POST /event/:id returns 400 when place is missing (direct router)', async () => {
     const res = await request(directApp)
-      .put(`/event/${UNKNOWN_ID}`)
+      .post(`/event/${UNKNOWN_ID}`)
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         date: validEventBody.date,
@@ -339,9 +339,9 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'Emplacement invalide');
   });
 
-  it('PUT /event/:id returns 400 when type is invalid (direct router)', async () => {
+  it('POST /event/:id returns 400 when type is invalid (direct router)', async () => {
     const res = await request(directApp)
-      .put(`/event/${UNKNOWN_ID}`)
+      .post(`/event/${UNKNOWN_ID}`)
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         date: validEventBody.date,
@@ -356,9 +356,9 @@ describe('/event (avec un vrai mongod)', () => {
     assert.ok(res.body.message.startsWith('Type invalide'));
   });
 
-  it('PUT /event/:id returns 400 when name is missing (direct router)', async () => {
+  it('POST /event/:id returns 400 when name is missing (direct router)', async () => {
     const res = await request(directApp)
-      .put(`/event/${UNKNOWN_ID}`)
+      .post(`/event/${UNKNOWN_ID}`)
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         date: validEventBody.date,
@@ -372,9 +372,9 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'Nom invalide');
   });
 
-  it('PUT /event/:id returns 400 when description is missing (direct router)', async () => {
+  it('POST /event/:id returns 400 when description is missing (direct router)', async () => {
     const res = await request(directApp)
-      .put(`/event/${UNKNOWN_ID}`)
+      .post(`/event/${UNKNOWN_ID}`)
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         date: validEventBody.date,
@@ -388,9 +388,9 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'Description invalide');
   });
 
-  it('PUT /event/:id returns 400 when group is missing (direct router)', async () => {
+  it('POST /event/:id returns 400 when group is missing (direct router)', async () => {
     const res = await request(directApp)
-      .put(`/event/${UNKNOWN_ID}`)
+      .post(`/event/${UNKNOWN_ID}`)
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ ...validEventBody });
 
@@ -398,7 +398,7 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'group invalide');
   });
 
-  it('PUT /event/:id returns 500 when Event.create throws an unexpected error', async () => {
+  it('POST /event/:id returns 500 when Event.create throws an unexpected error', async () => {
     const original = Event.create.bind(Event);
     Event.create = async () => {
       const err = new Error('unexpected db error');
@@ -408,7 +408,7 @@ describe('/event (avec un vrai mongod)', () => {
 
     try {
       const res = await request(directApp)
-        .put(`/event/${UNKNOWN_ID}`)
+        .post(`/event/${UNKNOWN_ID}`)
         .set('Authorization', `Bearer ${entraineurToken}`)
         .send({ ...validEventBody, group: groupId.toString() });
 

@@ -63,7 +63,7 @@ function createGroupsRouter({ limit = 100, windowMs = 60_000 } = {}) {
   // Creates a new group from the request body. Both name and owner (user ObjectId) are required.
   // The :id path parameter is validated but not used in the creation.
   // Returns 201 on success, 409 if an identical group already exists.
-  router.put(
+  router.post(
     '/:id',
     authenticate,
     authorize(USER_ROLE.ENTRAINEUR),
@@ -177,7 +177,7 @@ function createGroupsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
   // Adds the user identified by :userId to the group identified by :id.
   // Returns 201 on success, 409 if the user is already a member of the group.
-  router.put(
+  router.post(
     '/:id/members/:userId',
     authenticate,
     authorize(USER_ROLE.ENTRAINEUR),

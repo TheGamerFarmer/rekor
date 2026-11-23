@@ -42,7 +42,7 @@ class EventsApi {
 
     return apiClient.invokeAPI(
       path,
-      'PUT',
+      'POST',
       queryParams,
       postBody,
       headerParams,
