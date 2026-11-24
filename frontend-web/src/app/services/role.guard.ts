@@ -4,6 +4,7 @@ import { catchError, map, of } from 'rxjs';
 import { UserDetails } from '../api/model/userDetails';
 import { AuthService } from './auth.service';
 
+/** Creates a route guard that allows only users with one of the specified roles. */
 function rolesGuard(allowedRoles: readonly UserDetails.RoleEnum[]): CanActivateFn {
   return () => {
     const authService = inject(AuthService);

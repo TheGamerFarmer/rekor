@@ -117,6 +117,7 @@ export class AdherentService {
     this.updateMembers(this.members().filter((member) => member.id !== id));
   }
 
+  /** Updates the member signal and stores the resulting collection. */
   private updateMembers(members: Adherent[]): void {
     this.members.set(members);
     if (typeof localStorage !== 'undefined') {
@@ -124,6 +125,7 @@ export class AdherentService {
     }
   }
 
+  /** Loads members from browser storage, using the fixtures when storage is empty. */
   private readStoredMembers(): Adherent[] {
     if (typeof localStorage === 'undefined') {
       return [];
@@ -148,6 +150,7 @@ export class AdherentService {
   }
 }
 
+/** Migrates a stored member from the legacy birth-year and roles fields. */
 function migrateLegacyAdherent(value: unknown): unknown {
   if (!value || typeof value !== 'object') {
     return value;
@@ -170,6 +173,7 @@ function migrateLegacyAdherent(value: unknown): unknown {
   return legacyMember;
 }
 
+/** Checks whether persisted data matches the current member model. */
 function isAdherent(value: unknown): value is Adherent {
   if (!value || typeof value !== 'object') {
     return false;

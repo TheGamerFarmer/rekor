@@ -140,6 +140,7 @@ export class ComponentTresorerie {
   });
   private nextId = Math.max(...INITIAL_TRANSACTIONS.map((transaction) => transaction.id)) + 1;
 
+  /** Changes the selected year and updates forms that still use their default date. */
   protected onYearChange(event: Event): void {
     const select = event.currentTarget;
     if (select instanceof HTMLSelectElement) {
@@ -156,6 +157,7 @@ export class ComponentTresorerie {
     }
   }
 
+  /** Validates and adds a transaction to the selected year's balance. */
   protected addTransaction(type: TransactionType): void {
     const form = type === 'income' ? this.incomeForm : this.expenseForm;
     if (form.invalid) {
@@ -188,6 +190,7 @@ export class ComponentTresorerie {
     );
   }
 
+  /** Downloads the selected year's income and expense summary as a CSV file. */
   protected exportBalance(): void {
     const rows = [
       ['Date', 'Type', 'Catégorie', 'Description', 'Montant (€)'],
@@ -216,29 +219,35 @@ export class ComponentTresorerie {
     this.statusMessage.set(`Bilan ${this.year()} exporté.`);
   }
 
+  /** Toggles whether all income transactions are displayed. */
   protected toggleIncomeHistory(): void {
     this.showAllIncome.update((showAll) => !showAll);
   }
 
+  /** Toggles whether all expense transactions are displayed. */
   protected toggleExpenseHistory(): void {
     this.showAllExpenses.update((showAll) => !showAll);
   }
 
+  /** Checks whether a transaction belongs to the selected year. */
   private inYear(transaction: TreasuryTransaction): boolean {
     return Number(transaction.date.slice(0, 4)) === this.year();
   }
 
+  /** Formats a date as the local YYYY-MM-DD value used by date inputs. */
   private formatDate(date: Date): string {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${date.getFullYear()}-${month}-${day}`;
   }
 
+  /** Returns the current calendar date expressed in the requested year. */
   private dateForYear(year: number): string {
     const now = new Date();
     return this.formatDate(new Date(year, now.getMonth(), now.getDate()));
   }
 
+  /** Escapes a CSV cell and wraps it in quotes. */
   private escapeCsv(value: string): string {
     return `"${value.replaceAll('"', '""')}"`;
   }

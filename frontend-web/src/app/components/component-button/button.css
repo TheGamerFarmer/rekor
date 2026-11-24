@@ -95,7 +95,7 @@
 }
 
 .button-danger {
-  color: #b52e2e;
+  color: var(--color-error);
   background: #fce4e4;
 }
 

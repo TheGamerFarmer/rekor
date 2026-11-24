@@ -20,7 +20,6 @@ const PAGE_SIZE = 6;
 export class ComponentEvenement {
   private readonly evenementService = inject(EvenementService);
   private readonly authService = inject(AuthService);
-  protected readonly roles = UserDetails.RoleEnum;
   protected readonly canManageEvents = computed(() => {
     const role = this.authService.role();
     return (

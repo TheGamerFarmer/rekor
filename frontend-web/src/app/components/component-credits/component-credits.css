@@ -1,7 +1,7 @@
 :host {
   display: block;
   color: var(--color-dark);
-  font-family: 'DM Sans', Arial, sans-serif;
+  font-family: var(--font-family-base);
 }
 
 * {
@@ -147,7 +147,7 @@ h2::before {
 }
 
 .font-preview-sans {
-  font-family: 'DM Sans', Arial, sans-serif;
+  font-family: var(--font-family-base);
 }
 
 .font-preview-condensed {

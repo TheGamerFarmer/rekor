@@ -2,16 +2,13 @@
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  font-family: 'DM Sans', Arial, sans-serif;
+  font-family: var(--font-family-base);
 }
 
 footer {
   color: var(--color-surface);
 }
 
-* {
-  box-sizing: border-box;
-}
 a {
   color: inherit;
   text-decoration: none;

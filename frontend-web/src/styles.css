@@ -10,9 +10,18 @@
   --color-text: #101828;
   --color-text-muted: #5f6b7d;
   --color-border: #e6ebf2;
+  --color-control-border: #cbd5e3;
+  --color-error: #b52e2e;
+  --color-success: #287a3d;
+  --font-family-base: 'DM Sans', Arial, sans-serif;
+  --shadow-card: 0 1rem 3rem rgb(28 52 84 / 10%);
   --glass-background: rgb(255 255 255 / 75%);
   --glass-border: rgb(255 255 255 / 65%);
   --glass-shadow: rgb(22 59 140 / 10%);
+}
+
+* {
+  box-sizing: border-box;
 }
 
 html {
@@ -23,4 +32,178 @@ html {
 body {
   min-width: 320px;
   margin: 0;
+}
+
+.form-page,
+.account-page {
+  background: var(--color-background);
+  font-family: var(--font-family-base);
+}
+
+.form-page {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.surface-card {
+  border: 1px solid var(--color-border);
+  border-radius: 1.25rem;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.form-page .field,
+.account-page .field {
+  margin-bottom: 1.25rem;
+}
+
+.form-page label:not(.checkbox-field),
+.form-page legend,
+.account-page label:not(.checkbox-field) {
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.form-page label:not(.checkbox-field),
+.account-page label:not(.checkbox-field) {
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.form-page input:not([type='checkbox']),
+.form-page select,
+.account-page input:not([type='checkbox']),
+.account-page select {
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--color-control-border);
+  border-radius: 0.625rem;
+  padding: 0.8rem 0.9rem;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  transition:
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.form-page input:focus,
+.form-page select:focus,
+.account-page input:focus,
+.account-page select:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 15%, transparent);
+  outline: none;
+}
+
+.form-page input[aria-invalid='true'],
+.form-page select[aria-invalid='true'],
+.account-page input[aria-invalid='true'],
+.account-page select[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.admin-page {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 42px 28px 56px;
+  color: var(--color-dark);
+  font-family: var(--font-family-base);
+}
+
+.admin-card,
+.detail-card,
+.actualite-card {
+  border-radius: 12px;
+  background: var(--color-surface);
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--color-dark) 10%, transparent);
+}
+
+.icon-action {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid color-mix(in srgb, var(--color-dark) 20%, transparent);
+  border-radius: 6px;
+  background: transparent;
+  color: var(--color-dark);
+  cursor: pointer;
+}
+
+.icon-action img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.icon-action:hover,
+.icon-action:focus-visible {
+  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
+}
+
+.empty-state {
+  margin: 0;
+  padding: 28px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--color-dark) 5%, transparent);
+  text-align: center;
+}
+
+.detail-card,
+.actualite-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 250px;
+  gap: 34px;
+  padding: 34px;
+}
+
+.detail-meta,
+.actualite-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.detail-meta span,
+.actualite-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.detail-meta img,
+.actualite-meta img {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.back-button {
+  display: block;
+  width: fit-content;
+  margin-top: 24px;
+}
+
+.not-found {
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .detail-card,
+  .actualite-card {
+    grid-template-columns: 1fr;
+    padding: 24px 20px;
+  }
+
+  .detail-meta,
+  .actualite-meta {
+    padding-top: 20px;
+    border-top: 1px solid color-mix(in srgb, var(--color-dark) 12%, transparent);
+  }
 }

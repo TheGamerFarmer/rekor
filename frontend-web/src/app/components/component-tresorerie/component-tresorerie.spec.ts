@@ -52,14 +52,22 @@ describe('ComponentTresorerie', () => {
       )[1] as HTMLButtonElement
     ).click();
     fixture.detectChanges();
+    (
+      fixture.nativeElement.querySelectorAll('.history-card button')[1] as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
 
     expect(component['totalIncome']()).toBe(2500);
     expect(component['totalExpenses']()).toBe(2005);
     expect(component['balance']()).toBe(495);
     expect(fixture.nativeElement.textContent).toContain('Don du tournoi');
     expect(fixture.nativeElement.textContent).toContain('Ballon');
-    expect(component['incomes']()[0].date).toBe('2026-10-10');
-    expect(component['expenses']()[0].date).toBe('2026-10-11');
+    expect(
+      component['incomes']().find(({ description }) => description === 'Don du tournoi')?.date,
+    ).toBe('2026-10-10');
+    expect(component['expenses']().find(({ description }) => description === 'Ballon')?.date).toBe(
+      '2026-10-11',
+    );
   });
 
   it('rejects invalid transaction amounts', () => {

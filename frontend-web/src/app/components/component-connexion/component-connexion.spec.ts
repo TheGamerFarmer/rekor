@@ -35,9 +35,17 @@ describe('ComponentConnexion', () => {
 
   it('shows a success message after navigating from a successful registration', () => {
     const router = TestBed.inject(Router);
-    vi.spyOn(router, 'getCurrentNavigation').mockReturnValue({
+    const url = router.createUrlTree([]);
+    const navigation = {
+      id: 1,
+      initialUrl: url,
+      extractedUrl: url,
+      trigger: 'imperative',
       extras: { state: { registrationSuccess: true } },
-    } as Navigation);
+      previousNavigation: null,
+      abort: vi.fn(),
+    } satisfies Navigation;
+    vi.spyOn(router, 'getCurrentNavigation').mockReturnValue(navigation);
 
     fixture.destroy();
     fixture = TestBed.createComponent(ComponentConnexion);

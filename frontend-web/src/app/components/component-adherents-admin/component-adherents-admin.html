@@ -4,8 +4,8 @@
   subtitle="Gérez les profils et suivez les inscriptions du club."
 />
 
-<main class="admin-members-page">
-  <section class="admin-members-card" aria-label="Gestion des adhérents">
+<main class="admin-page admin-members-page">
+  <section class="admin-card admin-members-card" aria-label="Gestion des adhérents">
     <header class="admin-members-header">
       <nav class="registration-filters" aria-label="Filtrer les inscriptions">
         @for (status of statuses; track status.value) {
@@ -20,7 +20,7 @@
     </header>
 
     @if (isFormVisible() && editingId() !== null) {
-      <section class="member-form-card" aria-labelledby="member-form-title">
+      <section class="admin-card member-form-card" aria-labelledby="member-form-title">
         <h2 id="member-form-title">Modifier un adhérent</h2>
         <form [formGroup]="memberForm" (ngSubmit)="save()" novalidate>
           <div class="form-grid">

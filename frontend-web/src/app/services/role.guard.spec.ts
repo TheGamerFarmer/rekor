@@ -3,11 +3,10 @@ import {
   ActivatedRouteSnapshot,
   Router,
   RouterStateSnapshot,
-  UrlTree,
   provideRouter,
 } from '@angular/router';
 import type { GuardResult, MaybeAsync } from '@angular/router';
-import { Observable, firstValueFrom, of } from 'rxjs';
+import { Observable, firstValueFrom, of, throwError } from 'rxjs';
 import { UserDetails } from '../api/model/userDetails';
 import { AuthService } from './auth.service';
 import { administratorGuard, eventManagementGuard } from './role.guard';
@@ -26,6 +25,7 @@ describe('role guards', () => {
     });
   });
 
+  /** Runs a guard inside Angular's injection context and resolves its result. */
   async function runGuard(
     guard: typeof administratorGuard | typeof eventManagementGuard,
   ): Promise<GuardResult> {
@@ -35,6 +35,7 @@ describe('role guards', () => {
     return resolveGuardResult(result);
   }
 
+  /** Converts synchronous, promise, and observable guard results to a promise. */
   function resolveGuardResult(result: MaybeAsync<GuardResult>): Promise<GuardResult> {
     if (result instanceof Observable) {
       return firstValueFrom(result);
@@ -61,6 +62,15 @@ describe('role guards', () => {
     const result = await runGuard(administratorGuard);
 
     expect(result).toEqual(TestBed.inject(Router).createUrlTree(['/evenements']));
+  });
+
+  it('returns home when the authenticated user role cannot be loaded', async () => {
+    authService.isAuthenticated.mockReturnValue(true);
+    authService.loadRole.mockReturnValue(throwError(() => new Error('Profil indisponible')));
+
+    const result = await runGuard(administratorGuard);
+
+    expect(result).toEqual(TestBed.inject(Router).createUrlTree(['/']));
   });
 
   it.each([UserDetails.RoleEnum.Administrateur, UserDetails.RoleEnum.Capitaine])(

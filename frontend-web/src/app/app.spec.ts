@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { signal } from '@angular/core';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { AuthService } from './services/auth.service';
 import { UserDetails } from './api/model/userDetails';
 
@@ -11,12 +11,15 @@ describe('App', () => {
   const isAuthenticated = signal(false);
   const role = signal<UserDetails.RoleEnum | null>(null);
   const roleLoadError = signal(false);
+  const loadRole = vi.fn(() => of(role()));
   const logout = vi.fn();
 
   beforeEach(async () => {
     isAuthenticated.set(false);
     role.set(null);
     roleLoadError.set(false);
+    loadRole.mockReset();
+    loadRole.mockImplementation(() => of(role()));
     logout.mockReset();
     await TestBed.configureTestingModule({
       imports: [App],
@@ -24,12 +27,13 @@ describe('App', () => {
         provideRouter([{ path: 'accueil', redirectTo: '' }]),
         {
           provide: AuthService,
-          useValue: { isAuthenticated, role, roleLoadError, loadRole: () => of(role()), logout },
+          useValue: { isAuthenticated, role, roleLoadError, loadRole, logout },
         },
       ],
     }).compileComponents();
   });
 
+  /** Creates the root component fixture used by the app template tests. */
   function createApp() {
     const fixture = TestBed.createComponent(App);
     return { fixture };
@@ -38,6 +42,14 @@ describe('App', () => {
   it('should create the app', () => {
     const { fixture } = createApp();
     expect(fixture.componentInstance).toBeTruthy();
+  });
+
+  it('does not interrupt startup when restoring the role fails', () => {
+    isAuthenticated.set(true);
+    loadRole.mockReturnValueOnce(throwError(() => new Error('Profil indisponible')));
+
+    expect(() => createApp()).not.toThrow();
+    expect(loadRole).toHaveBeenCalledOnce();
   });
 
   it('should render the club name', async () => {

@@ -2,20 +2,9 @@
   display: block;
 }
 
-.admin-members-page {
-  max-width: 1100px;
-  margin: 0 auto;
-  padding: 42px 28px 56px;
-  color: var(--color-dark);
-  font-family: 'DM Sans', Arial, sans-serif;
-}
-
 .admin-members-card,
 .member-form-card {
   padding: 30px;
-  border-radius: 12px;
-  background: var(--color-surface);
-  box-shadow: 0 8px 24px color-mix(in srgb, var(--color-dark) 10%, transparent);
 }
 
 .admin-members-header {
@@ -26,15 +15,10 @@
   margin-bottom: 24px;
 }
 
-.registration-filters,
-.header-actions {
+.registration-filters {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-}
-
-.header-actions {
-  justify-content: flex-end;
 }
 
 .member-form-card {
@@ -172,36 +156,6 @@ small {
   gap: 8px;
 }
 
-.icon-action {
-  display: grid;
-  width: 34px;
-  height: 34px;
-  place-items: center;
-  border: 1px solid color-mix(in srgb, var(--color-dark) 20%, transparent);
-  border-radius: 6px;
-  background: transparent;
-  cursor: pointer;
-}
-
-.icon-action img {
-  width: 18px;
-  height: 18px;
-  object-fit: contain;
-}
-
-.icon-action:hover,
-.icon-action:focus-visible {
-  background: color-mix(in srgb, var(--color-primary) 14%, transparent);
-}
-
-.empty-state {
-  margin: 0;
-  padding: 28px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--color-dark) 5%, transparent);
-  text-align: center;
-}
-
 @media (max-width: 760px) {
   .admin-members-page {
     padding: 34px 20px 36px;
@@ -214,10 +168,6 @@ small {
   .admin-members-header {
     align-items: stretch;
     flex-direction: column;
-  }
-
-  .header-actions {
-    justify-content: flex-start;
   }
 
   .member-row {
@@ -240,8 +190,7 @@ small {
     grid-template-columns: 1fr;
   }
 
-  .form-actions,
-  .header-actions {
+  .form-actions {
     align-items: stretch;
     flex-direction: column;
   }

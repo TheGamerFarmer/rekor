@@ -53,6 +53,7 @@ export class ComponentInscription {
   private readonly authenticationService = inject(AuthenticationService);
   private readonly router = inject(Router);
 
+  /** Listens for reading-completion messages from the policy document tabs. */
   constructor() {
     if (!this.readingUnavailable) {
       const channel = new BroadcastChannel(readingChannelName(this.readingId));
@@ -96,6 +97,7 @@ export class ComponentInscription {
     { validators: passwordsMatch },
   );
 
+  /** Prevents consent until the privacy policy has been read to the end. */
   protected rejectPrivacyPolicyBeforeReading(event: MouseEvent): void {
     if (!this.privacyPolicyRead()) {
       event.preventDefault();
@@ -103,6 +105,7 @@ export class ComponentInscription {
     }
   }
 
+  /** Prevents consent until the internal rules have been read to the end. */
   protected rejectInternalRulesBeforeReading(event: MouseEvent): void {
     if (!this.internalRulesRead()) {
       event.preventDefault();

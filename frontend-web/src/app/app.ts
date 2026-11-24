@@ -16,6 +16,7 @@ export class App {
   protected readonly roles = UserDetails.RoleEnum;
   private readonly router = inject(Router);
 
+  /** Loads the user's role when restoring an existing session. */
   constructor() {
     if (this.authService.isAuthenticated()) {
       this.authService.loadRole().subscribe({ error: () => undefined });

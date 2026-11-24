@@ -47,6 +47,7 @@ export class ComponentAdherentsAdmin {
     this.adherents().filter((member) => member.registrationStatus === this.registrationFilter()),
   );
 
+  /** Validates an optional birth date and rejects dates outside the supported range. */
   private readonly validateBirthDate = (
     control: AbstractControl<string>,
   ): ValidationErrors | null => {
@@ -84,15 +85,18 @@ export class ComponentAdherentsAdmin {
     }),
   });
 
+  /** Counts members with the requested registration status. */
   protected getCount(status: RegistrationStatus): number {
     return this.adherents().filter((member) => member.registrationStatus === status).length;
   }
 
+  /** Changes the registration filter and closes any open edit form. */
   protected setFilter(status: RegistrationStatus): void {
     this.registrationFilter.set(status);
     this.closeForm();
   }
 
+  /** Populates the form with the selected member and opens it for editing. */
   protected startEdit(member: Adherent): void {
     this.editingId.set(member.id);
     this.submitted.set(false);
@@ -109,6 +113,7 @@ export class ComponentAdherentsAdmin {
     this.isFormVisible.set(true);
   }
 
+  /** Validates and saves the current member changes. */
   protected save(): void {
     this.submitted.set(true);
     if (this.memberForm.invalid) {
@@ -127,10 +132,12 @@ export class ComponentAdherentsAdmin {
     this.closeForm();
   }
 
+  /** Removes the selected member from the shared collection. */
   protected deleteMember(id: number): void {
     this.adherentService.remove(id);
   }
 
+  /** Resets and hides the member form. */
   protected closeForm(): void {
     this.isFormVisible.set(false);
     this.editingId.set(null);
@@ -138,6 +145,7 @@ export class ComponentAdherentsAdmin {
     this.memberForm.reset();
   }
 
+  /** Formats a date as the local YYYY-MM-DD value used by date inputs. */
   private formatDate(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');

@@ -42,6 +42,7 @@ export class ComponentCompte {
   private readonly authService = inject(AuthService);
   protected readonly pronouns = Object.values(RegisterInput.PronounEnum);
 
+  /** Loads the signed-in user's profile role for account-specific controls. */
   constructor() {
     if (this.authService.isAuthenticated()) {
       inject(UsersService)

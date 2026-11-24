@@ -12,7 +12,7 @@
 
     <div class="account-grid">
       <div class="account-column">
-        <section class="account-card" aria-labelledby="profile-title">
+        <section class="surface-card account-card" aria-labelledby="profile-title">
           <h2 id="profile-title">Informations personnelles</h2>
           <form [formGroup]="accountForm" (ngSubmit)="save()" novalidate>
             <div class="name-fields">
@@ -149,7 +149,7 @@
           </form>
         </section>
 
-        <section class="account-card account-danger" aria-labelledby="danger-title">
+        <section class="surface-card account-card account-danger" aria-labelledby="danger-title">
           <h2 id="danger-title">Supprimer mon compte</h2>
           <p>La suppression de votre compte est définitive et ne peut pas être annulée.</p>
           <label class="checkbox-field">
@@ -173,7 +173,7 @@
 
       <div class="account-column">
         @if (profileRole() && profileRole() !== 'Visiteur') {
-          <section class="account-card" aria-labelledby="certificate-title">
+          <section class="surface-card account-card" aria-labelledby="certificate-title">
             <h2 id="certificate-title">Certificat médical</h2>
             <p class="certificate-information">
               Vous pourrez transmettre votre certificat ici ou le remettre directement au club.
@@ -189,7 +189,7 @@
             <app-button text="Transmettre le certificat" [disabled]="true"></app-button>
           </section>
         }
-        <section class="account-card" aria-labelledby="password-title">
+        <section class="surface-card account-card" aria-labelledby="password-title">
           <h2 id="password-title">Modifier le mot de passe</h2>
           <form [formGroup]="passwordForm" (ngSubmit)="changePassword()" novalidate>
             <div class="field">

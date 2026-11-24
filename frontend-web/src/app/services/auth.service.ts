@@ -75,10 +75,12 @@ export class AuthService {
     this.isAuthenticated.set(false);
   }
 
+  /** Checks whether a persisted access token is available in browser storage. */
   private hasStoredToken(): boolean {
     return typeof localStorage !== 'undefined' && Boolean(localStorage.getItem(ACCESS_TOKEN_KEY));
   }
 
+  /** Persists the access token returned by the authentication API. */
   private setStoredToken(token: string): void {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(ACCESS_TOKEN_KEY, token);

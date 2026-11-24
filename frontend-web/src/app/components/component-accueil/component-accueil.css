@@ -1,6 +1,6 @@
 :host {
   color-scheme: light;
-  font-family: 'DM Sans', Arial, sans-serif;
+  font-family: var(--font-family-base);
   color: var(--color-dark);
   background: var(--color-surface);
   font-synthesis: none;
