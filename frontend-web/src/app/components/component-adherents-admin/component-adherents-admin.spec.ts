@@ -123,7 +123,20 @@ describe('ComponentAdherentsAdmin', () => {
     editButton.click();
     fixture.detectChanges();
 
-    expect((fixture.nativeElement.querySelector('#birth-date') as HTMLInputElement).value).toBe('');
+    const birthDate = fixture.nativeElement.querySelector('#birth-date') as HTMLInputElement;
+    expect(birthDate.value).toBe('');
+
+    const firstName = fixture.nativeElement.querySelector('#first-name') as HTMLInputElement;
+    firstName.value = 'Noémie';
+    firstName.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.nativeElement
+      .querySelector('form')
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+
+    expect(update).toHaveBeenCalledWith(
+      3,
+      expect.objectContaining({ firstName: 'Noémie', birthDate: null }),
+    );
   });
 
   it('updates role selections through the checkbox controls', () => {
