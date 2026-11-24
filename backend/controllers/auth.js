@@ -19,6 +19,7 @@ const User = require('../db/models/user');
 const Association = require('../db/models/association');
 const Registeration = require('../db/models/registration');
 const RefreshToken = require('../db/models/refresh-token');
+const { USER_ROLE } = require('../db/enums');
 
 async function createRefreshSession(user, association) {
   const refresh = signRefreshToken(user, association);
@@ -59,6 +60,11 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         return res.status(404).json({ message: "L'association n'existe pas" });
       }
 
+      let role = USER_ROLE.VISITEUR;
+      if (!(await User.exists({}))) {
+        role = USER_ROLE.ADMINISTRATEUR;
+      }
+
       try {
         await User.create({
           name,
@@ -66,7 +72,7 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
           email,
           password: await hashPassword(password),
           phoneNumber,
-          role: 'Visiteur',
+          role: role,
           ...(birthday ? { birthday: new Date(`${birthday}T00:00:00.000Z`) } : {}),
           pronoun,
         });
