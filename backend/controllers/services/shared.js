@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const { isValidObjectId } = require('mongoose');
+
 /**
  * Wraps an async Express route handler so that any rejected promise is forwarded to `next(err)`
  * instead of leaving the request hanging. Converts `MongooseError` (thrown when
