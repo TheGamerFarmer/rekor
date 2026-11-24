@@ -34,6 +34,13 @@ void main() {
       expect(find.text('Adresse e-mail'), findsOneWidget);
     });
 
+    testWidgets('Affiche le champ association', (tester) async {
+      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: MyLoginPage())),);
+
+      expect(find.byIcon(Icons.groups), findsOneWidget);
+      expect(find.text('Association'), findsOneWidget);
+    });
+
     testWidgets('Affiche le champ mot de passe', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(home: Scaffold(body: MyLoginPage())),
@@ -83,6 +90,7 @@ void main() {
 
       expect(find.text('Veuillez saisir votre e-mail'), findsOneWidget);
       expect(find.text('Veuillez saisir votre mot de passe'), findsOneWidget);
+      expect(find.text('Veuillez saisir votre association'), findsOneWidget);
     });
 
     testWidgets(
@@ -92,11 +100,10 @@ void main() {
           const MaterialApp(home: Scaffold(body: MyLoginPage())),
         );
 
+        await tester.enterText(find.byType(TextFormField).at(0), 'Gières Volley-Ball',);
         await tester.enterText(
-          find.byType(TextFormField).at(0),
-          'ada@exemple.fr',
-        );
-        await tester.enterText(find.byType(TextFormField).at(1), 'motdep@sse');
+          find.byType(TextFormField).at(1), 'ada@exemple.fr',);
+        await tester.enterText(find.byType(TextFormField).at(2), 'motdep@sse');
 
         await tester.tap(find.text('Se connecter'));
         await tester.pumpAndSettle();
@@ -110,11 +117,9 @@ void main() {
         const MaterialApp(home: Scaffold(body: MyLoginPage())),
       );
 
-      await tester.enterText(
-        find.byType(TextFormField).at(0),
-        'ada@exemple.fr',
-      );
-      await tester.enterText(find.byType(TextFormField).at(1), 'motdepasse');
+      await tester.enterText(find.byType(TextFormField).at(0), 'Gières Volley-Ball',);
+      await tester.enterText(find.byType(TextFormField).at(1), 'ada@exemple.fr',);
+      await tester.enterText(find.byType(TextFormField).at(2), 'motdepasse');
 
       await tester.tap(find.text('Se connecter'));
       await tester.pumpAndSettle();
@@ -129,11 +134,9 @@ void main() {
         const MaterialApp(home: Scaffold(body: MyLoginPage())),
       );
 
-      await tester.enterText(
-        find.byType(TextFormField).at(0),
-        'ada@exemple.fr',
-      );
-      await tester.enterText(find.byType(TextFormField).at(1), 'motdepasse');
+      await tester.enterText(find.byType(TextFormField).at(0), 'Gières Volley-Ball',);
+      await tester.enterText(find.byType(TextFormField).at(1), 'ada@exemple.fr',);
+      await tester.enterText(find.byType(TextFormField).at(2), 'motdepasse');
 
       await tester.tap(find.text('Se connecter'));
       await tester.pumpAndSettle();
@@ -155,8 +158,8 @@ class FakeApiClient extends ApiClient {
   FakeApiClient() : super('http://localhost:3000');
 
   @override
-  Future<String> login(String email, String password) async {
-    if (email == 'ada@exemple.fr' && password == 'motdepasse') {
+  Future<String> login(String email, String password, String associationName,) async {
+    if (email == 'ada@exemple.fr' && password == 'motdepasse' && associationName == 'Gières Volley-Ball') {
       return 'fake-access-token';
     }
 

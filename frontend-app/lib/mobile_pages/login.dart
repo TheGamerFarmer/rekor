@@ -19,12 +19,15 @@ class MyLoginPageState extends State<MyLoginPage> {
 
   final TextEditingController passwordController = TextEditingController();
 
+  final TextEditingController associationController = TextEditingController();
+
   bool passwordVisible = false;
 
   @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
+    associationController.dispose();
     super.dispose();
   }
 
@@ -49,6 +52,7 @@ class MyLoginPageState extends State<MyLoginPage> {
       await ApiClient.instance.login(
         emailController.text.trim(),
         passwordController.text,
+        associationController.text.trim(),
       );
       // Le token est configuré dans ApiClient.
 
@@ -76,7 +80,7 @@ class MyLoginPageState extends State<MyLoginPage> {
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('E-mail ou mot de passe incorrect'),
+          content: Text('Association, e-mail ou mot de passe incorrect'),
           backgroundColor: Colors.red,
           duration: Duration(seconds: 3),
         ),
@@ -104,6 +108,24 @@ class MyLoginPageState extends State<MyLoginPage> {
                   style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                 ),
                 const SizedBox(height: 35),
+
+                // Association
+                TextFormField(
+                  controller: associationController,
+                  textInputAction: TextInputAction.next,
+                  decoration: const InputDecoration(
+                    labelText: 'Association',
+                    prefixIcon: Icon(Icons.groups),
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value == null || value.isEmpty) {
+                      return 'Veuillez saisir votre association';
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
 
                 // Email
                 TextFormField(

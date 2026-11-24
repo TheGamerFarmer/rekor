@@ -38,7 +38,7 @@ void main() {
       },
     );
 
-    test('Realise la connexion et stocke le refresh token', () async {
+    test('Effectue la connexion et stocke le refresh token', () async {
       final api = ApiClient(
         'http://localhost:3000',
         client: MockClient((request) async {
@@ -46,7 +46,7 @@ void main() {
           expect(request.url.path, '/auth/login');
           expect(
             request.body,
-            '{"email":"ada@exemple.fr","password":"motdepasse"}',
+            '{"email":"ada@exemple.fr","password":"motdepasse","associationName":"Gières Volley-Ball"}',
           );
           return http.Response(
             '{"access_token":"access","refresh_token":"refresh"}',
@@ -56,7 +56,7 @@ void main() {
         }),
       );
 
-      expect(await api.login('ada@exemple.fr', 'motdepasse'), 'access');
+      expect(await api.login('ada@exemple.fr', 'motdepasse', 'Gières Volley-Ball',), 'access',);
       expect(await api.getRefreshToken(), 'refresh');
     });
 
@@ -72,7 +72,7 @@ void main() {
         ),
       );
 
-      await expectLater(api.login('ada@exemple.fr', 'bad'), throwsStateError);
+      await expectLater(api.login('ada@exemple.fr', 'bad', 'Gières Volley-Ball'), throwsStateError,);
       expect(await api.getRefreshToken(), isNull);
     });
 
