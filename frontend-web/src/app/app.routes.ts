@@ -16,6 +16,7 @@ import { ComponentAdherentsAdmin } from './components/component-adherents-admin/
 import { ComponentPolitique } from './components/component-inscription/politique';
 import { ComponentReglement } from './components/component-inscription/reglement';
 import { ComponentCredits } from './components/component-credits/component-credits';
+import { ComponentTresorerie } from './components/component-tresorerie/component-tresorerie';
 
 export const routes: Routes = [
   { path: '', component: ComponentAccueil },
@@ -36,5 +37,6 @@ export const routes: Routes = [
   { path: 'admin/evenements/:id/modifier', component: ComponentEvenementAdmin },
   { path: 'admin/evenements/:slug/modifier', component: ComponentEvenementAdmin },
   { path: 'admin/adherents', component: ComponentAdherentsAdmin },
+  { path: 'admin/tresorerie', component: ComponentTresorerie },
   { path: '**', redirectTo: '' },
 ];
