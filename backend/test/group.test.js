@@ -140,57 +140,92 @@ describe('/group (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 401);
   });
 
-  // ── POST /group/:id ──────────────────────────────────────────────────────────
+  // ── POST /group ──────────────────────────────────────────────────────────
 
-  it('POST /group/:id creates a new group and returns 201', async () => {
-    const newGroupId = new ObjectId('000000000000000000000099');
+  it('POST /group creates a new group and returns 201', async () => {
     const res = await request(app)
-      .post(`/group/${newGroupId}`)
+      .post('/group')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ name: 'Équipe B', owner: ownerId.toString() });
 
     assert.strictEqual(res.status, 201);
   });
 
-  it('POST /group/:id returns 404 when owner does not exist', async () => {
+  it('POST /group creates a new group with members and returns 201', async () => {
     const res = await request(app)
-      .post(`/group/${UNKNOWN_ID}`)
+      .post('/group')
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ name: 'Équipe Membres', owner: ownerId.toString(), members: [memberId.toString()] });
+
+    assert.strictEqual(res.status, 201);
+
+    const created = await db.getDb().collection('group').findOne({ name: 'Équipe Membres' });
+    assert.ok(created);
+    const membership = await db
+      .getDb()
+      .collection('group_member')
+      .findOne({ group: created._id, user: memberId });
+    assert.ok(membership);
+  });
+
+  it('POST /group creates a new group with null members and returns 201', async () => {
+    const res = await request(app)
+      .post('/group')
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ name: 'Équipe Null', owner: ownerId.toString(), members: null });
+
+    assert.strictEqual(res.status, 201);
+  });
+
+  it('POST /group returns 404 when owner does not exist', async () => {
+    const res = await request(app)
+      .post('/group')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ name: 'Équipe C', owner: UNKNOWN_ID });
 
     assert.strictEqual(res.status, 404);
   });
 
-  it('POST /group/:id returns 401 without authentication', async () => {
+  it('POST /group returns 404 when a member does not exist', async () => {
+    const res = await request(directApp)
+      .post('/group')
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ name: 'Équipe Fantôme', owner: ownerId.toString(), members: [UNKNOWN_ID] });
+
+    assert.strictEqual(res.status, 404);
+    assert.strictEqual(res.body.message, 'Un ou plusieurs membres introuvables');
+  });
+
+  it('POST /group returns 400 when a member id is malformed (direct router)', async () => {
+    const res = await request(directApp)
+      .post('/group')
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ name: 'Équipe Bad', owner: ownerId.toString(), members: ['pas-un-id'] });
+
+    assert.strictEqual(res.status, 400);
+    assert.strictEqual(res.body.message, 'Identifiant de membre invalide : pas-un-id');
+  });
+
+  it('POST /group returns 401 without authentication', async () => {
     const res = await request(app)
-      .post(`/group/${UNKNOWN_ID}`)
+      .post('/group')
       .send({ name: 'Équipe D', owner: ownerId.toString() });
 
     assert.strictEqual(res.status, 401);
   });
 
-  it('POST /group/:id returns 403 for an Adhérent role', async () => {
+  it('POST /group returns 403 for an Adhérent role', async () => {
     const res = await request(app)
-      .post(`/group/${UNKNOWN_ID}`)
+      .post('/group')
       .set('Authorization', `Bearer ${adherentToken}`)
       .send({ name: 'Équipe E', owner: ownerId.toString() });
 
     assert.strictEqual(res.status, 403);
   });
 
-  it('POST /group/pas-un-id returns 400 for a malformed identifier (direct router)', async () => {
+  it('POST /group returns 400 when name is missing (direct router)', async () => {
     const res = await request(directApp)
-      .post('/group/pas-un-id')
-      .set('Authorization', `Bearer ${entraineurToken}`)
-      .send({ name: 'Équipe F', owner: ownerId.toString() });
-
-    assert.strictEqual(res.status, 400);
-    assert.strictEqual(res.body.message, 'Identifiant invalide');
-  });
-
-  it('POST /group/:id returns 400 when name is missing (direct router)', async () => {
-    const res = await request(directApp)
-      .post(`/group/${UNKNOWN_ID}`)
+      .post('/group')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ owner: ownerId.toString() });
 
@@ -198,9 +233,9 @@ describe('/group (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'Nom invalide');
   });
 
-  it('POST /group/:id returns 400 when owner is missing (direct router)', async () => {
+  it('POST /group returns 400 when owner is missing (direct router)', async () => {
     const res = await request(directApp)
-      .post(`/group/${UNKNOWN_ID}`)
+      .post('/group')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ name: 'Équipe G' });
 
@@ -208,7 +243,7 @@ describe('/group (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'Propriétaire invalide');
   });
 
-  it('POST /group/:id returns 409 when Group.create throws a duplicate key error (direct router)', async () => {
+  it('POST /group returns 409 when Group.create throws a duplicate key error (direct router)', async () => {
     const original = Group.create.bind(Group);
     Group.create = async () => {
       const err = new Error('duplicate key');
@@ -218,7 +253,7 @@ describe('/group (avec un vrai mongod)', () => {
 
     try {
       const res = await request(directApp)
-        .post(`/group/${UNKNOWN_ID}`)
+        .post('/group')
         .set('Authorization', `Bearer ${entraineurToken}`)
         .send({ name: 'Équipe H', owner: ownerId.toString() });
 
@@ -229,7 +264,7 @@ describe('/group (avec un vrai mongod)', () => {
     }
   });
 
-  it('POST /group/:id returns 500 when Group.create throws an unexpected error', async () => {
+  it('POST /group returns 500 when Group.create throws an unexpected error', async () => {
     const original = Group.create.bind(Group);
     Group.create = async () => {
       const err = new Error('unexpected db error');
@@ -239,7 +274,7 @@ describe('/group (avec un vrai mongod)', () => {
 
     try {
       const res = await request(directApp)
-        .post(`/group/${UNKNOWN_ID}`)
+        .post('/group')
         .set('Authorization', `Bearer ${entraineurToken}`)
         .send({ name: 'Équipe H', owner: ownerId.toString() });
 

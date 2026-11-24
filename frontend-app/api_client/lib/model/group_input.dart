@@ -15,30 +15,36 @@ class GroupInput {
   GroupInput({
     required this.name,
     required this.owner,
+    this.members = const [],
   });
 
   String name;
 
   String owner;
 
+  List<String> members;
+
   @override
   bool operator ==(Object other) => identical(this, other) || other is GroupInput &&
     other.name == name &&
-    other.owner == owner;
+    other.owner == owner &&
+    _deepEquality.equals(other.members, members);
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
     (name.hashCode) +
-    (owner.hashCode);
+    (owner.hashCode) +
+    (members.hashCode);
 
   @override
-  String toString() => 'GroupInput[name=$name, owner=$owner]';
+  String toString() => 'GroupInput[name=$name, owner=$owner, members=$members]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
       json[r'name'] = this.name;
       json[r'owner'] = this.owner;
+      json[r'members'] = this.members;
     return json;
   }
 
@@ -63,6 +69,9 @@ class GroupInput {
       return GroupInput(
         name: mapValueOfType<String>(json, r'name')!,
         owner: mapValueOfType<String>(json, r'owner')!,
+        members: json[r'members'] is Iterable
+            ? (json[r'members'] as Iterable).cast<String>().toList(growable: false)
+            : const [],
       );
     }
     return null;

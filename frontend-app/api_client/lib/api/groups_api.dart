@@ -73,13 +73,10 @@ class GroupsApi {
   ///
   /// Parameters:
   ///
-  /// * [String] id (required):
-  ///
   /// * [GroupInput] groupInput (required):
-  Future<Response> createGroupWithHttpInfo(String id, GroupInput groupInput, { Future<void>? abortTrigger, }) async {
+  Future<Response> createGroupWithHttpInfo(GroupInput groupInput, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/group/{id}'
-      .replaceAll('{id}', id);
+    final path = r'/group';
 
     // ignore: prefer_final_locals
     Object? postBody = groupInput;
@@ -107,11 +104,9 @@ class GroupsApi {
   ///
   /// Parameters:
   ///
-  /// * [String] id (required):
-  ///
   /// * [GroupInput] groupInput (required):
-  Future<void> createGroup(String id, GroupInput groupInput, { Future<void>? abortTrigger, }) async {
-    final response = await createGroupWithHttpInfo(id, groupInput, abortTrigger: abortTrigger,);
+  Future<void> createGroup(GroupInput groupInput, { Future<void>? abortTrigger, }) async {
+    final response = await createGroupWithHttpInfo(groupInput, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

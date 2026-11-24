@@ -18,7 +18,7 @@ const { USER_ROLE } = require('../db/enums');
  *
  * Routes:
  * - `GET    /:id`                — Get a group by its MongoDB ObjectId (requires Adhérent or above)
- * - `PUT    /:id`                — Create a new group from the request body (requires Entraineur or above)
+ * - `POST   /`                   — Create a new group with optional members (requires Entraineur or above)
  * - `PATCH  /:id`                — Partially update a group (requires Entraineur or above)
  * - `DELETE /:id`                — Delete a group (requires Entraineur or above)
  * - `GET    /:id/members`        — List the members of a group (requires Adhérent or above)
@@ -61,18 +61,14 @@ function createGroupsRouter({ limit = 100, windowMs = 60_000 } = {}) {
   );
 
   // Creates a new group from the request body. Both name and owner (user ObjectId) are required.
-  // The :id path parameter is validated but not used in the creation.
+  // An optional members array of user ObjectIds can be provided to add users to the group.
   // Returns 201 on success, 409 if an identical group already exists.
   router.post(
-    '/:id',
+    '/',
     authenticate,
     authorize(USER_ROLE.ENTRAINEUR),
     wrapAsync(async (req, res) => {
-      if (!isValidObjectId(req.params.id)) {
-        return res.status(400).json({ message: 'Identifiant invalide' });
-      }
-
-      let { name, owner } = req.body;
+      let { name, owner, members } = req.body;
 
       let errorMessage;
 
@@ -88,13 +84,32 @@ function createGroupsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       if (!userResult) return res.status(404).json({ message: 'Utilisateur introuvable' });
 
+      if (members && members.length > 0) {
+        for (const userId of members) {
+          if (!isValidObjectId(userId)) {
+            return res.status(400).json({ message: `Identifiant de membre invalide : ${userId}` });
+          }
+        }
+
+        const foundUsers = await User.find({ _id: { $in: members } });
+        if (foundUsers.length !== members.length) {
+          return res.status(404).json({ message: 'Un ou plusieurs membres introuvables' });
+        }
+      }
+
+      let group;
       try {
-        await Group.create({ name, owner });
+        group = await Group.create({ name, owner });
       } catch (error) {
         if (error.code === 11000) {
           return res.status(409).json({ message: 'Ce groupe existe déjà' });
         }
         throw error;
+      }
+
+      if (members && members.length > 0) {
+        const memberDocs = members.map((userId) => ({ group: group._id, user: userId }));
+        await GroupMembre.insertMany(memberDocs);
       }
 
       res.status(201).end();

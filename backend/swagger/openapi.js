@@ -176,6 +176,10 @@ const GroupInput = z
   .object({
     name: z.string().min(1).openapi({ example: 'Équipe A' }),
     owner: UserId,
+    members: z
+      .array(UserId)
+      .optional()
+      .openapi({ example: ['6ac8c78e50318b28d457048f'] }),
   })
   .openapi('GroupInput');
 
@@ -580,13 +584,12 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'post',
-  path: '/group/{id}',
+  path: '/group',
   operationId: 'createGroup',
   tags: ['Groups'],
   summary: 'Creates a new group (requires Entraineur role or above)',
   security: [{ BearerAuth: [] }],
   request: {
-    params: z.object({ id: GroupId }),
     body: { required: true, content: json(GroupInput) },
   },
   responses: {
@@ -594,7 +597,7 @@ registry.registerPath({
     400: failure('Invalid request body'),
     401: failure('Authentication required or invalid token'),
     403: failure('Insufficient permissions'),
-    404: failure('Owner user not found'),
+    404: failure('Owner user or member not found'),
     409: failure('Group already exists'),
     429: failure('Too many requests'),
     500: failure('Internal server error'),

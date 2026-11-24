@@ -12,5 +12,6 @@
 export interface GroupInput { 
     name: string;
     owner: string;
+    members?: Array<string>;
 }
 
