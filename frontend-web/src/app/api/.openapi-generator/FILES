@@ -10,6 +10,7 @@ api/users.service.ts
 configuration.ts
 encoder.ts
 index.ts
+model/adminUpdateProfileInput.ts
 model/association.ts
 model/changePasswordInput.ts
 model/errorResponse.ts

@@ -59,6 +59,27 @@ test('GET /api-docs.json documente le résumé des publications', async () => {
   assert.strictEqual(res.body.components.schemas.Publication.properties.summary.type, 'string');
 });
 
+test('GET /api-docs.json documente les routes d’administration des utilisateurs', async () => {
+  const res = await request(app).get('/api-docs.json');
+  assert.strictEqual(res.status, 200);
+
+  assert.strictEqual(res.body.paths['/users/roles'].get.operationId, 'listUserRoles');
+  assert.deepStrictEqual(res.body.paths['/users/roles'].get.security, [{ BearerAuth: [] }]);
+  assert.ok(res.body.paths['/users/roles'].get.responses['403']);
+
+  const updateUser = res.body.paths['/users/{id}'].patch;
+  assert.strictEqual(updateUser.operationId, 'updateUser');
+  assert.deepStrictEqual(updateUser.security, [{ BearerAuth: [] }]);
+  assert.strictEqual(
+    updateUser.requestBody.content['application/json'].schema.$ref,
+    '#/components/schemas/AdminUpdateProfileInput',
+  );
+  assert.ok(updateUser.responses['400']);
+  assert.ok(updateUser.responses['403']);
+  assert.ok(updateUser.responses['404']);
+  assert.ok(!res.body.paths['/users/{id}/grant/{role}']);
+});
+
 test("GET /api-docs/ sert l'interface swagger UI", async () => {
   const res = await request(app).get('/api-docs/');
   assert.strictEqual(res.status, 200);

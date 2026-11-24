@@ -1,3 +1,4 @@
+export * from './adminUpdateProfileInput';
 export * from './association';
 export * from './changePasswordInput';
 export * from './errorResponse';

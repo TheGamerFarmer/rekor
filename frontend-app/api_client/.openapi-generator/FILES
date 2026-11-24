@@ -14,6 +14,7 @@ lib/auth/authentication.dart
 lib/auth/http_basic_auth.dart
 lib/auth/http_bearer_auth.dart
 lib/auth/oauth.dart
+lib/model/admin_update_profile_input.dart
 lib/model/association.dart
 lib/model/change_password_input.dart
 lib/model/error_response.dart
