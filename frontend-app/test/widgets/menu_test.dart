@@ -56,7 +56,7 @@ void main() {
         'Discussions',
         'Covoiturage',
         'Évènements',
-        'Compétition',
+        'Gestion',
         'Arbitrage',
         'Statistiques',
         'News',

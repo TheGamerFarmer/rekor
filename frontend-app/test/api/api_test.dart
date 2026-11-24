@@ -23,5 +23,17 @@ void main() {
 
       expect(result, 'ok');
     });
+
+    test('Signale une erreur lorsqu’une réponse santé est invalide', () async {
+      final mockClient = MockClient((_) async => http.Response('', 500));
+      final api = ApiClient('http://localhost:3000', client: mockClient);
+
+      await expectLater(api.health(), throwsA(anyOf(isA<Exception>())));
+    });
+
+    test('Conserve les paramètres de connexion du client', () {
+      final api = ApiClient('http://localhost:3000');
+      expect(api.baseUrl, 'http://localhost:3000');
+    });
   });
 }
