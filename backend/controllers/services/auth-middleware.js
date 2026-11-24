@@ -203,8 +203,7 @@ function authorize(...allowedRoles) {
     if (
       !allowedRoles.some(
         (role) =>
-          Object.values(USER_ROLE).includes(role) &&
-          Object.values(USER_ROLE).indexOf(req.auth.role) <= Object.values(USER_ROLE).indexOf(role),
+          Object.values(USER_ROLE).includes(role) && USER_ROLE.compareTo(req.auth.role, role) >= 0,
       )
     ) {
       return res.status(403).json({ message: 'Accès interdit' });

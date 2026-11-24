@@ -154,6 +154,11 @@ const EventListItem = z
 
 const EventDetails = EventListItem.openapi('EventDetails');
 
+const UserId = z
+  .string()
+  .regex(/^[0-9a-f]{24}$/)
+  .openapi({ example: '6ac8c78e50318b28d457048f' });
+
 const GroupId = z
   .string()
   .regex(/^[0-9a-f]{24}$/)

@@ -202,7 +202,7 @@ describe('/users (avec un vrai mongod)', () => {
     assert.strictEqual(unchanged.pronoun, ada.pronoun);
   });
 
-  it('PATCH /users/me renvoie 404 si le compte n’existe plus', async () => {
+  it("PATCH /users/me renvoie 404 si le compte n'existe plus", async () => {
     const token = signAccessToken(
       {
         _id: new ObjectId(UNKNOWN_ID),
@@ -234,7 +234,43 @@ describe('/users (avec un vrai mongod)', () => {
     assert.strictEqual(subsequentGet.status, 404);
   });
 
-  it('DELETE /users/me renvoie 404 si le compte n’existe plus', async () => {
+  it('DELETE /users/me transfère le groupe au membre le plus gradé', async () => {
+    const Group = require('../db/models/group');
+    const GroupMember = require('../db/models/group_member');
+    await Group.deleteMany({});
+    await GroupMember.deleteMany({});
+
+    const group = await Group.create({ name: 'Équipe Ada', owner: adaId });
+    await GroupMember.create({ group: group._id, user: alanId });
+
+    const res = await request(app).delete('/users/me').set('Authorization', `Bearer ${adaToken}`);
+    assert.strictEqual(res.status, 204);
+
+    const updated = await Group.findById(group._id);
+    assert.strictEqual(updated.owner.toString(), alanId.toString());
+
+    await Group.deleteMany({});
+    await GroupMember.deleteMany({});
+  });
+
+  it('DELETE /users/me supprime le groupe si aucun membre ne peut reprendre', async () => {
+    const Group = require('../db/models/group');
+    const GroupMember = require('../db/models/group_member');
+    await Group.deleteMany({});
+    await GroupMember.deleteMany({});
+
+    const group = await Group.create({ name: 'Équipe solo', owner: adaId });
+
+    const res = await request(app).delete('/users/me').set('Authorization', `Bearer ${adaToken}`);
+    assert.strictEqual(res.status, 204);
+
+    assert.strictEqual(await Group.findById(group._id), null);
+
+    await Group.deleteMany({});
+    await GroupMember.deleteMany({});
+  });
+
+  it("DELETE /users/me renvoie 404 si le compte n'existe plus", async () => {
     const token = signAccessToken(
       {
         _id: new ObjectId(UNKNOWN_ID),
@@ -270,7 +306,7 @@ describe('/users (avec un vrai mongod)', () => {
     assert.strictEqual(refreshAfterPasswordChange.status, 401);
   });
 
-  it('PUT /users/me/password renvoie 404 si le compte n’existe plus', async () => {
+  it("PUT /users/me/password renvoie 404 si le compte n'existe plus", async () => {
     const token = signAccessToken(
       {
         _id: new ObjectId(UNKNOWN_ID),

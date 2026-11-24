@@ -7,9 +7,12 @@ const {
 } = require('mongoose');
 const User = require('../db/models/user');
 const RefreshToken = require('../db/models/refresh-token');
+const GroupMember = require('../db/models/group_member');
+const Group = require('../db/models/group');
 const { wrapAsync, toPublicUser, toEssentialPublicUser } = require('./services/shared');
 const { authenticate } = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
+const { USER_ROLE } = require('../db/enums');
 
 function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   const router = express.Router();
@@ -21,6 +24,14 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
       standardHeaders: true,
       legacyHeaders: false,
       message: { message: 'Trop de requêtes, réessaie plus tard' },
+    }),
+  );
+
+  router.get(
+    '/',
+    wrapAsync(async (req, res) => {
+      const docs = await User.find({}).sort({ _id: 1 });
+      res.json(docs.map(toEssentialPublicUser));
     }),
   );
 
@@ -64,10 +75,33 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      const result = await User.deleteOne({ _id: new ObjectId(req.auth.sub) });
+      const user = new ObjectId(req.auth.sub);
+
+      const result = await User.deleteOne({ _id: user });
       if (result.deletedCount === 0) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
+
+      await GroupMember.deleteMany({ user: user });
+      const groups = await Group.find({ owner: user });
+
+      for (const group of groups) {
+        const members = await GroupMember.find({ group: group._id }).populate('user', 'role');
+
+        let replacer;
+        let replacerRole = USER_ROLE.VISITEUR;
+
+        for (const member of members) {
+          if (USER_ROLE.compareTo(member.user.role, replacerRole) > 0) {
+            replacer = member;
+            replacerRole = member.user.role;
+          }
+        }
+
+        if (replacer) await Group.updateOne({ _id: group._id }, { owner: replacer.user._id });
+        else await Group.deleteOne({ _id: group._id });
+      }
+
       await RefreshToken.deleteMany({ userId: new ObjectId(req.auth.sub) });
       res.status(204).end();
     }),
@@ -97,14 +131,6 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       await RefreshToken.deleteMany({ userId: currentUser._id });
       res.status(204).end();
-    }),
-  );
-
-  router.get(
-    '/',
-    wrapAsync(async (req, res) => {
-      const docs = await User.find({}).sort({ _id: 1 });
-      res.json(docs.map(toEssentialPublicUser));
     }),
   );
 

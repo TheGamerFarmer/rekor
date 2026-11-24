@@ -177,21 +177,23 @@ describe('collections sport', () => {
 
     it('accepte un document valide', async () => {
       await assert.doesNotReject(
-        Participant.create({ user: new ObjectId(), event: new ObjectId() }),
+        Participant.create({ user: new ObjectId(), event: new ObjectId(), participe: true }),
       );
     });
 
     it('refuse le doublon user+event', async () => {
       const user = new ObjectId();
       const event = new ObjectId();
-      await Participant.create({ user, event });
-      await assert.rejects(Participant.create({ user, event }), /duplicate key/);
+      await Participant.create({ user, event, participe: true });
+      await assert.rejects(Participant.create({ user, event, participe: true }), /duplicate key/);
     });
 
     it('autorise le même user sur deux événements différents', async () => {
       const user = new ObjectId();
-      await Participant.create({ user, event: new ObjectId() });
-      await assert.doesNotReject(Participant.create({ user, event: new ObjectId() }));
+      await Participant.create({ user, event: new ObjectId(), participe: true });
+      await assert.doesNotReject(
+        Participant.create({ user, event: new ObjectId(), participe: true }),
+      );
     });
   });
 

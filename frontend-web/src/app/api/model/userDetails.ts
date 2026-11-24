@@ -21,11 +21,11 @@ export interface UserDetails {
 }
 export namespace UserDetails {
     export const RoleEnum = {
-        Administrateur: 'Administrateur',
-        Entraineur: 'Entraineur',
-        Capitaine: 'Capitaine',
-        Adhrent: 'Adhérent',
         Visiteur: 'Visiteur',
+        Adhrent: 'Adhérent',
+        Capitaine: 'Capitaine',
+        Entraineur: 'Entraineur',
+        Administrateur: 'Administrateur',
     } as const;
     export type RoleEnum = typeof RoleEnum[keyof typeof RoleEnum];
     export const PronounEnum = {

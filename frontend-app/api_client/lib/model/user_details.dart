@@ -198,11 +198,11 @@ class UserDetails {
 
 
 enum UserDetailsRoleEnum {
-  administrateur._(r'Administrateur'),
-  entraineur._(r'Entraineur'),
-  capitaine._(r'Capitaine'),
-  adhrent._(r'Adhérent'),
   visiteur._(r'Visiteur'),
+  adhrent._(r'Adhérent'),
+  capitaine._(r'Capitaine'),
+  entraineur._(r'Entraineur'),
+  administrateur._(r'Administrateur'),
   ;
 
   /// Instantiate a new enum with the provided value.
@@ -261,11 +261,11 @@ class UserDetailsRoleEnumTypeTransformer {
     }
     if (data != null) {
       switch (data) {
-        case r'Administrateur': return UserDetailsRoleEnum.administrateur;
-        case r'Entraineur': return UserDetailsRoleEnum.entraineur;
-        case r'Capitaine': return UserDetailsRoleEnum.capitaine;
-        case r'Adhérent': return UserDetailsRoleEnum.adhrent;
         case r'Visiteur': return UserDetailsRoleEnum.visiteur;
+        case r'Adhérent': return UserDetailsRoleEnum.adhrent;
+        case r'Capitaine': return UserDetailsRoleEnum.capitaine;
+        case r'Entraineur': return UserDetailsRoleEnum.entraineur;
+        case r'Administrateur': return UserDetailsRoleEnum.administrateur;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');
