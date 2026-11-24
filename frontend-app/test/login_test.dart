@@ -3,6 +3,7 @@ import 'package:frontend_app/api/api_client.dart';
 import 'package:frontend_app/mobile_pages/login.dart';
 import 'package:flutter/material.dart';
 import 'package:frontend_app/widgets/app_header.dart';
+import 'package:rekor_api/api.dart' as generated;
 
 void main() {
   group('AppLogin', () {
@@ -38,9 +39,14 @@ void main() {
       await tester.pumpWidget(
         const MaterialApp(home: Scaffold(body: MyLoginPage())),
       );
+      await tester.pumpAndSettle();
 
       expect(find.byIcon(Icons.groups), findsOneWidget);
       expect(find.text('Association'), findsOneWidget);
+      expect(
+        find.byType(DropdownButtonFormField<generated.Association>),
+        findsOneWidget,
+      );
     });
 
     testWidgets('Affiche le champ mot de passe', (tester) async {
@@ -92,7 +98,10 @@ void main() {
 
       expect(find.text('Veuillez saisir votre e-mail'), findsOneWidget);
       expect(find.text('Veuillez saisir votre mot de passe'), findsOneWidget);
-      expect(find.text('Veuillez saisir votre association'), findsOneWidget);
+      expect(
+        find.text('Veuillez sélectionner votre association'),
+        findsOneWidget,
+      );
     });
 
     testWidgets(
@@ -102,20 +111,15 @@ void main() {
           const MaterialApp(home: Scaffold(body: MyLoginPage())),
         );
 
-        await tester.enterText(
-          find.byType(TextFormField).at(0),
-          'Gières Volley-Ball',
-        );
-        await tester.enterText(
-          find.byType(TextFormField).at(1),
-          'ada@exemple.fr',
-        );
-        await tester.enterText(find.byType(TextFormField).at(2), 'motdep@sse');
+        await _fillLogin(tester, password: 'motdep@sse');
 
         await tester.tap(find.text('Se connecter'));
         await tester.pumpAndSettle();
 
-        expect(find.text('E-mail ou mot de passe incorrect'), findsOneWidget);
+        expect(
+          find.text('Association, e-mail ou mot de passe incorrect'),
+          findsOneWidget,
+        );
       },
     );
 
@@ -124,15 +128,7 @@ void main() {
         const MaterialApp(home: Scaffold(body: MyLoginPage())),
       );
 
-      await tester.enterText(
-        find.byType(TextFormField).at(0),
-        'Gières Volley-Ball',
-      );
-      await tester.enterText(
-        find.byType(TextFormField).at(1),
-        'ada@exemple.fr',
-      );
-      await tester.enterText(find.byType(TextFormField).at(2), 'motdepasse');
+      await _fillLogin(tester);
 
       await tester.tap(find.text('Se connecter'));
       await tester.pumpAndSettle();
@@ -147,15 +143,7 @@ void main() {
         const MaterialApp(home: Scaffold(body: MyLoginPage())),
       );
 
-      await tester.enterText(
-        find.byType(TextFormField).at(0),
-        'Gières Volley-Ball',
-      );
-      await tester.enterText(
-        find.byType(TextFormField).at(1),
-        'ada@exemple.fr',
-      );
-      await tester.enterText(find.byType(TextFormField).at(2), 'motdepasse');
+      await _fillLogin(tester);
 
       await tester.tap(find.text('Se connecter'));
       await tester.pumpAndSettle();
@@ -177,6 +165,15 @@ class FakeApiClient extends ApiClient {
   FakeApiClient() : super('http://localhost:3000');
 
   @override
+  Future<List<generated.Association>> getAssociations() async => [
+    generated.Association(
+      id: 'association-1',
+      name: 'Gières Volley-Ball',
+      address: 'Gières',
+    ),
+  ];
+
+  @override
   Future<String> login(
     String email,
     String password,
@@ -195,4 +192,17 @@ class FakeApiClient extends ApiClient {
   Future<void> logout() async {
     // Simulation d'une déconnexion réussie.
   }
+}
+
+Future<void> _fillLogin(
+  WidgetTester tester, {
+  String password = 'motdepasse',
+}) async {
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byType(TextFormField).at(0), 'ada@exemple.fr');
+  await tester.enterText(find.byType(TextFormField).at(1), password);
+  await tester.tap(find.byType(DropdownButtonFormField<generated.Association>));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Gières Volley-Ball'));
+  await tester.pumpAndSettle();
 }

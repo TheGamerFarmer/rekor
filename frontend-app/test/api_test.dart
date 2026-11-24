@@ -38,6 +38,26 @@ void main() {
       },
     );
 
+    test('Récupère les associations disponibles', () async {
+      final api = ApiClient(
+        'http://localhost:3000',
+        client: MockClient((request) async {
+          expect(request.method, 'GET');
+          expect(request.url.path, '/association');
+          return http.Response(
+            '[{"_id":"1","name":"Gières Volley-Ball","address":"Gières"}]',
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        }),
+      );
+
+      final associations = await api.getAssociations();
+
+      expect(associations, hasLength(1));
+      expect(associations.single.name, 'Gières Volley-Ball');
+    });
+
     test('Effectue la connexion et stocke le refresh token', () async {
       final api = ApiClient(
         'http://localhost:3000',

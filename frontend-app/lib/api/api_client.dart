@@ -18,6 +18,7 @@ class ApiClient {
     )..client = _httpClient;
 
     _health = generated.HealthApi(_apiClient);
+    _associations = generated.AssociationsApi(_apiClient);
     _auth = generated.AuthenticationApi(_apiClient);
     _users = generated.UsersApi(_apiClient);
   }
@@ -28,6 +29,7 @@ class ApiClient {
 
   late final generated.ApiClient _apiClient;
   late final generated.HealthApi _health;
+  late final generated.AssociationsApi _associations;
   late final generated.AuthenticationApi _auth;
   late final generated.UsersApi _users;
 
@@ -48,6 +50,15 @@ class ApiClient {
     final response = await _health.getHealth();
     if (response == null) throw StateError('Réponse vide du back');
     return response.status;
+  }
+
+  /// Récupère les associations existantes.
+  Future<List<generated.Association>> getAssociations() async {
+    final response = await _associations.listAssociations();
+    if (response == null) {
+      throw StateError('Réponse vide lors de la récupération des associations');
+    }
+    return response;
   }
 
   /// Connexion auprès du back-end.

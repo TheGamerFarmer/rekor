@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/home_page.dart';
+import 'package:rekor_api/api.dart' as generated;
 
 import '../api/api_client.dart';
 
@@ -19,31 +20,47 @@ class MyLoginPageState extends State<MyLoginPage> {
 
   final TextEditingController passwordController = TextEditingController();
 
-  final TextEditingController associationController = TextEditingController();
+  List<generated.Association> associations = [];
+  generated.Association? selectedAssociation;
+  bool associationsLoading = true;
+  String? associationsError;
 
   bool passwordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    loadAssociations();
+  }
 
   @override
   void dispose() {
     emailController.dispose();
     passwordController.dispose();
-    associationController.dispose();
     super.dispose();
   }
 
-  /*void login() {
-    if (formKey.currentState!.validate()) {
-      // Appelle backend pour se connecter
+  Future<void> loadAssociations() async {
+    setState(() {
+      associationsLoading = true;
+      associationsError = null;
+    });
 
-      // Navigation vers la page d'accueil
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const MyHomePage(title: 'Accueil'),
-        ),
-      );
+    try {
+      final result = await ApiClient.instance.getAssociations();
+      if (!mounted) return;
+      setState(() {
+        associations = result;
+        associationsLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        associationsLoading = false;
+        associationsError = 'Impossible de charger les associations.';
+      });
     }
-  }*/
+  }
 
   Future<void> login() async {
     if (!formKey.currentState!.validate()) return;
@@ -52,7 +69,7 @@ class MyLoginPageState extends State<MyLoginPage> {
       await ApiClient.instance.login(
         emailController.text.trim(),
         passwordController.text,
-        associationController.text.trim(),
+        selectedAssociation!.name,
       );
       // Le token est configuré dans ApiClient.
 
@@ -109,24 +126,6 @@ class MyLoginPageState extends State<MyLoginPage> {
                 ),
                 const SizedBox(height: 35),
 
-                // Association
-                TextFormField(
-                  controller: associationController,
-                  textInputAction: TextInputAction.next,
-                  decoration: const InputDecoration(
-                    labelText: 'Association',
-                    prefixIcon: Icon(Icons.groups),
-                    border: OutlineInputBorder(),
-                  ),
-                  validator: (value) {
-                    if (value == null || value.isEmpty) {
-                      return 'Veuillez saisir votre association';
-                    }
-                    return null;
-                  },
-                ),
-                const SizedBox(height: 20),
-
                 // Email
                 TextFormField(
                   controller: emailController,
@@ -177,6 +176,72 @@ class MyLoginPageState extends State<MyLoginPage> {
                   },
                 ),
                 const SizedBox(height: 30),
+
+                // Association
+                DropdownButtonFormField<generated.Association>(
+                  initialValue: selectedAssociation,
+                  decoration: InputDecoration(
+                    labelText: 'Association',
+                    prefixIcon: const Icon(Icons.groups),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: associationsLoading
+                        ? const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : null,
+                  ),
+                  items: associations
+                      .map(
+                        (association) => DropdownMenuItem(
+                          value: association,
+                          child: Text(association.name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: associationsLoading || associationsError != null
+                      ? null
+                      : (association) {
+                          setState(() {
+                            selectedAssociation = association;
+                          });
+                        },
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Veuillez sélectionner votre association';
+                    }
+                    return null;
+                  },
+                ),
+                if (associationsError != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          associationsError!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: loadAssociations,
+                        child: const Text('Réessayer'),
+                      ),
+                    ],
+                  ),
+                ],
+                if (!associationsLoading &&
+                    associationsError == null &&
+                    associations.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text('Aucune association disponible.'),
+                  ),
+                const SizedBox(height: 20),
 
                 // Connexion
                 SizedBox(
