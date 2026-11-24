@@ -108,6 +108,10 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     }),
   );
 
+  router.get('/roles', authenticate, authorize(USER_ROLE.ADMINISTRATEUR), (req, res) => {
+    return res.json(Object.values(USER_ROLE));
+  });
+
   router.get(
     '/:id',
     wrapAsync(async (req, res) => {
@@ -118,6 +122,33 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
       const doc = await User.findById(req.params.id);
       if (!doc) return res.status(404).json({ message: 'Utilisateur introuvable' });
       res.json(toPublicUser(doc));
+
+  router.put(
+    '/:id/grant/:role',
+    authenticate,
+    authorize(USER_ROLE.ADMINISTRATEUR),
+    wrapAsync(async (req, res) => {
+      if (!isValidObjectId(req.params.id)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
+      const user = await User.findById(req.params.id);
+      if (!user) {
+        return res.status(404).json({ message: 'Utilisateur introuvable' });
+      }
+
+      const role = req.params.role;
+      if (!Object.values(USER_ROLE).includes(role)) {
+        return res.status(400).json({ message: 'Rôle inconnu' });
+      }
+
+      if (user._id.equals(req.auth.sub)) {
+        return res.status(403).json({ message: 'Interdiction de changer son propre rôle' });
+      }
+
+      await User.updateOne({ _id: user._id }, { $set: { role: role } });
+
+      return res.status(204).end();
     }),
   );
 
