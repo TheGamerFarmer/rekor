@@ -1,15 +1,13 @@
 require('../db/db');
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
-const {
-  isValidObjectId,
-  Types: { ObjectId },
-} = require('mongoose');
+const { isValidObjectId } = require('mongoose');
 const User = require('../db/models/user');
 const RefreshToken = require('../db/models/refresh-token');
 const { wrapAsync, toPublicUser, toEssentialPublicUser } = require('./services/shared');
-const { authenticate } = require('./services/auth-middleware');
+const { authenticate, authorize } = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
+const { USER_ROLE } = require('../db/enums');
 
 function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   const router = express.Router();
@@ -28,7 +26,11 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      const user = await User.findById(new ObjectId(req.auth.sub));
+      if (!isValidObjectId(req.auth.sub)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
+      const user = await User.findById(req.auth.sub);
       if (!user) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -40,6 +42,10 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
+      if (!isValidObjectId(req.auth.sub)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
       const { name, firstName, phoneNumber, birthday, pronoun } = req.body;
 
       const changes = {};
@@ -51,7 +57,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
         changes.birthday = new Date(`${birthday}T00:00:00.000Z`);
       }
 
-      const result = await User.updateOne({ _id: new ObjectId(req.auth.sub) }, { $set: changes });
+      const result = await User.updateOne({ _id: req.auth.sub }, { $set: changes });
       if (result.matchedCount === 0) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -93,8 +99,12 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me/password',
     authenticate,
     wrapAsync(async (req, res) => {
+      if (!isValidObjectId(req.auth.sub)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
       const { old_password, new_password } = req.body;
-      const currentUser = await User.findById(new ObjectId(req.auth.sub));
+      const currentUser = await User.findById(req.auth.sub);
       if (!currentUser) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -119,8 +129,8 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   router.get(
     '/',
     wrapAsync(async (req, res) => {
-      const docs = await User.find({}).sort({ _id: 1 });
-      res.json(docs.map(toEssentialPublicUser));
+      const users = await User.find({}).sort({ _id: 1 });
+      res.json(users.map(toEssentialPublicUser));
     }),
   );
 
@@ -135,9 +145,11 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
-      const doc = await User.findById(req.params.id);
-      if (!doc) return res.status(404).json({ message: 'Utilisateur introuvable' });
-      res.json(toPublicUser(doc));
+      const user = await User.findById(req.params.id);
+      if (!user) return res.status(404).json({ message: 'Utilisateur introuvable' });
+      res.json(toPublicUser(user));
+    }),
+  );
 
   router.put(
     '/:id/grant/:role',

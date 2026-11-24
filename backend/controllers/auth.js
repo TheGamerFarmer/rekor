@@ -1,9 +1,7 @@
 require('../db/db');
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
-const {
-  Types: { ObjectId },
-} = require('mongoose');
+const { isValidObjectId } = require('mongoose');
 const { wrapAsync } = require('./services/shared');
 const {
   InvalidTokenError,
@@ -141,14 +139,14 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         throw error;
       }
 
-      if (!ObjectId.isValid(claims.sub)) {
+      if (!isValidObjectId(claims.sub)) {
         return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
       }
 
       const oldTokenHash = hashRefreshToken(req.body.refresh_token);
       const session = await RefreshToken.findOne({
         _id: { $eq: claims.sid },
-        userId: { $eq: new ObjectId(claims.sub) },
+        userId: { $eq: claims.sub },
         tokenHash: { $eq: oldTokenHash },
         expiresAt: { $gt: new Date() },
       });
@@ -201,11 +199,11 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         throw error;
       }
 
-      if (!ObjectId.isValid(claims.sub)) {
+      if (!isValidObjectId(claims.sub)) {
         return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
       }
 
-      const userId = new ObjectId(claims.sub);
+      const userId = claims.sub;
       const session = await RefreshToken.findOne({
         _id: { $eq: claims.sid },
         userId: { $eq: userId },
