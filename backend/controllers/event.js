@@ -7,6 +7,7 @@ const {
 } = require('mongoose');
 const Event = require('../db/models/event');
 const Group = require('../db/models/group');
+const Participant = require('../db/models/participant');
 const { wrapAsync, toPublicEvent } = require('./services/shared');
 const { authenticate, authorize } = require('./services/auth-middleware');
 const { EVENT_TYPE, USER_ROLE } = require('../db/enums');
@@ -75,17 +76,12 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
   );
 
   // Creates a new event from the request body. All fields (date, place, type, name,
-  // description, group) are required. The :id path parameter is validated but not used
-  // in the creation. Returns 201 on success, 409 if an identical event already exists.
+  // description, group) are required. Returns 201 on success, 409 if an identical event already exists.
   router.post(
-    '/:id',
+    '/',
     authenticate,
     authorize(USER_ROLE.ENTRAINEUR),
     wrapAsync(async (req, res) => {
-      if (!isValidObjectId(req.params.id)) {
-        return res.status(400).json({ message: 'Identifiant invalide' });
-      }
-
       let { date, place, type, name, description, group } = req.body;
 
       let errorMessage;
@@ -171,12 +167,76 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
+      await Participant.deleteMany({ event: req.params.id });
+
       const result = await Event.deleteOne({ _id: req.params.id });
       if (result.deletedCount === 0) {
         return res.status(404).json({ message: 'Évenement introuvable' });
       }
 
       res.status(204).end();
+    }),
+  );
+
+  router.post(
+    '/:id/register',
+    authenticate,
+    authorize(USER_ROLE.ENTRAINEUR),
+    wrapAsync(async (req, res) => {
+      if (!isValidObjectId(req.params.id)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
+      let { participate } = req.body;
+
+      if (participate !== 'true' && participate !== 'false')
+        return res.status(400).json({ message: 'Participation state invalide' });
+
+      participate = participate === 'true';
+
+      const event = await Event.findById(req.params.id);
+      if (!event) return res.status(404).json({ message: 'Évènement introuvable' });
+
+      try {
+        await Participant.create({ event: req.params.id, participe: participate });
+      } catch (error) {
+        if (error.code === 11000) {
+          return res
+            .status(409)
+            .json({ message: "L'utilisateur à déjà déclaré sa participation à cet évent" });
+        }
+        throw error;
+      }
+
+      res.status(201).end();
+    }),
+  );
+
+  router.put(
+    '/:id/register',
+    authenticate,
+    authorize(USER_ROLE.ENTRAINEUR),
+    wrapAsync(async (req, res) => {
+      if (!isValidObjectId(req.params.id)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
+      let { participate } = req.body;
+
+      if (participate !== 'true' && participate !== 'false')
+        return res.status(400).json({ message: 'Participation state invalide' });
+
+      participate = participate === 'true';
+
+      const event = await Event.findById(req.params.id);
+      if (!event) return res.status(404).json({ message: 'Évènement introuvable' });
+
+      await Participant.updateOne(
+        { event: req.params.id, created_by: req.auth.sub },
+        { participe: participate },
+      );
+
+      res.status(201).end();
     }),
   );
 

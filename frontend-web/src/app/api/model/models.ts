@@ -14,6 +14,7 @@ export * from './loginResponse';
 export * from './publication';
 export * from './refreshTokenInput';
 export * from './registerInput';
+export * from './registerParticipationInput';
 export * from './updateProfileInput';
 export * from './userDetails';
 export * from './userListItem';

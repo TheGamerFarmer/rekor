@@ -143,6 +143,8 @@ function createGroupsRouter({ limit = 100, windowMs = 60_000 } = {}) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
+      await GroupMembre.deleteMany({ group: req.params.id });
+
       const result = await Group.deleteOne({ _id: req.params.id });
       if (result.deletedCount === 0) {
         return res.status(404).json({ message: 'Groupe introuvable' });

@@ -27,6 +27,7 @@ model/models.ts
 model/publication.ts
 model/refreshTokenInput.ts
 model/registerInput.ts
+model/registerParticipationInput.ts
 model/updateProfileInput.ts
 model/userDetails.ts
 model/userListItem.ts

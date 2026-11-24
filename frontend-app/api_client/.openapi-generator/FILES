@@ -30,6 +30,7 @@ lib/model/login_response.dart
 lib/model/publication.dart
 lib/model/refresh_token_input.dart
 lib/model/register_input.dart
+lib/model/register_participation_input.dart
 lib/model/update_profile_input.dart
 lib/model/user_details.dart
 lib/model/user_list_item.dart

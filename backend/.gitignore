@@ -1,5 +1,6 @@
 # Dépendances
 node_modules/
+graphify-out/
 
 # Variables d'environnement
 .env

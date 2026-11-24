@@ -12,6 +12,7 @@ const { signAccessToken } = require('../controllers/services/auth-middleware');
 const { clearRevokedSessions } = require('./helpers/redis');
 const Event = require('../db/models/event');
 const GroupMember = require('../db/models/group_member');
+const Participant = require('../db/models/participant');
 
 const association = { name: 'Gières Volley-Ball' };
 
@@ -57,6 +58,7 @@ describe('/event (avec un vrai mongod)', () => {
     await db.connect({ uri: mongod.getUri(), dbName: 'event-test' });
     await Event.ensureIndexes();
     await GroupMember.ensureIndexes();
+    await Participant.ensureIndexes();
     directApp = buildDirectEventApp();
   });
 
@@ -75,9 +77,11 @@ describe('/event (avec un vrai mongod)', () => {
     const groupCollection = db.getDb().collection('group');
     const eventCollection = db.getDb().collection('event');
     const groupMemberCollection = db.getDb().collection('group_member');
+    const participantCollection = db.getDb().collection('participant');
     await groupCollection.deleteMany({});
     await eventCollection.deleteMany({});
     await groupMemberCollection.deleteMany({});
+    await participantCollection.deleteMany({});
 
     const userId = new ObjectId('000000000000000000000003');
     groupId = new ObjectId('000000000000000000000001');
@@ -147,20 +151,20 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 400);
   });
 
-  // ── POST /event/:id ──────────────────────────────────────────────────────────
+  // ── POST /event ──────────────────────────────────────────────────────────
 
-  it('POST /event/:id creates a new event and returns 201', async () => {
-    const res = await request(app)
-      .post(`/event/${UNKNOWN_ID}`)
+  it('POST /event creates a new event and returns 201', async () => {
+    const res = await request(directApp)
+      .post('/event')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ ...validEventBody, group: groupId.toString() });
 
     assert.strictEqual(res.status, 201);
   });
 
-  it('POST /event/:id returns 400 when a required field is missing', async () => {
-    const res = await request(app)
-      .post(`/event/${UNKNOWN_ID}`)
+  it('POST /event returns 400 when a required field is missing', async () => {
+    const res = await request(directApp)
+      .post('/event')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         place: validEventBody.place,
@@ -173,27 +177,27 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 400);
   });
 
-  it('POST /event/:id returns 400 for an invalid event type', async () => {
-    const res = await request(app)
-      .post(`/event/${UNKNOWN_ID}`)
+  it('POST /event returns 400 for an invalid event type', async () => {
+    const res = await request(directApp)
+      .post('/event')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ ...validEventBody, type: 'TypeInvalide', group: groupId.toString() });
 
     assert.strictEqual(res.status, 400);
   });
 
-  it('POST /event/:id returns 404 when the group does not exist', async () => {
-    const res = await request(app)
-      .post(`/event/${UNKNOWN_ID}`)
+  it('POST /event returns 404 when the group does not exist', async () => {
+    const res = await request(directApp)
+      .post('/event')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ ...validEventBody, group: UNKNOWN_ID });
 
     assert.strictEqual(res.status, 404);
   });
 
-  it('POST /event/:id returns 409 when the event already exists', async () => {
-    const res = await request(app)
-      .post(`/event/${UNKNOWN_ID}`)
+  it('POST /event returns 409 when the event already exists', async () => {
+    const res = await request(directApp)
+      .post('/event')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         date: '2025-03-15',
@@ -207,17 +211,17 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 409);
   });
 
-  it('POST /event/:id returns 401 without authentication', async () => {
-    const res = await request(app)
-      .post(`/event/${UNKNOWN_ID}`)
+  it('POST /event returns 401 without authentication', async () => {
+    const res = await request(directApp)
+      .post('/event')
       .send({ ...validEventBody, group: groupId.toString() });
 
     assert.strictEqual(res.status, 401);
   });
 
-  it('POST /event/:id returns 403 for an Adhérent role', async () => {
-    const res = await request(app)
-      .post(`/event/${UNKNOWN_ID}`)
+  it('POST /event returns 403 for an Adhérent role', async () => {
+    const res = await request(directApp)
+      .post('/event')
       .set('Authorization', `Bearer ${adherentToken}`)
       .send({ ...validEventBody, group: groupId.toString() });
 
@@ -297,21 +301,11 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 403);
   });
 
-  // ── POST validation branches (bypass OpenAPI validator via directApp) ─────────
+  // ── POST validation branches (direct router) ────────────────────────────────
 
-  it('POST /event/pas-un-id returns 400 for a malformed identifier (direct router)', async () => {
+  it('POST /event returns 400 when date is missing (direct router)', async () => {
     const res = await request(directApp)
-      .post('/event/pas-un-id')
-      .set('Authorization', `Bearer ${entraineurToken}`)
-      .send({ ...validEventBody, group: groupId.toString() });
-
-    assert.strictEqual(res.status, 400);
-    assert.strictEqual(res.body.message, 'Identifiant invalide');
-  });
-
-  it('POST /event/:id returns 400 when date is missing (direct router)', async () => {
-    const res = await request(directApp)
-      .post(`/event/${UNKNOWN_ID}`)
+      .post('/event')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         place: validEventBody.place,
@@ -325,9 +319,9 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'Date invalide');
   });
 
-  it('POST /event/:id returns 400 when place is missing (direct router)', async () => {
+  it('POST /event returns 400 when place is missing (direct router)', async () => {
     const res = await request(directApp)
-      .post(`/event/${UNKNOWN_ID}`)
+      .post('/event')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         date: validEventBody.date,
@@ -341,9 +335,9 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'Emplacement invalide');
   });
 
-  it('POST /event/:id returns 400 when type is invalid (direct router)', async () => {
+  it('POST /event returns 400 when type is invalid (direct router)', async () => {
     const res = await request(directApp)
-      .post(`/event/${UNKNOWN_ID}`)
+      .post('/event')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         date: validEventBody.date,
@@ -358,9 +352,9 @@ describe('/event (avec un vrai mongod)', () => {
     assert.ok(res.body.message.startsWith('Type invalide'));
   });
 
-  it('POST /event/:id returns 400 when name is missing (direct router)', async () => {
+  it('POST /event returns 400 when name is missing (direct router)', async () => {
     const res = await request(directApp)
-      .post(`/event/${UNKNOWN_ID}`)
+      .post('/event')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         date: validEventBody.date,
@@ -374,9 +368,9 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'Nom invalide');
   });
 
-  it('POST /event/:id returns 400 when description is missing (direct router)', async () => {
+  it('POST /event returns 400 when description is missing (direct router)', async () => {
     const res = await request(directApp)
-      .post(`/event/${UNKNOWN_ID}`)
+      .post('/event')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({
         date: validEventBody.date,
@@ -390,9 +384,9 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'Description invalide');
   });
 
-  it('POST /event/:id returns 400 when group is missing (direct router)', async () => {
+  it('POST /event returns 400 when group is missing (direct router)', async () => {
     const res = await request(directApp)
-      .post(`/event/${UNKNOWN_ID}`)
+      .post('/event')
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ ...validEventBody });
 
@@ -400,7 +394,7 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'group invalide');
   });
 
-  it('POST /event/:id returns 500 when Event.create throws an unexpected error', async () => {
+  it('POST /event returns 500 when Event.create throws an unexpected error', async () => {
     const original = Event.create.bind(Event);
     Event.create = async () => {
       const err = new Error('unexpected db error');
@@ -410,7 +404,7 @@ describe('/event (avec un vrai mongod)', () => {
 
     try {
       const res = await request(directApp)
-        .post(`/event/${UNKNOWN_ID}`)
+        .post('/event')
         .set('Authorization', `Bearer ${entraineurToken}`)
         .send({ ...validEventBody, group: groupId.toString() });
 
@@ -452,5 +446,211 @@ describe('/event (avec un vrai mongod)', () => {
 
     assert.strictEqual(res.status, 404);
     assert.strictEqual(res.body.message, 'Groupe introuvable');
+  });
+
+  // ── DELETE /event/:id cascade (participants supprimés) ─────────────────────
+
+  it('DELETE /event/:id also deletes associated participants', async () => {
+    const userId = new ObjectId('000000000000000000000003');
+    await db.getDb().collection('participant').insertOne({
+      event: eventId,
+      participe: true,
+      created_by: userId,
+    });
+
+    const res = await request(directApp)
+      .delete(`/event/${eventId}`)
+      .set('Authorization', `Bearer ${entraineurToken}`);
+
+    assert.strictEqual(res.status, 204);
+    const remaining = await db.getDb().collection('participant').find({ event: eventId }).toArray();
+    assert.strictEqual(remaining.length, 0);
+  });
+
+  // ── POST /event/:id/register ───────────────────────────────────────────────
+
+  it('POST /event/:id/register creates a participation and returns 201', async () => {
+    const res = await request(directApp)
+      .post(`/event/${eventId}/register`)
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ participate: 'true' });
+
+    assert.strictEqual(res.status, 201);
+    const doc = await db.getDb().collection('participant').findOne({ event: eventId });
+    assert.ok(doc);
+    assert.strictEqual(doc.participe, true);
+  });
+
+  it('POST /event/:id/register returns 400 for invalid participate value', async () => {
+    const res = await request(directApp)
+      .post(`/event/${eventId}/register`)
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ participate: 'maybe' });
+
+    assert.strictEqual(res.status, 400);
+    assert.strictEqual(res.body.message, 'Participation state invalide');
+  });
+
+  it('POST /event/:id/register returns 400 when participate is missing', async () => {
+    const res = await request(directApp)
+      .post(`/event/${eventId}/register`)
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({});
+
+    assert.strictEqual(res.status, 400);
+  });
+
+  it('POST /event/:id/register returns 404 when event does not exist', async () => {
+    const res = await request(directApp)
+      .post(`/event/${UNKNOWN_ID}/register`)
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ participate: 'true' });
+
+    assert.strictEqual(res.status, 404);
+    assert.strictEqual(res.body.message, 'Évènement introuvable');
+  });
+
+  it('POST /event/:id/register returns 400 for a malformed identifier', async () => {
+    const res = await request(directApp)
+      .post('/event/pas-un-id/register')
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ participate: 'true' });
+
+    assert.strictEqual(res.status, 400);
+    assert.strictEqual(res.body.message, 'Identifiant invalide');
+  });
+
+  it('POST /event/:id/register returns 401 without authentication', async () => {
+    const res = await request(directApp)
+      .post(`/event/${eventId}/register`)
+      .send({ participate: 'true' });
+
+    assert.strictEqual(res.status, 401);
+  });
+
+  it('POST /event/:id/register returns 403 for an Adhérent role', async () => {
+    const res = await request(directApp)
+      .post(`/event/${eventId}/register`)
+      .set('Authorization', `Bearer ${adherentToken}`)
+      .send({ participate: 'true' });
+
+    assert.strictEqual(res.status, 403);
+  });
+
+  it('POST /event/:id/register with participate=false creates participation', async () => {
+    const res = await request(directApp)
+      .post(`/event/${eventId}/register`)
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ participate: 'false' });
+
+    assert.strictEqual(res.status, 201);
+    const doc = await db.getDb().collection('participant').findOne({ event: eventId });
+    assert.ok(doc);
+    assert.strictEqual(doc.participe, false);
+  });
+
+  it('POST /event/:id/register returns 409 when Participant.create throws a duplicate key error', async () => {
+    const original = Participant.create.bind(Participant);
+    Participant.create = async () => {
+      const err = new Error('duplicate key');
+      err.code = 11000;
+      throw err;
+    };
+
+    try {
+      const res = await request(directApp)
+        .post(`/event/${eventId}/register`)
+        .set('Authorization', `Bearer ${entraineurToken}`)
+        .send({ participate: 'true' });
+
+      assert.strictEqual(res.status, 409);
+    } finally {
+      Participant.create = original;
+    }
+  });
+
+  it('POST /event/:id/register returns 500 when Participant.create throws an unexpected error', async () => {
+    const original = Participant.create.bind(Participant);
+    Participant.create = async () => {
+      const err = new Error('unexpected db error');
+      err.code = 99999;
+      throw err;
+    };
+
+    try {
+      const res = await request(directApp)
+        .post(`/event/${eventId}/register`)
+        .set('Authorization', `Bearer ${entraineurToken}`)
+        .send({ participate: 'true' });
+
+      assert.strictEqual(res.status, 500);
+    } finally {
+      Participant.create = original;
+    }
+  });
+
+  // ── PUT /event/:id/register ────────────────────────────────────────────────
+
+  it('PUT /event/:id/register updates participation and returns 201', async () => {
+    const userId = new ObjectId('000000000000000000000003');
+    await db.getDb().collection('participant').insertOne({
+      event: eventId,
+      participe: true,
+      created_by: userId,
+    });
+
+    const res = await request(directApp)
+      .put(`/event/${eventId}/register`)
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ participate: 'false' });
+
+    assert.strictEqual(res.status, 201);
+  });
+
+  it('PUT /event/:id/register returns 400 for invalid participate value', async () => {
+    const res = await request(directApp)
+      .put(`/event/${eventId}/register`)
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ participate: 'oui' });
+
+    assert.strictEqual(res.status, 400);
+    assert.strictEqual(res.body.message, 'Participation state invalide');
+  });
+
+  it('PUT /event/:id/register returns 404 when event does not exist', async () => {
+    const res = await request(directApp)
+      .put(`/event/${UNKNOWN_ID}/register`)
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ participate: 'true' });
+
+    assert.strictEqual(res.status, 404);
+    assert.strictEqual(res.body.message, 'Évènement introuvable');
+  });
+
+  it('PUT /event/:id/register returns 400 for a malformed identifier', async () => {
+    const res = await request(directApp)
+      .put('/event/pas-un-id/register')
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ participate: 'true' });
+
+    assert.strictEqual(res.status, 400);
+    assert.strictEqual(res.body.message, 'Identifiant invalide');
+  });
+
+  it('PUT /event/:id/register returns 401 without authentication', async () => {
+    const res = await request(directApp)
+      .put(`/event/${eventId}/register`)
+      .send({ participate: 'true' });
+
+    assert.strictEqual(res.status, 401);
+  });
+
+  it('PUT /event/:id/register returns 403 for an Adhérent role', async () => {
+    const res = await request(directApp)
+      .put(`/event/${eventId}/register`)
+      .set('Authorization', `Bearer ${adherentToken}`)
+      .send({ participate: 'true' });
+
+    assert.strictEqual(res.status, 403);
   });
 });

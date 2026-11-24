@@ -208,6 +208,12 @@ const EventPatchInput = z
   })
   .openapi('EventPatchInput');
 
+const RegisterParticipationInput = z
+  .object({
+    participate: z.enum(['true', 'false']).openapi({ example: 'true' }),
+  })
+  .openapi('RegisterParticipationInput');
+
 // ---------- Routes ----------
 registry.registerPath({
   method: 'get',
@@ -447,13 +453,12 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'post',
-  path: '/event/{id}',
+  path: '/event',
   operationId: 'createEvent',
   tags: ['Events'],
   summary: 'Creates a new event (requires Entraineur role or above)',
   security: [{ BearerAuth: [] }],
   request: {
-    params: z.object({ id: EventId }),
     body: { required: true, content: json(EventInput) },
   },
   responses: {
@@ -501,6 +506,51 @@ registry.registerPath({
   responses: {
     204: { description: 'Event deleted, no response content' },
     400: failure('Invalid identifier'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions'),
+    404: failure('Event not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/event/{id}/register',
+  operationId: 'registerParticipation',
+  tags: ['Events'],
+  summary: 'Registers participation for an event (requires Entraineur role or above)',
+  security: [{ BearerAuth: [] }],
+  request: {
+    params: z.object({ id: EventId }),
+    body: { required: true, content: json(RegisterParticipationInput) },
+  },
+  responses: {
+    201: { description: 'Participation registered, no response content' },
+    400: failure('Invalid identifier or participation state'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions'),
+    404: failure('Event not found'),
+    409: failure('User already registered for this event'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/event/{id}/register',
+  operationId: 'updateParticipation',
+  tags: ['Events'],
+  summary: 'Updates participation for an event (requires Entraineur role or above)',
+  security: [{ BearerAuth: [] }],
+  request: {
+    params: z.object({ id: EventId }),
+    body: { required: true, content: json(RegisterParticipationInput) },
+  },
+  responses: {
+    201: { description: 'Participation updated, no response content' },
+    400: failure('Invalid identifier or participation state'),
     401: failure('Authentication required or invalid token'),
     403: failure('Insufficient permissions'),
     404: failure('Event not found'),

@@ -22,13 +22,10 @@ class EventsApi {
   ///
   /// Parameters:
   ///
-  /// * [String] id (required):
-  ///
   /// * [EventInput] eventInput (required):
-  Future<Response> createEventWithHttpInfo(String id, EventInput eventInput, { Future<void>? abortTrigger, }) async {
+  Future<Response> createEventWithHttpInfo(EventInput eventInput, { Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
-    final path = r'/event/{id}'
-      .replaceAll('{id}', id);
+    final path = r'/event';
 
     // ignore: prefer_final_locals
     Object? postBody = eventInput;
@@ -56,11 +53,9 @@ class EventsApi {
   ///
   /// Parameters:
   ///
-  /// * [String] id (required):
-  ///
   /// * [EventInput] eventInput (required):
-  Future<void> createEvent(String id, EventInput eventInput, { Future<void>? abortTrigger, }) async {
-    final response = await createEventWithHttpInfo(id, eventInput, abortTrigger: abortTrigger,);
+  Future<void> createEvent(EventInput eventInput, { Future<void>? abortTrigger, }) async {
+    final response = await createEventWithHttpInfo(eventInput, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }
@@ -214,6 +209,56 @@ class EventsApi {
     return null;
   }
 
+  /// Registers participation for an event (requires Entraineur role or above)
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [RegisterParticipationInput] registerParticipationInput (required):
+  Future<Response> registerParticipationWithHttpInfo(String id, RegisterParticipationInput registerParticipationInput, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/event/{id}/register'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = registerParticipationInput;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Registers participation for an event (requires Entraineur role or above)
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [RegisterParticipationInput] registerParticipationInput (required):
+  Future<void> registerParticipation(String id, RegisterParticipationInput registerParticipationInput, { Future<void>? abortTrigger, }) async {
+    final response = await registerParticipationWithHttpInfo(id, registerParticipationInput, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
   /// Partially updates an event (requires Entraineur role or above)
   ///
   /// Note: This method returns the HTTP [Response].
@@ -259,6 +304,56 @@ class EventsApi {
   /// * [EventPatchInput] eventPatchInput (required):
   Future<void> updateEvent(String id, EventPatchInput eventPatchInput, { Future<void>? abortTrigger, }) async {
     final response = await updateEventWithHttpInfo(id, eventPatchInput, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Updates participation for an event (requires Entraineur role or above)
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [RegisterParticipationInput] registerParticipationInput (required):
+  Future<Response> updateParticipationWithHttpInfo(String id, RegisterParticipationInput registerParticipationInput, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/event/{id}/register'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = registerParticipationInput;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PUT',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Updates participation for an event (requires Entraineur role or above)
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [RegisterParticipationInput] registerParticipationInput (required):
+  Future<void> updateParticipation(String id, RegisterParticipationInput registerParticipationInput, { Future<void>? abortTrigger, }) async {
+    final response = await updateParticipationWithHttpInfo(id, registerParticipationInput, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

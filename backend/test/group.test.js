@@ -314,6 +314,27 @@ describe('/group (avec un vrai mongod)', () => {
     assert.strictEqual(deleted, null);
   });
 
+  it('DELETE /group/:id also deletes associated group members', async () => {
+    const membersBefore = await db
+      .getDb()
+      .collection('group_member')
+      .find({ group: groupId })
+      .toArray();
+    assert.ok(membersBefore.length > 0);
+
+    const res = await request(directApp)
+      .delete(`/group/${groupId}`)
+      .set('Authorization', `Bearer ${entraineurToken}`);
+
+    assert.strictEqual(res.status, 204);
+    const membersAfter = await db
+      .getDb()
+      .collection('group_member')
+      .find({ group: groupId })
+      .toArray();
+    assert.strictEqual(membersAfter.length, 0);
+  });
+
   it('DELETE /group/:id returns 404 when group does not exist', async () => {
     const res = await request(app)
       .delete(`/group/${UNKNOWN_ID}`)

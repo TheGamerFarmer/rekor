@@ -215,6 +215,8 @@ class ApiClient {
           return RefreshTokenInput.fromJson(value);
         case 'RegisterInput':
           return RegisterInput.fromJson(value);
+        case 'RegisterParticipationInput':
+          return RegisterParticipationInput.fromJson(value);
         case 'UpdateProfileInput':
           return UpdateProfileInput.fromJson(value);
         case 'UserDetails':

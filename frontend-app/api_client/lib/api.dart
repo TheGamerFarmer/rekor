@@ -51,6 +51,7 @@ part 'model/login_response.dart';
 part 'model/publication.dart';
 part 'model/refresh_token_input.dart';
 part 'model/register_input.dart';
+part 'model/register_participation_input.dart';
 part 'model/update_profile_input.dart';
 part 'model/user_details.dart';
 part 'model/user_list_item.dart';
