@@ -27,7 +27,7 @@ describe('ComponentActualiteDetail', () => {
     expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain(
       'Collecte solidaire organisée par le club',
     );
-    expect(fixture.nativeElement.querySelector('.actualite-body')?.textContent).toContain(
+    expect(fixture.nativeElement.querySelector('.actualite-body strong')?.textContent).toBe(
       'collecte solidaire',
     );
     expect(fixture.nativeElement.querySelector('.banner')?.getAttribute('style')).toContain(

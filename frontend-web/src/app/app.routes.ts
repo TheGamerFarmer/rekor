@@ -12,6 +12,11 @@ import { ComponentEvenementDetails } from './components/component-evenement-deta
 import { ComponentEvenementAdmin } from './components/component-evenement-admin/component-evenement-admin';
 import { ComponentEvenementsAdmin } from './components/component-evenements-admin/component-evenements-admin';
 import { ComponentRegles } from './components/component-regles/component-regles';
+import { ComponentAdherentsAdmin } from './components/component-adherents-admin/component-adherents-admin';
+import { ComponentPolitique } from './components/component-inscription/politique';
+import { ComponentReglement } from './components/component-inscription/reglement';
+import { ComponentCredits } from './components/component-credits/component-credits';
+import { ComponentTresorerie } from './components/component-tresorerie/component-tresorerie';
 
 export const routes: Routes = [
   { path: '', component: ComponentAccueil },
@@ -20,6 +25,9 @@ export const routes: Routes = [
   { path: 'actualites', component: ComponentActualite },
   { path: 'actualites/:id', component: ComponentActualiteDetail },
   { path: 'inscription', component: ComponentInscription },
+  { path: 'politique-confidentialite', component: ComponentPolitique },
+  { path: 'reglement-interieur', component: ComponentReglement },
+  { path: 'credits', component: ComponentCredits },
   { path: 'presentation-club', component: ComponentClub },
   { path: 'regles', component: ComponentRegles },
   { path: 'evenements', component: ComponentEvenement },
@@ -27,5 +35,8 @@ export const routes: Routes = [
   { path: 'admin/evenements', component: ComponentEvenementsAdmin },
   { path: 'admin/evenements/nouveau', component: ComponentEvenementAdmin },
   { path: 'admin/evenements/:id/modifier', component: ComponentEvenementAdmin },
+  { path: 'admin/evenements/:slug/modifier', component: ComponentEvenementAdmin },
+  { path: 'admin/adherents', component: ComponentAdherentsAdmin },
+  { path: 'admin/tresorerie', component: ComponentTresorerie },
   { path: '**', redirectTo: '' },
 ];

@@ -5,7 +5,7 @@ export interface Actualite {
   image: string;
   date: string;
   association: string;
-  corps: string[];
+  corps: string;
 }
 
 export const actualites: Actualite[] = [
@@ -16,10 +16,8 @@ export const actualites: Actualite[] = [
     image: '/images/volley7.jpg',
     date: '2026-09-01',
     association: 'Gières Volley-Ball',
-    corps: [
-      'Une nouvelle règle de jeu entre en vigueur afin de rendre les rencontres encore plus claires et agréables pour toutes et tous.',
-      'Les joueurs et joueuses sont invités à en prendre connaissance dès maintenant.',
-    ],
+    corps:
+      '<p>Une nouvelle règle de jeu entre en vigueur afin de rendre les rencontres encore plus claires et agréables pour toutes et tous.</p><p>Les joueurs et joueuses sont invités à en prendre connaissance dès maintenant.</p>',
   },
   {
     id: 2,
@@ -28,9 +26,8 @@ export const actualites: Actualite[] = [
     image: '/images/collecte.png',
     date: '2026-09-15',
     association: 'Gières Volley-Ball',
-    corps: [
-      "Le club organise une grande collecte solidaire afin de soutenir une belle cause et de mobiliser ses membres autour d'un moment de partage et de solidarité. Vous pouvez donner dans la boîte présente aux trois prochains entraînements. Chaque don compte, alors n'hésitez pas à participer !",
-    ],
+    corps:
+      "<p>Le club organise une grande <strong>collecte solidaire</strong> afin de soutenir une belle cause et de mobiliser ses membres autour d'un moment de partage et de solidarité. Vous pouvez donner dans la boîte présente aux trois prochains entraînements. Chaque don compte, alors n'hésitez pas à participer !</p>",
   },
   {
     id: 3,
@@ -39,10 +36,8 @@ export const actualites: Actualite[] = [
     image: '/images/volley_ball1.jpg',
     date: '2026-08-25',
     association: 'Gières Volley-Ball',
-    corps: [
-      'Les inscriptions pour la nouvelle saison du Gières Volley-Ball sont ouvertes.',
-      'Envie de découvrir le volley ou de rejoindre le club ? Consultez la page d’inscription pour commencer votre démarche.',
-    ],
+    corps:
+      '<p>Les inscriptions pour la nouvelle saison du Gières Volley-Ball sont ouvertes.</p><p>Envie de découvrir le volley ou de rejoindre le club ? Consultez la page d’inscription pour commencer votre démarche.</p>',
   },
   {
     id: 4,
@@ -51,9 +46,7 @@ export const actualites: Actualite[] = [
     image: '/images/vacances.jpg',
     date: '2026-07-10',
     association: 'Gières Volley-Ball',
-    corps: [
-      'La saison se termine et le club fait une pause estivale à partir du 10 juillet.',
-      'Toute l’équipe vous souhaite de belles vacances. Rendez-vous à la rentrée pour une nouvelle saison pleine de projets !',
-    ],
+    corps:
+      '<p>La saison se termine et le club fait une pause estivale à partir du 10 juillet.</p><p>Toute l’équipe vous souhaite de belles vacances. Rendez-vous à la rentrée pour une nouvelle saison pleine de projets !</p>',
   },
 ];

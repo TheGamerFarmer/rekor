@@ -1,0 +1,202 @@
+<app-component-banner image="/images/volley4.jpg" title="Trésorerie" />
+
+<main class="treasury-page">
+  <div class="treasury-toolbar">
+    <label class="year-selector">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <rect x="3" y="5" width="18" height="16" rx="2" />
+        <path d="M16 3v4M8 3v4M3 10h18M8 14h2M14 14h2M8 17h2" />
+      </svg>
+      <span>Année :</span>
+      <select aria-label="Année du bilan" [value]="year()" (change)="onYearChange($event)">
+        @for (option of years; track option) {
+          <option [value]="option">{{ option }}</option>
+        }
+      </select>
+    </label>
+    <button class="export-button" type="button" (click)="exportBalance()">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3v12m0 0 4-4m-4 4-4-4M5 17v3h14v-3" />
+      </svg>
+      Exporter le bilan
+    </button>
+  </div>
+
+  <section class="summary-grid" aria-label="Résumé du bilan">
+    <article class="summary-card income-summary">
+      <span class="summary-icon" aria-hidden="true">€</span>
+      <div>
+        <p>Total des recettes</p>
+        <strong>{{ totalIncome() | currency: 'EUR' : 'symbol' : '1.0-2' : 'fr-FR' }}</strong>
+      </div>
+    </article>
+    <article class="summary-card expense-summary">
+      <span class="summary-icon" aria-hidden="true">€</span>
+      <div>
+        <p>Total des dépenses</p>
+        <strong>{{ totalExpenses() | currency: 'EUR' : 'symbol' : '1.0-2' : 'fr-FR' }}</strong>
+      </div>
+    </article>
+    <article class="summary-card balance-summary">
+      <span class="summary-icon chart-icon" aria-hidden="true"> <i></i><i></i><i></i> </span>
+      <div>
+        <p>Solde de l'année</p>
+        <strong>{{ balance() | currency: 'EUR' : 'symbol' : '1.0-2' : 'fr-FR' }}</strong>
+      </div>
+    </article>
+  </section>
+
+  <section class="forms-grid" aria-label="Ajouter une opération">
+    <form class="entry-form" [formGroup]="incomeForm" (ngSubmit)="addTransaction('income')">
+      <h2>Ajouter une recette</h2>
+      <div class="form-fields">
+        <label>
+          Catégorie <span class="required">*</span>
+          <select formControlName="category">
+            @for (category of incomeCategories; track category) {
+              <option [value]="category">{{ category }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Montant <span class="required">*</span>
+          <input
+            type="number"
+            formControlName="amount"
+            min="0.01"
+            step="0.01"
+            placeholder="Ex : 50"
+          />
+        </label>
+        <label class="description-field">
+          Description (optionnel)
+          <input
+            type="text"
+            formControlName="description"
+            maxlength="160"
+            placeholder="Ex : Adhésion saison 2026/2027"
+          />
+        </label>
+      </div>
+      <button class="add-button" type="submit">
+        <span aria-hidden="true">＋</span> Ajouter la recette
+      </button>
+    </form>
+
+    <form class="entry-form" [formGroup]="expenseForm" (ngSubmit)="addTransaction('expense')">
+      <h2>Ajouter une dépense</h2>
+      <div class="form-fields">
+        <label>
+          Catégorie <span class="required">*</span>
+          <select formControlName="category">
+            @for (category of expenseCategories; track category) {
+              <option [value]="category">{{ category }}</option>
+            }
+          </select>
+        </label>
+        <label>
+          Montant <span class="required">*</span>
+          <input
+            type="number"
+            formControlName="amount"
+            min="0.01"
+            step="0.01"
+            placeholder="Ex : 50"
+          />
+        </label>
+        <label class="description-field">
+          Description (optionnel)
+          <input
+            type="text"
+            formControlName="description"
+            maxlength="160"
+            placeholder="Ex : Ballons pour le club"
+          />
+        </label>
+      </div>
+      <button class="add-button" type="submit">
+        <span aria-hidden="true">＋</span> Ajouter la dépense
+      </button>
+    </form>
+  </section>
+
+  <p class="status-message" role="status" aria-live="polite">{{ statusMessage() }}</p>
+
+  <section class="history-grid" aria-label="Historique des opérations">
+    <article class="history-card">
+      <h2>Historique des recettes</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Catégorie</th>
+              <th>Description</th>
+              <th>Montant</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (transaction of visibleIncomes(); track transaction.id) {
+              <tr>
+                <td>{{ transaction.date | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ transaction.category }}</td>
+                <td>{{ transaction.description || '—' }}</td>
+                <td class="amount income-amount">
+                  + {{ transaction.amount | currency: 'EUR' : 'symbol' : '1.0-2' : 'fr-FR' }}
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td class="empty-row" colspan="4">Aucune recette pour {{ year() }}.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (incomes().length > 3) {
+        <button class="history-toggle" type="button" (click)="toggleIncomeHistory()">
+          {{ showAllIncome() ? 'Voir moins' : 'Voir plus' }}
+          <span aria-hidden="true">{{ showAllIncome() ? '↑' : '→' }}</span>
+        </button>
+      }
+    </article>
+
+    <article class="history-card">
+      <h2>Historique des dépenses</h2>
+      <div class="table-scroll">
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Catégorie</th>
+              <th>Description</th>
+              <th>Montant</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (transaction of visibleExpenses(); track transaction.id) {
+              <tr>
+                <td>{{ transaction.date | date: 'dd/MM/yyyy' }}</td>
+                <td>{{ transaction.category }}</td>
+                <td>{{ transaction.description || '—' }}</td>
+                <td class="amount expense-amount">
+                  − {{ transaction.amount | currency: 'EUR' : 'symbol' : '1.0-2' : 'fr-FR' }}
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td class="empty-row" colspan="4">Aucune dépense pour {{ year() }}.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (expenses().length > 3) {
+        <button class="history-toggle" type="button" (click)="toggleExpenseHistory()">
+          {{ showAllExpenses() ? 'Voir moins' : 'Voir plus' }}
+          <span aria-hidden="true">{{ showAllExpenses() ? '↑' : '→' }}</span>
+        </button>
+      }
+    </article>
+  </section>
+</main>
