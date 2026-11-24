@@ -15,6 +15,7 @@ import { ComponentRegles } from './components/component-regles/component-regles'
 import { ComponentAdherentsAdmin } from './components/component-adherents-admin/component-adherents-admin';
 import { ComponentPolitique } from './components/component-inscription/politique';
 import { ComponentReglement } from './components/component-inscription/reglement';
+import { ComponentCredits } from './components/component-credits/component-credits';
 
 export const routes: Routes = [
   { path: '', component: ComponentAccueil },
@@ -25,6 +26,7 @@ export const routes: Routes = [
   { path: 'inscription', component: ComponentInscription },
   { path: 'politique-confidentialite', component: ComponentPolitique },
   { path: 'reglement-interieur', component: ComponentReglement },
+  { path: 'credits', component: ComponentCredits },
   { path: 'presentation-club', component: ComponentClub },
   { path: 'regles', component: ComponentRegles },
   { path: 'evenements', component: ComponentEvenement },

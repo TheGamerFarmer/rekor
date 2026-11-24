@@ -1,0 +1,54 @@
+<app-component-banner image="/images/volley4.jpg" title="Crédits" />
+
+<main class="credits-page">
+  <p class="credits-intro">
+    Cette page regroupe les crédits des ressources utilisées sur ce site.<br />
+    Un grand merci à leurs auteurs pour leur travail !
+  </p>
+
+  <section aria-labelledby="image-credits-title">
+    <h2 id="image-credits-title">Images</h2>
+    <div class="credit-list">
+      @for (source of imageSources; track source.name) {
+        <article class="credit-card">
+          <img class="source-icon" [src]="source.icon" alt="" />
+          <div class="credit-description">
+            <h3>{{ source.name }}</h3>
+            <p>{{ source.description }}</p>
+          </div>
+          <a class="source-link" [href]="source.url" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M14 4h6v6M20 4l-9 9" />
+              <path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6" />
+            </svg>
+            <span>{{ source.domain }}</span>
+          </a>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section aria-labelledby="font-credits-title">
+    <h2 id="font-credits-title">Polices d’écriture utilisées</h2>
+    <div class="credit-list">
+      @for (font of fontSources; track font.name) {
+        <article class="credit-card font-card">
+          <span class="font-preview" [class]="font.previewClass" aria-hidden="true">
+            {{ font.preview }}
+          </span>
+          <div class="credit-description">
+            <h3>{{ font.name }}</h3>
+            <p>{{ font.description }}</p>
+          </div>
+          <a class="source-link" [href]="font.url" target="_blank" rel="noopener noreferrer">
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M14 4h6v6M20 4l-9 9" />
+              <path d="M18 13v6a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h6" />
+            </svg>
+            <span>{{ font.domain }}</span>
+          </a>
+        </article>
+      }
+    </div>
+  </section>
+</main>
