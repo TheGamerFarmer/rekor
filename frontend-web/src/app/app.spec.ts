@@ -1,22 +1,31 @@
 import { TestBed } from '@angular/core/testing';
 import { provideRouter, Router } from '@angular/router';
 import { signal } from '@angular/core';
+import { of } from 'rxjs';
 import { AuthService } from './services/auth.service';
+import { UserDetails } from './api/model/userDetails';
 
 import { App } from './app';
 
 describe('App', () => {
   const isAuthenticated = signal(false);
+  const role = signal<UserDetails.RoleEnum | null>(null);
+  const roleLoadError = signal(false);
   const logout = vi.fn();
 
   beforeEach(async () => {
     isAuthenticated.set(false);
+    role.set(null);
+    roleLoadError.set(false);
     logout.mockReset();
     await TestBed.configureTestingModule({
       imports: [App],
       providers: [
         provideRouter([{ path: 'accueil', redirectTo: '' }]),
-        { provide: AuthService, useValue: { isAuthenticated, logout } },
+        {
+          provide: AuthService,
+          useValue: { isAuthenticated, role, roleLoadError, loadRole: () => of(role()), logout },
+        },
       ],
     }).compileComponents();
   });
@@ -115,5 +124,40 @@ describe('App', () => {
 
     expect(logout).toHaveBeenCalled();
     expect(navigate).toHaveBeenCalledWith(['/accueil']);
+  });
+
+  it('shows administration links according to the signed-in role', () => {
+    isAuthenticated.set(true);
+    role.set(UserDetails.RoleEnum.Administrateur);
+    const { fixture } = createApp();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.admin-menu')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.admin-submenu a[href="/admin/adherents"]'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.admin-submenu a[href="/admin/tresorerie"]'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.admin-submenu a[href="/admin/evenements"]'),
+    ).not.toBeNull();
+
+    role.set(UserDetails.RoleEnum.Entraineur);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.admin-menu')).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.admin-submenu a[href="/admin/evenements"]'),
+    ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.admin-submenu a[href="/admin/adherents"]'),
+    ).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.admin-submenu a[href="/admin/tresorerie"]'),
+    ).toBeNull();
+
+    role.set(UserDetails.RoleEnum.Adhrent);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.admin-menu')).toBeNull();
   });
 });

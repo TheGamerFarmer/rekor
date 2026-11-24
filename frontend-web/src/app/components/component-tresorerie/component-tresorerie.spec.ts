@@ -21,11 +21,18 @@ describe('ComponentTresorerie', () => {
     expect(page.textContent).toContain('1 980 €');
     expect(page.textContent).toContain('470 €');
     expect(page.querySelectorAll('.history-card tbody tr')).toHaveLength(6);
+    expect(page.querySelectorAll('input[type="date"]')).toHaveLength(2);
+    expect(page.textContent).toContain('Nourriture/ Boisson');
+    const expenseOptions = Array.from(
+      page.querySelectorAll('.entry-form select')[1].querySelectorAll('option'),
+    ).map((option) => option.textContent);
+    expect(expenseOptions).not.toContain('Déplacement');
   });
 
   it('adds income and expense entries and recalculates the balance', () => {
     const component = fixture.componentInstance;
     component['incomeForm'].setValue({
+      date: '2026-10-10',
       category: 'Don',
       amount: 50,
       description: 'Don du tournoi',
@@ -34,6 +41,7 @@ describe('ComponentTresorerie', () => {
       fixture.nativeElement.querySelector('.entry-form button[type="submit"]') as HTMLButtonElement
     ).click();
     component['expenseForm'].setValue({
+      date: '2026-10-11',
       category: 'Matériel',
       amount: 25,
       description: 'Ballon',
@@ -50,11 +58,18 @@ describe('ComponentTresorerie', () => {
     expect(component['balance']()).toBe(495);
     expect(fixture.nativeElement.textContent).toContain('Don du tournoi');
     expect(fixture.nativeElement.textContent).toContain('Ballon');
+    expect(component['incomes']()[0].date).toBe('2026-10-10');
+    expect(component['expenses']()[0].date).toBe('2026-10-11');
   });
 
   it('rejects invalid transaction amounts', () => {
     const component = fixture.componentInstance;
-    component['incomeForm'].setValue({ category: 'Don', amount: 0, description: '' });
+    component['incomeForm'].setValue({
+      date: '2026-11-24',
+      category: 'Don',
+      amount: 0,
+      description: '',
+    });
     (
       fixture.nativeElement.querySelector('.entry-form button[type="submit"]') as HTMLButtonElement
     ).click();

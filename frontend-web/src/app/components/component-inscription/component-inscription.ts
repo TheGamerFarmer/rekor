@@ -137,7 +137,10 @@ export class ComponentInscription {
         birthday: values.birthday,
       })
       .subscribe({
-        next: () => void this.router.navigate(['/connexion']),
+        next: () =>
+          void this.router.navigate(['/connexion'], {
+            state: { registrationSuccess: true },
+          }),
         error: (error) => {
           if (error.status === 409) {
             this.registrationError.set('Un compte existe déjà avec cette adresse e-mail.');

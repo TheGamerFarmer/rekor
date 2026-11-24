@@ -17,6 +17,7 @@ import { ComponentPolitique } from './components/component-inscription/politique
 import { ComponentReglement } from './components/component-inscription/reglement';
 import { ComponentCredits } from './components/component-credits/component-credits';
 import { ComponentTresorerie } from './components/component-tresorerie/component-tresorerie';
+import { administratorGuard, eventManagementGuard } from './services/role.guard';
 
 export const routes: Routes = [
   { path: '', component: ComponentAccueil },
@@ -32,11 +33,35 @@ export const routes: Routes = [
   { path: 'regles', component: ComponentRegles },
   { path: 'evenements', component: ComponentEvenement },
   { path: 'evenements/:id', component: ComponentEvenementDetails },
-  { path: 'admin/evenements', component: ComponentEvenementsAdmin },
-  { path: 'admin/evenements/nouveau', component: ComponentEvenementAdmin },
-  { path: 'admin/evenements/:id/modifier', component: ComponentEvenementAdmin },
-  { path: 'admin/evenements/:slug/modifier', component: ComponentEvenementAdmin },
-  { path: 'admin/adherents', component: ComponentAdherentsAdmin },
-  { path: 'admin/tresorerie', component: ComponentTresorerie },
+  {
+    path: 'admin/evenements',
+    component: ComponentEvenementsAdmin,
+    canActivate: [eventManagementGuard],
+  },
+  {
+    path: 'admin/evenements/nouveau',
+    component: ComponentEvenementAdmin,
+    canActivate: [eventManagementGuard],
+  },
+  {
+    path: 'admin/evenements/:id/modifier',
+    component: ComponentEvenementAdmin,
+    canActivate: [eventManagementGuard],
+  },
+  {
+    path: 'admin/evenements/:slug/modifier',
+    component: ComponentEvenementAdmin,
+    canActivate: [eventManagementGuard],
+  },
+  {
+    path: 'admin/adherents',
+    component: ComponentAdherentsAdmin,
+    canActivate: [administratorGuard],
+  },
+  {
+    path: 'admin/tresorerie',
+    component: ComponentTresorerie,
+    canActivate: [administratorGuard],
+  },
   { path: '**', redirectTo: '' },
 ];

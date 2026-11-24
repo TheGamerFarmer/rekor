@@ -19,6 +19,9 @@ export class ComponentConnexion {
   protected readonly showPassword = signal(false);
   protected readonly submitted = signal(false);
   protected readonly loginError = signal<string | null>(null);
+  protected readonly registrationSuccess = signal(
+    this.router.getCurrentNavigation()?.extras.state?.['registrationSuccess'] === true,
+  );
 
   protected readonly loginForm = new FormBuilder().nonNullable.group({
     associationName: [this.associationName],

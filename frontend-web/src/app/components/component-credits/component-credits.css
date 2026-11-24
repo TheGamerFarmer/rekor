@@ -30,6 +30,27 @@ section {
   gap: 16px;
 }
 
+.project-context {
+  margin: 0;
+  line-height: 1.65;
+}
+
+.developer-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.developer-list li {
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: var(--color-primary-light);
+  font-weight: 700;
+}
+
 h2 {
   position: relative;
   margin: 0;

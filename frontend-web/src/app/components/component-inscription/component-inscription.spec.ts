@@ -270,7 +270,7 @@ describe('ComponentInscription', () => {
     );
   });
 
-  it('navigates to /connexion after successful registration', async () => {
+  it('navigates to /connexion with a success confirmation after registration', async () => {
     component['registrationForm'].patchValue({
       firstName: 'Ada',
       lastName: 'Lovelace',
@@ -286,7 +286,9 @@ describe('ComponentInscription', () => {
     component['submit']();
     await fixture.whenStable();
 
-    expect(navigate).toHaveBeenCalledWith(['/connexion']);
+    expect(navigate).toHaveBeenCalledWith(['/connexion'], {
+      state: { registrationSuccess: true },
+    });
   });
 
   it('includes birthday when provided', async () => {

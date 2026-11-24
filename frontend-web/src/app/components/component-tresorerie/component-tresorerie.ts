@@ -64,7 +64,7 @@ const INITIAL_TRANSACTIONS: TreasuryTransaction[] = [
     id: 6,
     type: 'expense',
     date: '2026-11-01',
-    category: 'Nourriture',
+    category: 'Nourriture/ Boisson',
     description: 'Goûter tournoi',
     amount: 120,
   },
@@ -100,13 +100,7 @@ export class ComponentTresorerie {
   protected readonly statusMessage = signal('');
   protected readonly years = Array.from({ length: 6 }, (_, index) => CURRENT_YEAR - index);
   protected readonly incomeCategories = ['Adhésion', 'Subvention', 'Don', 'Autre'];
-  protected readonly expenseCategories = [
-    'Matériel',
-    'Nourriture',
-    'Service',
-    'Déplacement',
-    'Autre',
-  ];
+  protected readonly expenseCategories = ['Matériel', 'Nourriture/ Boisson', 'Service', 'Autre'];
 
   protected readonly incomes = computed(() =>
     this.transactions()
@@ -133,11 +127,13 @@ export class ComponentTresorerie {
   );
 
   protected readonly incomeForm = new FormBuilder().nonNullable.group({
+    date: [this.dateForYear(CURRENT_YEAR), Validators.required],
     category: ['Adhésion', Validators.required],
     amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     description: [''],
   });
   protected readonly expenseForm = new FormBuilder().nonNullable.group({
+    date: [this.dateForYear(CURRENT_YEAR), Validators.required],
     category: ['Matériel', Validators.required],
     amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     description: [''],
@@ -147,7 +143,14 @@ export class ComponentTresorerie {
   protected onYearChange(event: Event): void {
     const select = event.currentTarget;
     if (select instanceof HTMLSelectElement) {
+      const previousDefaultDate = this.dateForYear(this.year());
       this.year.set(Number(select.value));
+      const nextDefaultDate = this.dateForYear(this.year());
+      for (const form of [this.incomeForm, this.expenseForm]) {
+        if (form.controls.date.value === previousDefaultDate) {
+          form.controls.date.setValue(nextDefaultDate);
+        }
+      }
       this.showAllIncome.set(false);
       this.showAllExpenses.set(false);
     }
@@ -157,20 +160,17 @@ export class ComponentTresorerie {
     const form = type === 'income' ? this.incomeForm : this.expenseForm;
     if (form.invalid) {
       form.markAllAsTouched();
-      this.statusMessage.set('Veuillez saisir une catégorie et un montant supérieur à zéro.');
+      this.statusMessage.set(
+        'Veuillez saisir une date, une catégorie et un montant supérieur à zéro.',
+      );
       return;
     }
 
     const values = form.getRawValue();
-    const now = new Date();
-    const date =
-      this.year() === now.getFullYear()
-        ? this.formatDate(now)
-        : `${this.year()}-${this.formatDate(now).slice(5)}`;
     const transaction: TreasuryTransaction = {
       id: this.nextId++,
       type,
-      date,
+      date: values.date,
       category: values.category,
       description: values.description.trim(),
       amount: Number(values.amount),
@@ -178,6 +178,7 @@ export class ComponentTresorerie {
 
     this.transactions.update((transactions) => [transaction, ...transactions]);
     form.reset({
+      date: this.dateForYear(this.year()),
       category: type === 'income' ? 'Adhésion' : 'Matériel',
       amount: null,
       description: '',
@@ -231,6 +232,11 @@ export class ComponentTresorerie {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${date.getFullYear()}-${month}-${day}`;
+  }
+
+  private dateForYear(year: number): string {
+    const now = new Date();
+    return this.formatDate(new Date(year, now.getMonth(), now.getDate()));
   }
 
   private escapeCsv(value: string): string {

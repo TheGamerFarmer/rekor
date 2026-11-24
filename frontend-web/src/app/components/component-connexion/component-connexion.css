@@ -148,11 +148,18 @@ input[aria-invalid='true'] {
   margin: 0.4rem 0 0;
 }
 
-.form-message.error {
-  color: #b52e2e;
+.form-message {
   font-size: 0.85rem;
   margin: 1rem 0 0;
   text-align: center;
+}
+
+.form-message.error {
+  color: #b52e2e;
+}
+
+.form-message.success {
+  color: #287a3d;
 }
 
 .signup-prompt {

@@ -121,6 +121,11 @@
   background: #e73737;
 }
 
+.balance-summary .summary-icon {
+  background: var(--color-secondary);
+  color: var(--color-dark);
+}
+
 .summary-card p {
   margin: 0 0 3px;
   font-size: 14px;
@@ -132,34 +137,6 @@
   font-size: clamp(20px, 2.2vw, 29px);
   font-weight: 800;
   white-space: nowrap;
-}
-
-.balance-summary strong {
-  color: var(--color-primary);
-}
-
-.chart-icon {
-  align-items: end;
-  gap: 4px;
-  padding: 17px 15px;
-}
-
-.chart-icon i {
-  width: 7px;
-  border-radius: 2px 2px 0 0;
-  background: white;
-}
-
-.chart-icon i:nth-child(1) {
-  height: 13px;
-}
-
-.chart-icon i:nth-child(2) {
-  height: 23px;
-}
-
-.chart-icon i:nth-child(3) {
-  height: 17px;
 }
 
 .forms-grid,

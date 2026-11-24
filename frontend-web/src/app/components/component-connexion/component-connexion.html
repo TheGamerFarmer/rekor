@@ -52,6 +52,13 @@
 
       <app-button type="submit" [fullWidth]="true" text="Se connecter"></app-button>
 
+      @if (registrationSuccess()) {
+        <p class="form-message success" role="status">
+          Votre inscription a bien été prise en compte. Votre candidature sera étudiée par un
+          responsable.
+        </p>
+      }
+
       @if (loginError()) {
         <p class="form-message error" role="alert">{{ loginError() }}</p>
       }

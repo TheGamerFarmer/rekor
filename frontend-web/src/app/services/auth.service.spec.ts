@@ -3,6 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { provideApi } from '../api';
 import { AuthService } from './auth.service';
+import { UserDetails } from '../api/model/userDetails';
 
 describe('AuthService', () => {
   let http: HttpTestingController;
@@ -41,9 +42,17 @@ describe('AuthService', () => {
     });
 
     request.flush({ access_token: 'token-123', refresh_token: 'refresh-123' });
+    http.expectOne('/api/users/me').flush({
+      id: '1',
+      name: 'Martin',
+      email: 'joueur@example.com',
+      pronoun: UserDetails.PronounEnum.Il,
+      role: UserDetails.RoleEnum.Administrateur,
+    });
 
     expect(localStorage.getItem('rekor-access-token')).toBe('token-123');
     expect(service.isAuthenticated()).toBe(true);
+    expect(service.role()).toBe(UserDetails.RoleEnum.Administrateur);
   });
 
   it('restores and clears a stored session', () => {
@@ -72,6 +81,13 @@ describe('AuthService', () => {
     http.expectOne('/api/auth/login').flush({
       access_token: 'token-123',
       refresh_token: 'refresh-123',
+    });
+    http.expectOne('/api/users/me').flush({
+      id: '1',
+      name: 'Martin',
+      email: 'joueur@example.com',
+      pronoun: UserDetails.PronounEnum.Il,
+      role: UserDetails.RoleEnum.Visiteur,
     });
     expect(service.isAuthenticated()).toBe(true);
 
