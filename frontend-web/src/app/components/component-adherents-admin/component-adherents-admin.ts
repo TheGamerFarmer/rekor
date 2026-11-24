@@ -35,11 +35,12 @@ export class ComponentAdherentsAdmin {
   protected readonly submitted = signal(false);
   protected readonly currentDate = this.formatDate(new Date());
   protected readonly pronouns = MEMBER_PRONOUNS;
-  protected readonly roles = MEMBER_ROLES;
+  protected readonly roles: readonly MemberRole[] = MEMBER_ROLES;
   protected readonly statuses = [
     { value: 'validated', label: 'Validées' },
     { value: 'pending-validation', label: 'En cours de validation' },
     { value: 'to-validate', label: 'À valider' },
+    { value: 'refused', label: 'Refusées' },
   ] as const satisfies readonly { value: RegistrationStatus; label: string }[];
 
   protected readonly filteredAdherents = computed(() =>
@@ -73,7 +74,7 @@ export class ComponentAdherentsAdmin {
     birthDate: ['', [this.validateBirthDate]],
     phone: ['', [Validators.required, Validators.pattern(/^[0-9+().\s-]{6,20}$/)]],
     email: ['', [Validators.required, Validators.email]],
-    roles: new FormControl<MemberRole[]>([], {
+    role: new FormControl<MemberRole>('', {
       nonNullable: true,
       validators: [Validators.required],
     }),
@@ -102,29 +103,10 @@ export class ComponentAdherentsAdmin {
       birthDate: member.birthDate ?? '',
       phone: member.phone,
       email: member.email,
-      roles: [...member.roles],
+      role: member.role,
       registrationStatus: member.registrationStatus,
     });
     this.isFormVisible.set(true);
-  }
-
-  protected toggleRole(role: MemberRole, checked: boolean): void {
-    const selected = this.memberForm.controls.roles.value;
-    this.memberForm.controls.roles.setValue(
-      checked ? [...selected, role] : selected.filter((item) => item !== role),
-    );
-    this.memberForm.controls.roles.markAsTouched();
-  }
-
-  protected onRoleChange(role: MemberRole, event: Event): void {
-    const checkbox = event.currentTarget;
-    if (checkbox instanceof HTMLInputElement) {
-      this.toggleRole(role, checkbox.checked);
-    }
-  }
-
-  protected hasRole(role: MemberRole): boolean {
-    return this.memberForm.controls.roles.value.includes(role);
   }
 
   protected save(): void {

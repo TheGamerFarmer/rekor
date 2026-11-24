@@ -2,14 +2,19 @@ import { Injectable, signal } from '@angular/core';
 
 export const MEMBER_ROLES = [
   'Administrateur',
-  'Entraîneur',
+  'Entraineur',
   'Capitaine',
   'Adhérent',
   'Visiteur',
 ] as const;
-export type MemberRole = (typeof MEMBER_ROLES)[number];
+export type MemberRole = string;
 
-export const REGISTRATION_STATUSES = ['validated', 'pending-validation', 'to-validate'] as const;
+export const REGISTRATION_STATUSES = [
+  'validated',
+  'pending-validation',
+  'to-validate',
+  'refused',
+] as const;
 export type RegistrationStatus = (typeof REGISTRATION_STATUSES)[number];
 
 export const MEMBER_PRONOUNS = ['Il', 'Elle', 'Iel', 'Autre'] as const;
@@ -23,7 +28,7 @@ export interface Adherent {
   birthDate: string | null;
   phone: string;
   email: string;
-  roles: MemberRole[];
+  role: MemberRole;
   registrationStatus: RegistrationStatus;
 }
 
@@ -40,7 +45,7 @@ const MOCK_ADHERENTS: Adherent[] = [
     birthDate: '2000-05-12',
     phone: '0600000001',
     email: 'alex.martin@example.fr',
-    roles: ['Adhérent', 'Capitaine'],
+    role: 'Capitaine',
     registrationStatus: 'validated',
   },
   {
@@ -51,7 +56,7 @@ const MOCK_ADHERENTS: Adherent[] = [
     birthDate: '1998-11-03',
     phone: '0600000002',
     email: 'sam.durand@example.fr',
-    roles: ['Adhérent'],
+    role: 'Visiteur',
     registrationStatus: 'to-validate',
   },
   {
@@ -62,7 +67,7 @@ const MOCK_ADHERENTS: Adherent[] = [
     birthDate: '2002-02-21',
     phone: '0600000003',
     email: 'camille.bernard@example.fr',
-    roles: ['Entraîneur'],
+    role: 'Entraineur',
     registrationStatus: 'pending-validation',
   },
   {
@@ -73,7 +78,7 @@ const MOCK_ADHERENTS: Adherent[] = [
     birthDate: null,
     phone: '0600000004',
     email: 'noa.petit@example.fr',
-    roles: ['Adhérent'],
+    role: 'Visiteur',
     registrationStatus: 'to-validate',
   },
   {
@@ -84,7 +89,7 @@ const MOCK_ADHERENTS: Adherent[] = [
     birthDate: '1995-08-17',
     phone: '0600000005',
     email: 'lina.robert@example.fr',
-    roles: ['Adhérent'],
+    role: 'Adhérent',
     registrationStatus: 'validated',
   },
 ];
@@ -97,15 +102,13 @@ export class AdherentService {
   /** Adds a member and persists the updated collection. */
   add(values: AdherentInput): void {
     const id = Math.max(0, ...this.members().map((member) => member.id)) + 1;
-    this.updateMembers([...this.members(), { ...values, roles: [...values.roles], id }]);
+    this.updateMembers([...this.members(), { ...values, id }]);
   }
 
   /** Updates a member while preserving their identifier. */
   update(id: number, values: AdherentInput): void {
     this.updateMembers(
-      this.members().map((member) =>
-        member.id === id ? { ...values, roles: [...values.roles], id } : member,
-      ),
+      this.members().map((member) => (member.id === id ? { ...values, id } : member)),
     );
   }
 
@@ -128,7 +131,7 @@ export class AdherentService {
 
     const stored = localStorage.getItem(MEMBERS_STORAGE_KEY);
     if (!stored) {
-      return MOCK_ADHERENTS.map((member) => ({ ...member, roles: [...member.roles] }));
+      return MOCK_ADHERENTS.map((member) => ({ ...member }));
     }
 
     try {
@@ -151,13 +154,20 @@ function migrateLegacyAdherent(value: unknown): unknown {
   }
 
   const member = value as Record<string, unknown>;
-  if (!('birthYear' in member) || 'birthDate' in member) {
-    return value;
+  const legacyMember = { ...member };
+  if ('birthYear' in legacyMember && !('birthDate' in legacyMember)) {
+    legacyMember['birthDate'] = null;
+    delete legacyMember['birthYear'];
   }
 
-  const legacyMember = { ...member };
-  delete legacyMember['birthYear'];
-  return { ...legacyMember, birthDate: null };
+  if (!('role' in legacyMember) && Array.isArray(legacyMember['roles'])) {
+    const roles: unknown[] = legacyMember['roles'];
+    const normalized = roles.map((role) => (role === 'Entraîneur' ? 'Entraineur' : role));
+    const knownRole = MEMBER_ROLES.find((role) => normalized.includes(role));
+    legacyMember['role'] = knownRole ?? (normalized.length === 1 ? normalized[0] : undefined);
+    delete legacyMember['roles'];
+  }
+  return legacyMember;
 }
 
 function isAdherent(value: unknown): value is Adherent {
@@ -174,8 +184,8 @@ function isAdherent(value: unknown): value is Adherent {
     (typeof member['birthDate'] === 'string' || member['birthDate'] === null) &&
     typeof member['phone'] === 'string' &&
     typeof member['email'] === 'string' &&
-    Array.isArray(member['roles']) &&
-    member['roles'].every((role: unknown) => MEMBER_ROLES.includes(role as MemberRole)) &&
+    typeof member['role'] === 'string' &&
+    member['role'].trim().length > 0 &&
     REGISTRATION_STATUSES.includes(member['registrationStatus'] as RegistrationStatus)
   );
 }

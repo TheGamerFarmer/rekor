@@ -67,32 +67,6 @@
   font-weight: 600;
 }
 
-.role-field {
-  align-content: start;
-}
-
-.role-field legend {
-  margin-bottom: 8px;
-  padding: 0;
-}
-
-.role-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 16px;
-}
-
-.role-option {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 400;
-}
-
-.role-option input {
-  accent-color: var(--color-primary);
-}
-
 input:not([type='checkbox']),
 select {
   width: 100%;
@@ -193,6 +167,8 @@ small {
 
 .member-actions {
   display: flex;
+  flex-wrap: wrap;
+  align-items: center;
   gap: 8px;
 }
 

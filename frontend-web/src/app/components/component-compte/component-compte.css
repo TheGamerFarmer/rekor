@@ -3,13 +3,28 @@
 }
 
 .account-page {
-  align-items: flex-start;
   background: #f4f7fb;
-  display: flex;
   font-family: Inter, 'Segoe UI', sans-serif;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 8rem 1rem 2rem;
+  padding: 3rem 1rem;
+}
+
+.account-layout {
+  margin: 0 auto;
+  max-width: 72rem;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 1.5rem;
+}
+
+.account-column {
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+  align-content: start;
 }
 
 .account-card {
@@ -17,9 +32,8 @@
   border: 1px solid #e3e9f2;
   border-radius: 1.25rem;
   box-shadow: 0 1rem 3rem rgb(28 52 84 / 10%);
-  max-width: 42rem;
-  padding: 2.5rem;
-  width: 100%;
+  min-width: 0;
+  padding: 1.75rem;
 }
 
 .account-header {
@@ -27,20 +41,6 @@
   display: flex;
   gap: 1rem;
   margin-bottom: 2rem;
-}
-
-.brand {
-  align-items: center;
-  background: #2355c4;
-  border-radius: 0.75rem;
-  color: #fff;
-  display: flex;
-  flex: 0 0 auto;
-  font-size: 1.5rem;
-  font-weight: 800;
-  height: 3rem;
-  justify-content: center;
-  width: 3rem;
 }
 
 h1 {
@@ -124,16 +124,17 @@ select[aria-invalid='true'] {
   text-align: center;
 }
 
-.account-section {
-  border-top: 1px solid #e3e9f2;
-  margin-top: 2rem;
-  padding-top: 2rem;
-}
-
-.account-section h2 {
+.account-card h2 {
   color: #18243a;
   font-size: 1.2rem;
   margin: 0 0 1.25rem;
+}
+
+.certificate-information {
+  color: #62708a;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 1rem;
 }
 
 .account-danger {
@@ -174,9 +175,15 @@ select[aria-invalid='true'] {
 }
 
 .account-danger app-button,
-.account-card > app-button {
+.account-layout > app-button {
   display: block;
   margin-top: 1.5rem;
+}
+
+@media (max-width: 760px) {
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 600px) {

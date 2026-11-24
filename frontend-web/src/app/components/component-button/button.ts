@@ -1,6 +1,6 @@
 import { Component, input } from '@angular/core';
 
-export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'danger' | 'text';
+export type ButtonVariant = 'primary' | 'secondary' | 'outline' | 'success' | 'danger' | 'text';
 export type ButtonType = 'button' | 'submit' | 'reset';
 export type ButtonIconVariant = 'light' | 'primary';
 export type ButtonSize = 'default' | 'small';
