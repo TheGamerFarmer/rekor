@@ -10,7 +10,6 @@ import 'package:frontend_app/mobile_pages/groupe.dart';
 import 'package:frontend_app/mobile_pages/groupe_detail_page.dart';
 import 'package:frontend_app/mobile_pages/creationconvoiturage.dart';
 import 'package:frontend_app/models/groupe.dart';
-import 'package:frontend_app/models/message.dart';
 import 'package:frontend_app/models/equipe.dart';
 import 'package:frontend_app/models/fiche_presence.dart';
 import 'package:frontend_app/models/utilisateur.dart';

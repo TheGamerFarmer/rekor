@@ -39,13 +39,12 @@ void main() {
   testWidgets('EquipeFormDialog valide les erreurs puis une équipe', (
     tester,
   ) async {
-    Equipe? equipe;
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              equipe = await showDialog<Equipe>(
+              await showDialog<Equipe>(
                 context: context,
                 builder: (_) => const EquipeFormDialog(
                   utilisateurs: [
@@ -68,13 +67,12 @@ void main() {
   });
 
   testWidgets('AjouterPersonnesDialog filtre et valide', (tester) async {
-    Set<int>? selection;
     await tester.pumpWidget(
       MaterialApp(
         home: Builder(
           builder: (context) => TextButton(
             onPressed: () async {
-              selection = await showDialog<Set<int>>(
+              await showDialog<Set<int>>(
                 context: context,
                 builder: (_) => const AjouterPersonnesDialog(
                   candidats: [Utilisateur(id: 1, nom: 'Martin', prenom: 'Léa')],
