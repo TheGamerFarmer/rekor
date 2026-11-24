@@ -71,12 +71,12 @@ function createGroupsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       if (!name) errorMessage = 'Nom invalide';
 
-      if ((!owner || !isValidObjectId(owner)) && !errorMessage)
-        errorMessage = 'Propriétaire invalide';
+      if (typeof owner !== 'string' || !isValidObjectId(owner))
+        if (!errorMessage) errorMessage = 'Propriétaire invalide';
 
       if (errorMessage) return res.status(400).json({ message: errorMessage });
 
-      const userResult = await User.findById(owner);
+      const userResult = await User.findOne({ _id: { $eq: owner } });
 
       if (!userResult) return res.status(404).json({ message: 'Utilisateur introuvable' });
 
@@ -128,14 +128,14 @@ function createGroupsRouter({ limit = 100, windowMs = 60_000 } = {}) {
       const changes = {};
       if (name) changes.name = name;
       if (owner) {
-        if (!isValidObjectId(owner)) {
+        if (typeof owner !== 'string' || !isValidObjectId(owner)) {
           return res.status(400).json({ message: 'Propriétaire invalide' });
         }
         changes.owner = owner;
       }
 
       if (changes.owner) {
-        const userResult = await User.findById(changes.owner);
+        const userResult = await User.findOne({ _id: { $eq: changes.owner } });
         if (!userResult) return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
 

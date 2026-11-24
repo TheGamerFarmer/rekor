@@ -147,7 +147,7 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
       if (description) changes.description = description;
       changes.group = group;
 
-      const groupResult = await Group.findById(group);
+      const groupResult = await Group.findOne({ _id: { $eq: group } });
 
       if (!groupResult) return res.status(404).json({ message: 'Groupe introuvable' });
 
