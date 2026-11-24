@@ -47,8 +47,18 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
   router.post(
     '/register',
     wrapAsync(async (req, res) => {
-      const { name, firstName, email, password, phoneNumber, birthday, pronoun, associationName } =
-        req.body;
+      const {
+        name,
+        firstName,
+        email,
+        password,
+        phoneNumber,
+        birthday,
+        pronoun,
+        associationName,
+        medicalCertificate,
+        rightOfPublicity,
+      } = req.body;
 
       if (await User.exists({ email: { $eq: email } })) {
         return res.status(409).json({ message: 'Un utilisateur avec cet e-mail existe déjà' });
@@ -69,6 +79,8 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
           role: 'Visiteur',
           ...(birthday ? { birthday: new Date(`${birthday}T00:00:00.000Z`) } : {}),
           pronoun,
+          medicalCertificate,
+          rightOfPublicity,
         });
       } catch (error) {
         if (error.code === 11000) {

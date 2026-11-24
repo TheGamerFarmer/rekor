@@ -21,7 +21,18 @@ const wrapAsync = (handler) => (req, res, next) =>
  * @param {import('../../db/models/user')} user
  */
 const toPublicUser = (user) => {
-  const { _id, name, firstName, email, phoneNumber, role, birthday, pronoun } = user;
+  const {
+    _id,
+    name,
+    firstName,
+    email,
+    phoneNumber,
+    role,
+    birthday,
+    pronoun,
+    medicalCertificate,
+    rightOfPublicity,
+  } = user;
   const doc = {
     id: _id.toString(),
     name,
@@ -29,6 +40,8 @@ const toPublicUser = (user) => {
     email,
     role,
     pronoun,
+    medicalCertificate,
+    rightOfPublicity,
   };
 
   if (phoneNumber !== undefined && phoneNumber !== null) doc.phoneNumber = phoneNumber;
