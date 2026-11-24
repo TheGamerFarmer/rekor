@@ -232,7 +232,7 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
       if (!event) return res.status(404).json({ message: 'Évènement introuvable' });
 
       await Participant.updateOne(
-        { event: req.params.id, created_by: req.auth.sub },
+        { event: { $eq: req.params.id }, created_by: { $eq: req.auth.sub } },
         { participe: participate },
       );
 
