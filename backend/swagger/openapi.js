@@ -197,7 +197,6 @@ const EventInput = z
     type: EventType,
     name: z.string().min(1).openapi({ example: 'Entraînement du lundi' }),
     description: z.string().min(1).openapi({ example: 'Entraînement hebdomadaire' }),
-    group: EventId,
   })
   .openapi('EventInput');
 
@@ -460,17 +459,16 @@ registry.registerPath({
   path: '/event',
   operationId: 'createEvent',
   tags: ['Events'],
-  summary: 'Creates a new event (requires Entraineur role or above)',
+  summary: 'Creates a new event with an auto-created group (requires Entraineur role or above)',
   security: [{ BearerAuth: [] }],
   request: {
     body: { required: true, content: json(EventInput) },
   },
   responses: {
-    201: { description: 'Event created, no response content' },
+    201: { description: 'Event created with its group, creator added as group member' },
     400: failure('Invalid request body'),
     401: failure('Authentication required or invalid token'),
     403: failure('Insufficient permissions'),
-    404: failure('Group not found'),
     409: failure('Event already exists'),
     429: failure('Too many requests'),
     500: failure('Internal server error'),
@@ -523,7 +521,8 @@ registry.registerPath({
   path: '/event/{id}/register',
   operationId: 'registerParticipation',
   tags: ['Events'],
-  summary: 'Registers participation for an event (requires Entraineur role or above)',
+  summary:
+    'Registers participation for an event and joins the group if accepting (requires Entraineur role or above)',
   security: [{ BearerAuth: [] }],
   request: {
     params: z.object({ id: EventId }),

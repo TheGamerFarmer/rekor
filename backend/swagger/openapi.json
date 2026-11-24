@@ -460,11 +460,6 @@
             "type": "string",
             "minLength": 1,
             "example": "Entraînement hebdomadaire"
-          },
-          "group": {
-            "type": "string",
-            "pattern": "^[0-9a-f]{24}$",
-            "example": "6ac8c78e50318b28d457048f"
           }
         },
         "required": [
@@ -472,8 +467,7 @@
           "place",
           "type",
           "name",
-          "description",
-          "group"
+          "description"
         ]
       },
       "EventPatchInput": {
@@ -1540,7 +1534,7 @@
         "tags": [
           "Events"
         ],
-        "summary": "Creates a new event (requires Entraineur role or above)",
+        "summary": "Creates a new event with an auto-created group (requires Entraineur role or above)",
         "security": [
           {
             "BearerAuth": []
@@ -1558,7 +1552,7 @@
         },
         "responses": {
           "201": {
-            "description": "Event created, no response content"
+            "description": "Event created with its group, creator added as group member"
           },
           "400": {
             "description": "Invalid request body",
@@ -1582,16 +1576,6 @@
           },
           "403": {
             "description": "Insufficient permissions",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Group not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -1925,7 +1909,7 @@
         "tags": [
           "Events"
         ],
-        "summary": "Registers participation for an event (requires Entraineur role or above)",
+        "summary": "Registers participation for an event and joins the group if accepting (requires Entraineur role or above)",
         "security": [
           {
             "BearerAuth": []

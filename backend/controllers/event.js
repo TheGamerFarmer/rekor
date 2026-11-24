@@ -7,6 +7,7 @@ const {
 } = require('mongoose');
 const Event = require('../db/models/event');
 const Group = require('../db/models/group');
+const GroupMembre = require('../db/models/group_member');
 const Participant = require('../db/models/participant');
 const { wrapAsync, toPublicEvent } = require('./services/shared');
 const { authenticate, authorize } = require('./services/auth-middleware');
@@ -75,14 +76,16 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
     }),
   );
 
-  // Creates a new event from the request body. All fields (date, place, type, name,
-  // description, group) are required. Returns 201 on success, 409 if an identical event already exists.
+  // Creates a new event from the request body. Fields date, place, type, name and
+  // description are required. A group is automatically created with the event name
+  // and the authenticated user as owner and first member.
+  // Returns 201 on success, 409 if an identical event already exists.
   router.post(
     '/',
     authenticate,
     authorize(USER_ROLE.ENTRAINEUR),
     wrapAsync(async (req, res) => {
-      let { date, place, type, name, description, group } = req.body;
+      const { date, place, type, name, description } = req.body;
 
       let errorMessage;
 
@@ -98,20 +101,20 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       if (!description && !errorMessage) errorMessage = 'Description invalide';
 
-      if (!group && !errorMessage) errorMessage = 'group invalide';
-
       if (errorMessage) return res.status(400).json({ message: errorMessage });
 
-      group = new ObjectId(group);
+      const userId = new ObjectId(req.auth.sub);
 
-      const groupResult = await Group.findById(group);
+      const group = await Group.create({ name, owner: userId });
 
-      if (!groupResult) return res.status(404).json({ message: 'Groupe introuvable' });
+      await GroupMembre.create({ group: group._id, user: userId });
 
       try {
-        await Event.create({ date, place, type, name, description, group });
+        await Event.create({ date, place, type, name, description, group: group._id });
       } catch (error) {
         if (error.code === 11000) {
+          await GroupMembre.deleteMany({ group: group._id });
+          await Group.deleteOne({ _id: group._id });
           return res.status(409).json({ message: 'Cet évenement existe déjà' });
         }
         throw error;
@@ -206,6 +209,14 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
             .json({ message: "L'utilisateur à déjà déclaré sa participation à cet évent" });
         }
         throw error;
+      }
+
+      if (participate) {
+        const userId = new ObjectId(req.auth.sub);
+        const existing = await GroupMembre.findOne({ group: event.group, user: userId });
+        if (!existing) {
+          await GroupMembre.create({ group: event.group, user: userId });
+        }
       }
 
       res.status(201).end();

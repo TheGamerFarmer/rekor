@@ -15,7 +15,6 @@ export interface EventInput {
     type: EventInput.TypeEnum;
     name: string;
     description: string;
-    group: string;
 }
 export namespace EventInput {
     export const TypeEnum = {

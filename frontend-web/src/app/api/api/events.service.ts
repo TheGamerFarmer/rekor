@@ -46,7 +46,7 @@ export class EventsService extends BaseService {
     }
 
     /**
-     * Creates a new event (requires Entraineur role or above)
+     * Creates a new event with an auto-created group (requires Entraineur role or above)
      * @endpoint post /event
      * @param eventInput 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -288,7 +288,7 @@ export class EventsService extends BaseService {
     }
 
     /**
-     * Registers participation for an event (requires Entraineur role or above)
+     * Registers participation for an event and joins the group if accepting (requires Entraineur role or above)
      * @endpoint post /event/{id}/register
      * @param id 
      * @param registerParticipationInput 

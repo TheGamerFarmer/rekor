@@ -18,7 +18,6 @@ class EventInput {
     required this.type,
     required this.name,
     required this.description,
-    required this.group,
   });
 
   DateTime date;
@@ -31,16 +30,13 @@ class EventInput {
 
   String description;
 
-  String group;
-
   @override
   bool operator ==(Object other) => identical(this, other) || other is EventInput &&
     other.date == date &&
     other.place == place &&
     other.type == type &&
     other.name == name &&
-    other.description == description &&
-    other.group == group;
+    other.description == description;
 
   @override
   int get hashCode =>
@@ -49,11 +45,10 @@ class EventInput {
     (place.hashCode) +
     (type.hashCode) +
     (name.hashCode) +
-    (description.hashCode) +
-    (group.hashCode);
+    (description.hashCode);
 
   @override
-  String toString() => 'EventInput[date=$date, place=$place, type=$type, name=$name, description=$description, group=$group]';
+  String toString() => 'EventInput[date=$date, place=$place, type=$type, name=$name, description=$description]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
@@ -62,7 +57,6 @@ class EventInput {
       json[r'type'] = this.type;
       json[r'name'] = this.name;
       json[r'description'] = this.description;
-      json[r'group'] = this.group;
     return json;
   }
 
@@ -87,8 +81,6 @@ class EventInput {
         assert(json[r'name'] != null, 'Required key "EventInput[name]" has a null value in JSON.');
         assert(json.containsKey(r'description'), 'Required key "EventInput[description]" is missing from JSON.');
         assert(json[r'description'] != null, 'Required key "EventInput[description]" has a null value in JSON.');
-        assert(json.containsKey(r'group'), 'Required key "EventInput[group]" is missing from JSON.');
-        assert(json[r'group'] != null, 'Required key "EventInput[group]" has a null value in JSON.');
         return true;
       }());
 
@@ -98,7 +90,6 @@ class EventInput {
         type: EventInputTypeEnum.fromJson(json[r'type'])!,
         name: mapValueOfType<String>(json, r'name')!,
         description: mapValueOfType<String>(json, r'description')!,
-        group: mapValueOfType<String>(json, r'group')!,
       );
     }
     return null;
@@ -151,7 +142,6 @@ class EventInput {
     'type',
     'name',
     'description',
-    'group',
   };
 }
 

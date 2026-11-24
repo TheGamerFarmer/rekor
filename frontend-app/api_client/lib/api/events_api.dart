@@ -16,7 +16,7 @@ class EventsApi {
 
   final ApiClient apiClient;
 
-  /// Creates a new event (requires Entraineur role or above)
+  /// Creates a new event with an auto-created group (requires Entraineur role or above)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -49,7 +49,7 @@ class EventsApi {
     );
   }
 
-  /// Creates a new event (requires Entraineur role or above)
+  /// Creates a new event with an auto-created group (requires Entraineur role or above)
   ///
   /// Parameters:
   ///
@@ -209,7 +209,7 @@ class EventsApi {
     return null;
   }
 
-  /// Registers participation for an event (requires Entraineur role or above)
+  /// Registers participation for an event and joins the group if accepting (requires Entraineur role or above)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -245,7 +245,7 @@ class EventsApi {
     );
   }
 
-  /// Registers participation for an event (requires Entraineur role or above)
+  /// Registers participation for an event and joins the group if accepting (requires Entraineur role or above)
   ///
   /// Parameters:
   ///
