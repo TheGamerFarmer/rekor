@@ -531,7 +531,10 @@
             "pattern": "^[0-9a-f]{24}$",
             "example": "6ac8c78e50318b28d457048f"
           }
-        }
+        },
+        "required": [
+          "group"
+        ]
       },
       "RegisterParticipationInput": {
         "type": "object",
@@ -1774,7 +1777,7 @@
             "description": "Event updated, no response content"
           },
           "400": {
-            "description": "Invalid identifier",
+            "description": "Invalid identifier or invalid group",
             "content": {
               "application/json": {
                 "schema": {

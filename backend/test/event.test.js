@@ -442,11 +442,21 @@ describe('/event (avec un vrai mongod)', () => {
     assert.deepStrictEqual(updated.date, new Date('2025-04-10T00:00:00.000Z'));
   });
 
-  it('PATCH /event/:id returns 404 when group is omitted (bug: group always required)', async () => {
+  it('PATCH /event/:id returns 400 when group is omitted', async () => {
     const res = await request(app)
       .patch(`/event/${eventId}`)
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ name: 'Nom sans groupe' });
+
+    assert.strictEqual(res.status, 400);
+    assert.strictEqual(res.body.message, 'Groupe invalide');
+  });
+
+  it('PATCH /event/:id returns 404 when the group does not exist', async () => {
+    const res = await request(app)
+      .patch(`/event/${eventId}`)
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ name: 'Nouveau nom', group: UNKNOWN_ID });
 
     assert.strictEqual(res.status, 404);
     assert.strictEqual(res.body.message, 'Groupe introuvable');

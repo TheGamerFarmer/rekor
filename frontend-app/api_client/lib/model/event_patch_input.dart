@@ -18,7 +18,7 @@ class EventPatchInput {
     this.type,
     this.name,
     this.description,
-    this.group,
+    required this.group,
   });
 
   ///
@@ -55,13 +55,7 @@ class EventPatchInput {
   ///
   String? description;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? group;
+  String group;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is EventPatchInput &&
@@ -80,7 +74,7 @@ class EventPatchInput {
     (type == null ? 0 : type!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (description == null ? 0 : description!.hashCode) +
-    (group == null ? 0 : group!.hashCode);
+    (group.hashCode);
 
   @override
   String toString() => 'EventPatchInput[date=$date, place=$place, type=$type, name=$name, description=$description, group=$group]';
@@ -112,11 +106,7 @@ class EventPatchInput {
     } else {
       json[r'description'] = null;
     }
-    if (this.group != null) {
       json[r'group'] = this.group;
-    } else {
-      json[r'group'] = null;
-    }
     return json;
   }
 
@@ -131,6 +121,8 @@ class EventPatchInput {
       // Note 1: the values aren't checked for validity beyond being non-null.
       // Note 2: this code is stripped in release mode!
       assert(() {
+        assert(json.containsKey(r'group'), 'Required key "EventPatchInput[group]" is missing from JSON.');
+        assert(json[r'group'] != null, 'Required key "EventPatchInput[group]" has a null value in JSON.');
         return true;
       }());
 
@@ -140,7 +132,7 @@ class EventPatchInput {
         type: EventPatchInputTypeEnum.fromJson(json[r'type']),
         name: mapValueOfType<String>(json, r'name'),
         description: mapValueOfType<String>(json, r'description'),
-        group: mapValueOfType<String>(json, r'group'),
+        group: mapValueOfType<String>(json, r'group')!,
       );
     }
     return null;
@@ -188,6 +180,7 @@ class EventPatchInput {
 
   /// The list of required keys that must be present in a JSON.
   static const requiredKeys = <String>{
+    'group',
   };
 }
 

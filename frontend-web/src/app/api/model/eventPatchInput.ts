@@ -15,7 +15,7 @@ export interface EventPatchInput {
     type?: EventPatchInput.TypeEnum;
     name?: string;
     description?: string;
-    group?: string;
+    group: string;
 }
 export namespace EventPatchInput {
     export const TypeEnum = {

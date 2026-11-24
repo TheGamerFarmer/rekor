@@ -328,6 +328,16 @@ describe('/group (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'Utilisateur introuvable');
   });
 
+  it('PATCH /group/:id returns 400 when owner is not a valid ObjectId', async () => {
+    const res = await request(app)
+      .patch(`/group/${groupId}`)
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ owner: 'pas-un-id' });
+
+    assert.strictEqual(res.status, 400);
+    assert.strictEqual(res.body.message, 'Propriétaire invalide');
+  });
+
   it('PATCH /group/:id returns 400 for a malformed identifier', async () => {
     const res = await request(app)
       .patch('/group/pas-un-id')

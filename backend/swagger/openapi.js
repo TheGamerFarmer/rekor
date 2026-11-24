@@ -213,7 +213,7 @@ const EventPatchInput = z
     type: EventType.optional(),
     name: z.string().min(1).optional().openapi({ example: 'Entraînement du lundi' }),
     description: z.string().min(1).optional().openapi({ example: 'Entraînement hebdomadaire' }),
-    group: EventId.optional(),
+    group: EventId,
   })
   .openapi('EventPatchInput');
 
@@ -494,7 +494,7 @@ registry.registerPath({
   },
   responses: {
     204: { description: 'Event updated, no response content' },
-    400: failure('Invalid identifier'),
+    400: failure('Invalid identifier or invalid group'),
     401: failure('Authentication required or invalid token'),
     403: failure('Insufficient permissions'),
     404: failure('Event or group not found'),

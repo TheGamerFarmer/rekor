@@ -71,7 +71,8 @@ function createGroupsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       if (!name) errorMessage = 'Nom invalide';
 
-      if (!owner && !errorMessage) errorMessage = 'Propriétaire invalide';
+      if ((!owner || !isValidObjectId(owner)) && !errorMessage)
+        errorMessage = 'Propriétaire invalide';
 
       if (errorMessage) return res.status(400).json({ message: errorMessage });
 
@@ -126,7 +127,12 @@ function createGroupsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       const changes = {};
       if (name) changes.name = name;
-      if (owner) changes.owner = owner;
+      if (owner) {
+        if (!isValidObjectId(owner)) {
+          return res.status(400).json({ message: 'Propriétaire invalide' });
+        }
+        changes.owner = owner;
+      }
 
       if (changes.owner) {
         const userResult = await User.findById(changes.owner);

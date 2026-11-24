@@ -135,15 +135,19 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       const { date, place, type, name, description, group } = req.body;
 
+      if (!group || !isValidObjectId(group)) {
+        return res.status(400).json({ message: 'Groupe invalide' });
+      }
+
       const changes = {};
       if (date) changes.date = new Date(`${date}T00:00:00.000Z`);
       if (place) changes.place = place;
       if (type && Object.values(EVENT_TYPE).includes(type)) changes.type = type;
       if (name) changes.name = name;
       if (description) changes.description = description;
-      if (group) changes.group = group;
+      changes.group = group;
 
-      const groupResult = await Group.findById(changes.group);
+      const groupResult = await Group.findById(group);
 
       if (!groupResult) return res.status(404).json({ message: 'Groupe introuvable' });
 
@@ -210,7 +214,10 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       if (participate) {
         const userId = req.auth.sub;
-        const existing = await GroupMembre.findOne({ group: event.group, user: userId });
+        const existing = await GroupMembre.findOne({
+          group: { $eq: event.group },
+          user: { $eq: userId },
+        });
         if (!existing) {
           await GroupMembre.create({ group: event.group, user: userId });
         }
