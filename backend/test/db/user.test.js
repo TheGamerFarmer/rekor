@@ -13,6 +13,8 @@ const valid = {
   password: 'motdepasse',
   role: USER_ROLE.ADHERENT,
   pronoun: USER_PRONOUN.ELLE,
+  medicalCertificate: false,
+  rightOfPublicity: false,
 };
 
 describe('collection user', () => {
@@ -44,7 +46,16 @@ describe('collection user', () => {
     }
   });
 
-  for (const field of ['name', 'firstName', 'email', 'password', 'role', 'pronoun']) {
+  for (const field of [
+    'name',
+    'firstName',
+    'email',
+    'password',
+    'role',
+    'pronoun',
+    'medicalCertificate',
+    'rightOfPublicity',
+  ]) {
     it(`refuse sans ${field}`, async () => {
       const doc = { ...valid };
       delete doc[field];

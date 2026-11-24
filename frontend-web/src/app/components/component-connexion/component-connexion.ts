@@ -36,7 +36,8 @@ export class ComponentConnexion {
       return;
     }
 
-    this.authService.login(this.loginForm.getRawValue()).subscribe({
+    const { email, password } = this.loginForm.getRawValue();
+    this.authService.login({ associationName: this.associationName, email, password }).subscribe({
       next: () => void this.router.navigate(['/compte']),
       error: () => this.loginError.set('E-mail ou mot de passe incorrect.'),
     });

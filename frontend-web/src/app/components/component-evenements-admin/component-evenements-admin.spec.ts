@@ -39,6 +39,7 @@ describe('ComponentEvenementsAdmin', () => {
     expect(
       fixture.nativeElement.querySelector('a[href="/admin/evenements/nouveau"]'),
     ).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('a[href="/admin/adherents"]')).toBeNull();
   });
 
   it('calls the service when deleting an event', () => {
