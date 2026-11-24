@@ -10,7 +10,7 @@ describe('ComponentEvenementDetails', () => {
   let params: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
 
   beforeEach(async () => {
-    params = new BehaviorSubject(convertToParamMap({ slug: 'match-gieres-grenoble' }));
+    params = new BehaviorSubject(convertToParamMap({ id: '6' }));
     await TestBed.configureTestingModule({
       imports: [ComponentEvenementDetails],
       providers: [
@@ -21,7 +21,7 @@ describe('ComponentEvenementDetails', () => {
         {
           provide: EvenementService,
           useValue: {
-            findBySlug: (slug: string) => defaultEvenements.find((event) => event.slug === slug),
+            findById: (id: number) => defaultEvenements.find((event) => event.id === id),
           },
         },
       ],
@@ -34,14 +34,29 @@ describe('ComponentEvenementDetails', () => {
   it('renders the event details with the formatted date and metadata', () => {
     expect(fixture.nativeElement.textContent).toContain('Match - Gières vs Grenoble');
     expect(fixture.nativeElement.textContent).toContain('28/11/2026');
+    expect(fixture.nativeElement.textContent).toContain('20:00');
     expect(fixture.nativeElement.textContent).toContain('Gymnase de Grenoble');
     expect(fixture.nativeElement.querySelector('.back-button a')?.getAttribute('href')).toBe(
       '/evenements',
     );
   });
 
-  it('shows a fallback for an unknown event slug', () => {
-    params.next(convertToParamMap({ slug: 'unknown' }));
+  it('shows a fallback for an unknown event ID', () => {
+    params.next(convertToParamMap({ id: '999' }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Événement introuvable');
+  });
+
+  it('shows a fallback when the route has no slug parameter', () => {
+    params.next(convertToParamMap({}));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Événement introuvable');
+  });
+
+  it('shows a fallback for a non-numeric event ID', () => {
+    params.next(convertToParamMap({ id: 'invalid' }));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Événement introuvable');

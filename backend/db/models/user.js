@@ -1,5 +1,5 @@
 const { Schema, model } = require('mongoose');
-const { USER_ROLES, USER_PRONOUNS } = require('../enums');
+const { USER_ROLE, USER_PRONOUN } = require('../enums');
 
 const userSchema = new Schema(
   {
@@ -10,13 +10,13 @@ const userSchema = new Schema(
     phoneNumber: String,
     role: {
       type: String,
-      enum: USER_ROLES,
+      enum: Object.values(USER_ROLE),
       required: true,
     },
     birthday: Date,
     pronoun: {
       type: String,
-      enum: USER_PRONOUNS,
+      enum: Object.values(USER_PRONOUN),
       required: true,
     },
   },

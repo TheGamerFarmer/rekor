@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 
 require('./models/user');
 require('./models/refresh-token');
-require('./models/association');
+const Association = require('./models/association');
 require('./models/group');
 require('./models/team');
 require('./models/event');
@@ -30,9 +30,14 @@ require('./models/bank_operation');
 require('./models/bank_operation_document');
 require('./models/registration');
 
+const DEFAULT_ASSOCIATION = {
+  name: 'Gières Volley-Ball',
+  address: '1 Rue des Sports 38610 Gières',
+};
+
 /**
  * Creates missing collections and synchronises indexes for all registered Mongoose models.
- * Safe to call on every startup — existing collections are silently skipped.
+ * Seeds the default association and is safe to call on every startup.
  */
 async function ensureSchema() {
   for (const modelName of Object.keys(mongoose.models)) {
@@ -43,6 +48,18 @@ async function ensureSchema() {
       if (err.codeName !== 'NamespaceExists') throw err;
     }
     await Model.syncIndexes();
+  }
+
+  try {
+    await Association.updateOne(
+      DEFAULT_ASSOCIATION,
+      { $setOnInsert: DEFAULT_ASSOCIATION },
+      { upsert: true },
+    );
+  } catch (error) {
+    if (error.code !== 11000 || !(await Association.exists(DEFAULT_ASSOCIATION))) {
+      throw error;
+    }
   }
 }
 

@@ -8,7 +8,7 @@ describe('ComponentActualiteDetail', () => {
   let params: BehaviorSubject<ParamMap>;
 
   beforeEach(async () => {
-    params = new BehaviorSubject(convertToParamMap({ slug: 'collecte-solidaire-du-club' }));
+    params = new BehaviorSubject(convertToParamMap({ id: '2' }));
     await TestBed.configureTestingModule({
       imports: [ComponentActualiteDetail],
       providers: [
@@ -40,7 +40,7 @@ describe('ComponentActualiteDetail', () => {
   });
 
   it('shows a registration action for the registration news', () => {
-    params.next(convertToParamMap({ slug: 'inscriptions-ouvertes' }));
+    params.next(convertToParamMap({ id: '3' }));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain(
@@ -49,11 +49,18 @@ describe('ComponentActualiteDetail', () => {
     expect(fixture.nativeElement.querySelector('a[href="/inscription"]')).not.toBeNull();
   });
 
-  it('provides a fallback for an unknown actualite slug', () => {
-    params.next(convertToParamMap({ slug: 'unknown' }));
+  it('provides a fallback for an unknown actualite ID', () => {
+    params.next(convertToParamMap({ id: '999' }));
     fixture.detectChanges();
 
     expect(fixture.nativeElement.textContent).toContain('Actualité introuvable');
     expect(fixture.nativeElement.querySelector('a[href="/actualites"]')).not.toBeNull();
+  });
+
+  it('provides a fallback for a non-numeric actualite ID', () => {
+    params.next(convertToParamMap({ id: 'invalid' }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Actualité introuvable');
   });
 });

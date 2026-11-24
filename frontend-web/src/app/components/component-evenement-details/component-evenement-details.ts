@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
+import { getHeureEvenement } from '../component-evenement/evenements.data';
 import { EvenementService } from '../../services/evenement.service';
 
 @Component({
@@ -17,9 +18,14 @@ export class ComponentEvenementDetails {
   private readonly evenementService = inject(EvenementService);
   private readonly params = toSignal(this.route.paramMap);
 
-  /** Resolves the event identified by the route slug. */
+  /** Resolves the event identified by the route ID. */
   protected readonly evenement = computed(() => {
-    const slug = this.params()?.get('slug');
-    return slug ? this.evenementService.findBySlug(slug) : undefined;
+    const id = Number(this.params()?.get('id'));
+    return Number.isInteger(id) ? this.evenementService.findById(id) : undefined;
   });
+
+  /** Returns the hour stored in the event date-time value. */
+  protected getHeureEvenement(date: string): string {
+    return getHeureEvenement(date);
+  }
 }

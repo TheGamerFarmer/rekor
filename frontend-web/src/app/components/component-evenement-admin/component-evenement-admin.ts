@@ -4,7 +4,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
 import { EvenementService } from '../../services/evenement.service';
-import type { EvenementType } from '../component-evenement/evenements.data';
+import { getHeureEvenement, type EvenementType } from '../component-evenement/evenements.data';
 
 @Component({
   imports: [Banner, Button, ReactiveFormsModule],
@@ -37,12 +37,18 @@ export class ComponentEvenementAdmin {
 
   /** Initializes the form with the event addressed by the edit route. */
   constructor() {
-    const slug = this.route.snapshot.paramMap.get('slug');
-    const evenement = slug ? this.evenementService.findBySlug(slug) : undefined;
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const id = idParam === null ? null : Number(idParam);
+    const evenement =
+      id !== null && Number.isInteger(id) ? this.evenementService.findById(id) : undefined;
 
     if (evenement) {
       this.isEditing.set(true);
-      this.eventForm.patchValue(evenement);
+      this.eventForm.patchValue({
+        ...evenement,
+        date: evenement.date.split('T')[0],
+        time: getHeureEvenement(evenement.date),
+      });
     }
   }
 
@@ -53,22 +59,22 @@ export class ComponentEvenementAdmin {
       return;
     }
 
-    const values = this.eventForm.getRawValue();
-    const existingSlug = this.route.snapshot.paramMap.get('slug');
-    if (existingSlug) {
-      if (!this.evenementService.findBySlug(existingSlug)) {
+    const { date, time, ...values } = this.eventForm.getRawValue();
+    const eventValues = {
+      ...values,
+      date: `${date}T${time}`,
+      type: values.type as EvenementType,
+    };
+    const idParam = this.route.snapshot.paramMap.get('id');
+    const existingId = idParam === null ? null : Number(idParam);
+    if (existingId !== null && Number.isInteger(existingId)) {
+      if (!this.evenementService.findById(existingId)) {
         void this.router.navigate(['/admin/evenements']);
         return;
       }
-      this.evenementService.update(existingSlug, {
-        ...values,
-        type: values.type as EvenementType,
-      });
+      this.evenementService.update(existingId, eventValues);
     } else {
-      this.evenementService.add({
-        ...values,
-        type: values.type as EvenementType,
-      });
+      this.evenementService.add(eventValues);
     }
 
     void this.router.navigate(['/admin/evenements']);

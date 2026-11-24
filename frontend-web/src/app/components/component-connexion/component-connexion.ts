@@ -13,6 +13,7 @@ import { AuthService } from '../../services/auth.service';
   templateUrl: './component-connexion.html',
 })
 export class ComponentConnexion {
+  private readonly associationName = 'Gières Volley-Ball';
   private readonly authService = inject(AuthService);
   private readonly router = inject(Router);
   protected readonly showPassword = signal(false);
@@ -20,9 +21,9 @@ export class ComponentConnexion {
   protected readonly loginError = signal<string | null>(null);
 
   protected readonly loginForm = new FormBuilder().nonNullable.group({
+    associationName: [this.associationName],
     email: ['', [Validators.required, Validators.email]],
     password: ['', [Validators.required]],
-    rememberMe: [false],
   });
 
   /** Marks the login attempt and exposes validation errors when needed. */
@@ -35,7 +36,8 @@ export class ComponentConnexion {
       return;
     }
 
-    this.authService.login(this.loginForm.getRawValue()).subscribe({
+    const { email, password } = this.loginForm.getRawValue();
+    this.authService.login({ associationName: this.associationName, email, password }).subscribe({
       next: () => void this.router.navigate(['/compte']),
       error: () => this.loginError.set('E-mail ou mot de passe incorrect.'),
     });

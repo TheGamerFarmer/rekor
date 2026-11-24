@@ -148,8 +148,8 @@ input[aria-invalid='true'] {
   margin: 0.4rem 0 0;
 }
 
-.form-message {
-  color: #20734a;
+.form-message.error {
+  color: #b52e2e;
   font-size: 0.85rem;
   margin: 1rem 0 0;
   text-align: center;

@@ -24,7 +24,7 @@
   </div>
 
   <section class="event-list" aria-label="Liste des événements">
-    @for (evenement of visibleEvenements(); track evenement.slug) {
+    @for (evenement of visibleEvenements(); track evenement.id) {
       <article class="event-card">
         <div class="event-date" aria-label="Date de l'événement">
           <strong>{{ evenement.date | date: 'dd' }}</strong>
@@ -35,14 +35,17 @@
           <h2>{{ evenement.name }}</h2>
           <p>{{ evenement.description }}</p>
           <div class="event-meta">
-            <span><img src="/icons/calendrier.png" alt="" />{{ evenement.time }}</span>
+            <span>
+              <img src="/icons/calendrier.png" alt="" />
+              {{ getHeureEvenement(evenement.date) }}
+            </span>
             <span><img src="/icons/map.png" alt="" />{{ getNomGymnase(evenement.place) }}</span>
           </div>
         </div>
         <app-button
           variant="outline"
-          [href]="'/evenements/' + evenement.slug"
-          text="Voir le détail"
+          [href]="'/evenements/' + evenement.id"
+          text="Voir les détails"
         ></app-button>
       </article>
     } @empty {

@@ -16,7 +16,7 @@ class AuthenticationApi {
 
   final ApiClient apiClient;
 
-  /// Vérifie les identifiants et renvoie un access token et un refresh token
+  /// Authentifie l’utilisateur dans l’association indiquée et renvoie les tokens
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -49,7 +49,7 @@ class AuthenticationApi {
     );
   }
 
-  /// Vérifie les identifiants et renvoie un access token et un refresh token
+  /// Authentifie l’utilisateur dans l’association indiquée et renvoie les tokens
   ///
   /// Parameters:
   ///
@@ -167,7 +167,7 @@ class AuthenticationApi {
     return null;
   }
 
-  /// Crée un compte utilisateur (rôle Visiteur attribué par le serveur)
+  /// Crée un compte Visiteur et l’inscrit dans l’association indiquée
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -200,7 +200,7 @@ class AuthenticationApi {
     );
   }
 
-  /// Crée un compte utilisateur (rôle Visiteur attribué par le serveur)
+  /// Crée un compte Visiteur et l’inscrit dans l’association indiquée
   ///
   /// Parameters:
   ///

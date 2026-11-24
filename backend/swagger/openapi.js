@@ -5,6 +5,7 @@ const {
   OpenAPIRegistry,
   OpenApiGeneratorV3,
 } = require('@asteasolutions/zod-to-openapi');
+const { USER_ROLE, USER_PRONOUN } = require('../db/enums');
 const { version } = require('../package.json');
 
 extendZodWithOpenApi(z);
@@ -18,13 +19,13 @@ const HealthResponse = z
   })
   .openapi('HealthResponse');
 
-const UserId = z
+const Id = z
   .string()
   .regex(/^[0-9a-f]{24}$/)
   .openapi({ example: '6ac8c78e50318b28d457048f' });
 
-const Role = z.enum(['Entraineur', 'Capitaine', 'Adhérent', 'Visiteur']);
-const Pronoun = z.enum(['Il', 'Elle', 'Iel', 'Autre']);
+const Role = z.enum(Object.values(USER_ROLE));
+const Pronoun = z.enum(Object.values(USER_PRONOUN));
 
 const RegisterInput = z
   .object({
@@ -32,6 +33,10 @@ const RegisterInput = z
     firstName: z.string().min(1).openapi({ example: 'Ada' }),
     email: z.email().openapi({ example: 'ada@exemple.fr' }),
     password: z.string().min(1).openapi({ example: 'motdepasse' }),
+    associationName: z
+      .string()
+      .min(1)
+      .openapi({ example: 'Gières Volley-Ball', description: 'Nom de l’association' }),
     pronoun: Pronoun.openapi({ example: 'Elle' }),
     phoneNumber: z.string().optional().openapi({ example: '0612345678' }),
     birthday: z.iso.date().optional().openapi({ example: '1815-12-10' }),
@@ -52,6 +57,10 @@ const LoginInput = z
   .object({
     email: z.email().openapi({ example: 'ada@exemple.fr' }),
     password: z.string().min(1).openapi({ example: 'motdepasse' }),
+    associationName: z
+      .string()
+      .min(1)
+      .openapi({ example: 'Gières Volley-Ball', description: 'Nom de l’association' }),
   })
   .openapi('LoginInput');
 
@@ -70,7 +79,7 @@ const ChangePasswordInput = z
 
 const UserListItem = z
   .object({
-    id: UserId,
+    id: Id,
     name: z.string(),
     firstName: z.string().optional(),
     email: z.email(),
@@ -83,6 +92,26 @@ const UserDetails = UserListItem.extend({
   phoneNumber: z.string().optional(),
   birthday: z.iso.datetime().optional(),
 }).openapi('UserDetails');
+
+const Association = z
+  .object({
+    _id: Id,
+    name: z.string(),
+    address: z.string(),
+  })
+  .openapi('Association');
+
+const Publication = z
+  .object({
+    _id: Id,
+    titre: z.string(),
+    summary: z.string(),
+    corps: z.string(),
+    date: z.iso.datetime(),
+    association: Id,
+  })
+  .openapi('Publication');
+registry.register('Publication', Publication);
 
 const LoginResponse = z
   .object({
@@ -129,6 +158,19 @@ registry.registerPath({
     200: { description: 'Les utilisateurs', content: json(z.array(UserListItem)) },
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/association',
+  operationId: 'listAssociations',
+  tags: ['Associations'],
+  summary: 'Liste les associations',
+  responses: {
+    200: { description: 'Les associations', content: json(z.array(Association)) },
+    429: failure('Trop de requêtes'),
     500: failure('Erreur interne du serveur'),
   },
 });
@@ -212,7 +254,7 @@ registry.registerPath({
   operationId: 'getUser',
   tags: ['Users'],
   summary: 'Récupère un utilisateur par son identifiant',
-  request: { params: z.object({ id: UserId }) },
+  request: { params: z.object({ id: Id }) },
   responses: {
     200: { description: "L'utilisateur", content: json(UserDetails) },
     400: failure('Identifiant invalide'),
@@ -228,12 +270,13 @@ registry.registerPath({
   path: '/auth/register',
   operationId: 'register',
   tags: ['Authentication'],
-  summary: 'Crée un compte utilisateur (rôle Visiteur attribué par le serveur)',
+  summary: 'Crée un compte Visiteur et l’inscrit dans l’association indiquée',
   request: { body: { required: true, content: json(RegisterInput) } },
   responses: {
     201: { description: 'Compte créé, sans contenu de réponse' },
     400: failure('Requête invalide'),
-    409: failure('Un utilisateur avec cet e-mail existe déjà'),
+    409: failure('E-mail déjà utilisé ou utilisateur déjà inscrit à cette association'),
+    404: failure('Association introuvable'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
     500: failure('Erreur interne du serveur'),
@@ -245,12 +288,13 @@ registry.registerPath({
   path: '/auth/login',
   operationId: 'login',
   tags: ['Authentication'],
-  summary: 'Vérifie les identifiants et renvoie un access token et un refresh token',
+  summary: 'Authentifie l’utilisateur dans l’association indiquée et renvoie les tokens',
   request: { body: { required: true, content: json(LoginInput) } },
   responses: {
     200: { description: 'Utilisateur authentifié', content: json(LoginResponse) },
     400: failure('Requête invalide'),
     401: failure('E-mail ou mot de passe incorrect'),
+    404: failure('Association introuvable'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
     500: failure('Erreur interne ou configuration d’authentification indisponible'),

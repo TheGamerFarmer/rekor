@@ -4,6 +4,12 @@ const { MongoMemoryServer } = require('mongodb-memory-server');
 const db = require('../db/db');
 const { ensureSchema } = require('../db/schema');
 const RefreshToken = require('../db/models/refresh-token');
+const Association = require('../db/models/association');
+
+const DEFAULT_ASSOCIATION = {
+  name: 'Gières Volley-Ball',
+  address: '1 Rue des Sports 38610 Gières',
+};
 
 const EXPECTED_COLLECTIONS = [
   'refresh_tokens',
@@ -69,6 +75,12 @@ describe('ensureSchema', () => {
     assert.ok(indexes.some((index) => index.key.expiresAt === 1 && index.expireAfterSeconds === 0));
   });
 
+  it('insère l’association par défaut une seule fois', async () => {
+    assert.strictEqual(await Association.countDocuments(DEFAULT_ASSOCIATION), 1);
+    await ensureSchema();
+    assert.strictEqual(await Association.countDocuments(DEFAULT_ASSOCIATION), 1);
+  });
+
   it('est idempotente (peut tourner deux fois sans erreur)', async () => {
     await assert.doesNotReject(ensureSchema());
   });
@@ -86,6 +98,36 @@ describe('ensureSchema', () => {
       await assert.rejects(ensureSchema(), /disk full/);
     } finally {
       Model.createCollection = original;
+    }
+  });
+
+  it('ignore un doublon concurrent si l’association par défaut existe déjà', async () => {
+    const originalUpdateOne = Association.updateOne;
+    Association.updateOne = async () => {
+      throw Object.assign(new Error('Duplicate association'), { code: 11000 });
+    };
+
+    try {
+      await assert.doesNotReject(ensureSchema());
+    } finally {
+      Association.updateOne = originalUpdateOne;
+    }
+  });
+
+  it('propage un doublon de seed si l’association par défaut est absente', async () => {
+    const originalUpdateOne = Association.updateOne;
+    const originalExists = Association.exists;
+    const duplicate = Object.assign(new Error('Duplicate association'), { code: 11000 });
+    Association.updateOne = async () => {
+      throw duplicate;
+    };
+    Association.exists = async () => null;
+
+    try {
+      await assert.rejects(ensureSchema(), (error) => error === duplicate);
+    } finally {
+      Association.updateOne = originalUpdateOne;
+      Association.exists = originalExists;
     }
   });
 });

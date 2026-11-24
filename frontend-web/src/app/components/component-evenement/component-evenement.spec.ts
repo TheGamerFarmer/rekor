@@ -1,15 +1,16 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ComponentEvenement } from './component-evenement';
-import { defaultEvenements } from './evenements.data';
+import { defaultEvenements, getDateDuJour, getHeureEvenement } from './evenements.data';
+import { createTestEvenements, dateRelativeToToday } from './evenements.test-data';
 import { EvenementService } from '../../services/evenement.service';
 
 describe('ComponentEvenement', () => {
   let fixture: ComponentFixture<ComponentEvenement>;
-  let events = signal(defaultEvenements);
+  let events = signal(createTestEvenements());
 
   beforeEach(async () => {
-    events = signal(defaultEvenements);
+    events = signal(createTestEvenements());
     await TestBed.configureTestingModule({
       imports: [ComponentEvenement],
       providers: [
@@ -24,7 +25,27 @@ describe('ComponentEvenement', () => {
     fixture.detectChanges();
   });
 
+  it.each([
+    ['2026-11-13T08:30:00', '08:30'],
+    ['2026-11-13 08:30:00', '08:30'],
+    ['2026-11-13', ''],
+  ])('extracts the hour from %s', (date, expectedHour) => {
+    expect(getHeureEvenement(date)).toBe(expectedHour);
+  });
+
+  it('formats the current date for event filtering', () => {
+    const now = new Date();
+    const expected = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+      now.getDate(),
+    ).padStart(2, '0')}`;
+
+    expect(getDateDuJour()).toBe(expected);
+  });
+
   it('renders upcoming events by default', () => {
+    events.set([{ ...defaultEvenements[3], date: '2999-01-01T20:00:00' }]);
+    fixture.detectChanges();
+
     expect(fixture.nativeElement.textContent).toContain('Entraînement');
     expect(fixture.nativeElement.querySelector('.event-list')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('a[href="/admin/evenements"]')).not.toBeNull();
@@ -46,21 +67,21 @@ describe('ComponentEvenement', () => {
   });
 
   it('links each event to its detail page', () => {
-    const link = fixture.nativeElement.querySelector(
-      'a[href="/evenements/entrainement-2026-11-17"]',
-    );
+    events.set([{ ...defaultEvenements[0], date: '2999-01-01' }]);
+    fixture.detectChanges();
+
+    const link = fixture.nativeElement.querySelector('a[href="/evenements/1"]');
 
     expect(link).not.toBeNull();
   });
 
   it('shows pagination and clamps navigation to the available pages', () => {
     events.set([
-      ...defaultEvenements,
-      ...defaultEvenements.map((event, index) => ({
+      ...createTestEvenements(),
+      ...createTestEvenements().map((event, index) => ({
         ...event,
         id: event.id + 10 + index,
-        slug: `${event.slug}-copy`,
-        date: '2026-12-01',
+        date: `${dateRelativeToToday(14)}T20:00:00`,
       })),
     ]);
     fixture.detectChanges();
@@ -77,6 +98,14 @@ describe('ComponentEvenement', () => {
     previous.click();
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).toContain('Page 1 sur 2');
+
+    fixture.componentInstance['goToPage'](0);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Page 1 sur 2');
+
+    fixture.componentInstance['goToPage'](3);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Page 2 sur 2');
   });
 
   it('shows an empty state when no events match the filter', () => {
@@ -86,5 +115,9 @@ describe('ComponentEvenement', () => {
     expect(fixture.nativeElement.querySelector('.empty-state')?.textContent).toContain(
       'Aucun événement',
     );
+  });
+
+  it('displays the event hour from the date field', () => {
+    expect(fixture.nativeElement.textContent).toContain('20:00');
   });
 });

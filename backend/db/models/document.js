@@ -1,10 +1,10 @@
 const { Schema, model } = require('mongoose');
-const { DOCUMENT_TYPES } = require('../enums');
+const { DOCUMENT_TYPE } = require('../enums');
 
 const documentSchema = new Schema(
   {
     fileName: { type: String, required: true },
-    type: { type: String, enum: DOCUMENT_TYPES, required: true },
+    type: { type: String, enum: Object.values(DOCUMENT_TYPE), required: true },
     association: { type: Schema.Types.ObjectId, ref: 'Association', required: true },
   },
   { collection: 'document', versionKey: false },

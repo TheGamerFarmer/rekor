@@ -8,10 +8,10 @@ import {
   Validators,
 } from '@angular/forms';
 import { Router } from '@angular/router';
-import { RegisterInput } from '../../api/model/registerInput';
+import { RegisterInput } from '../../api';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
-import { InscriptionService } from '../../services/inscription.service';
+import { AuthenticationService } from '../../api';
 
 /** Ensures that the password confirmation matches the original password. */
 function passwordsMatch(control: AbstractControl): ValidationErrors | null {
@@ -34,17 +34,23 @@ function maxPhoneDigits(control: AbstractControl): ValidationErrors | null {
   templateUrl: './component-inscription.html',
 })
 export class ComponentInscription {
+  private readonly associationName = 'Gières Volley-Ball';
   protected readonly showPassword = signal(false);
   protected readonly showConfirmation = signal(false);
   protected readonly submitted = signal(false);
   protected readonly registrationError = signal<string | null>(null);
+  protected readonly privacyPolicyLinkClicked = signal(false);
+  protected readonly internalRulesLinkClicked = signal(false);
+  protected readonly privacyPolicyCheckboxAttempted = signal(false);
+  protected readonly internalRulesCheckboxAttempted = signal(false);
   protected readonly pronouns = Object.values(RegisterInput.PronounEnum);
 
-  private readonly inscriptionService = inject(InscriptionService);
+  private readonly authenticationService = inject(AuthenticationService);
   private readonly router = inject(Router);
 
   protected readonly registrationForm = new FormBuilder().nonNullable.group(
     {
+      associationName: [this.associationName],
       firstName: ['', [Validators.required]],
       lastName: ['', [Validators.required]],
       pronoun: new FormControl<RegisterInput.PronounEnum | ''>('', {
@@ -71,6 +77,20 @@ export class ComponentInscription {
     { validators: passwordsMatch },
   );
 
+  protected rejectPrivacyPolicyBeforeOpening(event: MouseEvent): void {
+    if (!this.privacyPolicyLinkClicked()) {
+      event.preventDefault();
+      this.privacyPolicyCheckboxAttempted.set(true);
+    }
+  }
+
+  protected rejectInternalRulesBeforeOpening(event: MouseEvent): void {
+    if (!this.internalRulesLinkClicked()) {
+      event.preventDefault();
+      this.internalRulesCheckboxAttempted.set(true);
+    }
+  }
+
   /** Validates the form and delegates registration to the inscription service. */
   protected submit(): void {
     this.submitted.set(true);
@@ -86,14 +106,15 @@ export class ComponentInscription {
       return;
     }
 
-    this.inscriptionService
+    this.authenticationService
       .register({
+        associationName: values.associationName,
+        name: values.lastName,
         firstName: values.firstName,
-        lastName: values.lastName,
         email: values.email,
         password: values.password,
         pronoun: values.pronoun,
-        phone: values.phone,
+        phoneNumber: values.phone,
         birthday: values.birthday,
       })
       .subscribe({

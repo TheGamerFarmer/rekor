@@ -198,6 +198,7 @@ class UserDetails {
 
 
 enum UserDetailsRoleEnum {
+  administrateur._(r'Administrateur'),
   entraineur._(r'Entraineur'),
   capitaine._(r'Capitaine'),
   adhrent._(r'Adhérent'),
@@ -260,6 +261,7 @@ class UserDetailsRoleEnumTypeTransformer {
     }
     if (data != null) {
       switch (data) {
+        case r'Administrateur': return UserDetailsRoleEnum.administrateur;
         case r'Entraineur': return UserDetailsRoleEnum.entraineur;
         case r'Capitaine': return UserDetailsRoleEnum.capitaine;
         case r'Adhérent': return UserDetailsRoleEnum.adhrent;

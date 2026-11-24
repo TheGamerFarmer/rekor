@@ -1,22 +1,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ComponentInscription } from './component-inscription';
 import { Router } from '@angular/router';
-import { InscriptionService } from '../../services/inscription.service';
 import { of, throwError } from 'rxjs';
+import { AuthenticationService } from '../../api';
 
 describe('ComponentInscription', () => {
   let component: ComponentInscription;
   let fixture: ComponentFixture<ComponentInscription>;
   let register: ReturnType<typeof vi.fn>;
+  let navigate: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
     register = vi.fn().mockReturnValue(of(undefined));
+    navigate = vi.fn();
     await TestBed.configureTestingModule({
       imports: [ComponentInscription],
       providers: [
-        { provide: Router, useValue: { navigate: vi.fn() } },
+        { provide: Router, useValue: { navigate } },
         {
-          provide: InscriptionService,
+          provide: AuthenticationService,
           useValue: { register },
         },
       ],
@@ -30,6 +32,15 @@ describe('ComponentInscription', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('links the required privacy consent to the privacy policy page', () => {
+    expect(
+      fixture.nativeElement.querySelector('.agreements a[href="/politique-confidentialite"]'),
+    ).not.toBeNull();
+    expect(fixture.nativeElement.textContent).toContain('Inscrivez-vous à l’association');
+    expect(fixture.nativeElement.textContent).toContain('Gières Volley-Ball');
+    expect(fixture.nativeElement.querySelector('[formControlName="associationName"]')).toBeNull();
   });
 
   it('shows validation errors when required fields are invalid', async () => {
@@ -66,6 +77,67 @@ describe('ComponentInscription', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[role="alert"]')).not.toBeNull();
+  });
+
+  it('links the required internal rules consent to the club regulations', () => {
+    expect(
+      fixture.nativeElement.querySelector('.agreements a[href="/reglement-interieur"]'),
+    ).not.toBeNull();
+  });
+
+  it('unlocks each required agreement checkbox after opening its document link', () => {
+    const privacyCheckbox = fixture.nativeElement.querySelector(
+      '[formControlName="privacyPolicy"]',
+    ) as HTMLInputElement;
+    const internalRulesCheckbox = fixture.nativeElement.querySelector(
+      '[formControlName="internalRules"]',
+    ) as HTMLInputElement;
+    const privacyLink = fixture.nativeElement.querySelector(
+      'a[href="/politique-confidentialite"]',
+    ) as HTMLAnchorElement;
+    const internalRulesLink = fixture.nativeElement.querySelector(
+      'a[href="/reglement-interieur"]',
+    ) as HTMLAnchorElement;
+
+    expect(privacyCheckbox.disabled).toBe(false);
+    expect(internalRulesCheckbox.disabled).toBe(false);
+    expect(privacyLink.closest('label')?.textContent?.replace(/\s+/g, ' ')).toContain(
+      'J’ai pris connaissance de la politique de confidentialité de l’association.',
+    );
+    expect(internalRulesLink.closest('label')?.textContent?.replace(/\s+/g, ' ')).toContain(
+      'J’atteste avoir lu et accepté le règlement intérieur de l’association.',
+    );
+
+    privacyCheckbox.click();
+    internalRulesCheckbox.click();
+    fixture.detectChanges();
+    expect(privacyCheckbox.checked).toBe(false);
+    expect(internalRulesCheckbox.checked).toBe(false);
+    expect(fixture.nativeElement.textContent).toContain(
+      'Veuillez ouvrir la politique de confidentialité avant de cocher cette case.',
+    );
+    expect(fixture.nativeElement.textContent).toContain(
+      'Veuillez ouvrir le règlement intérieur avant de cocher cette case.',
+    );
+
+    privacyLink.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Veuillez ouvrir la politique de confidentialité avant de cocher cette case.',
+    );
+    expect(fixture.nativeElement.textContent).toContain(
+      'Veuillez ouvrir le règlement intérieur avant de cocher cette case.',
+    );
+    privacyCheckbox.click();
+    expect(privacyCheckbox.checked).toBe(true);
+
+    internalRulesLink.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Veuillez ouvrir le règlement intérieur avant de cocher cette case.',
+    );
+    internalRulesCheckbox.click();
+    expect(internalRulesCheckbox.checked).toBe(true);
   });
 
   it('keeps one password hint and highlights it only while the password is invalid', () => {
@@ -135,6 +207,10 @@ describe('ComponentInscription', () => {
     pronoun.value = 'Elle';
     pronoun.dispatchEvent(new Event('change', { bubbles: true }));
 
+    fixture.nativeElement.querySelector('a[href="/politique-confidentialite"]').click();
+    fixture.nativeElement.querySelector('a[href="/reglement-interieur"]').click();
+    fixture.detectChanges();
+
     for (const name of ['privacyPolicy', 'internalRules', 'healthData', 'imageRights']) {
       const checkbox = fixture.nativeElement.querySelector(
         `[formControlName="${name}"]`,
@@ -152,6 +228,85 @@ describe('ComponentInscription', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+    expect(register).toHaveBeenCalledWith(
+      expect.objectContaining({
+        associationName: 'Gières Volley-Ball',
+        name: 'Lovelace',
+        firstName: 'Ada',
+        email: 'ada@example.com',
+        pronoun: 'Elle',
+        phoneNumber: '0600000000',
+        password: 'Motdepasse1!',
+      }),
+    );
+  });
+
+  it('navigates to /connexion after successful registration', async () => {
+    component['registrationForm'].patchValue({
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      pronoun: 'Elle',
+      email: 'ada@example.com',
+      phone: '0600000000',
+      password: 'Motdepasse1!',
+      confirmPassword: 'Motdepasse1!',
+      internalRules: true,
+      privacyPolicy: true,
+    });
+
+    component['submit']();
+    await fixture.whenStable();
+
+    expect(navigate).toHaveBeenCalledWith(['/connexion']);
+  });
+
+  it('includes birthday when provided', async () => {
+    component['registrationForm'].patchValue({
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      pronoun: 'Elle',
+      birthday: '1815-12-10',
+      email: 'ada@example.com',
+      phone: '0600000000',
+      password: 'Motdepasse1!',
+      confirmPassword: 'Motdepasse1!',
+      internalRules: true,
+      privacyPolicy: true,
+    });
+
+    component['submit']();
+    await fixture.whenStable();
+
+    expect(register).toHaveBeenCalledWith(expect.objectContaining({ birthday: '1815-12-10' }));
+  });
+
+  it('marks required agreement checkboxes as invalid and does not submit when unchecked', async () => {
+    component['registrationForm'].patchValue({
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      pronoun: 'Elle',
+      email: 'ada@example.com',
+      phone: '0600000000',
+      password: 'Motdepasse1!',
+      confirmPassword: 'Motdepasse1!',
+      internalRules: false,
+      privacyPolicy: false,
+    });
+
+    fixture.nativeElement.querySelector('button[type="submit"]').click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    const privacyCheckbox = fixture.nativeElement.querySelector(
+      '[formControlName="privacyPolicy"]',
+    ) as HTMLInputElement;
+    const internalRulesCheckbox = fixture.nativeElement.querySelector(
+      '[formControlName="internalRules"]',
+    ) as HTMLInputElement;
+
+    expect(privacyCheckbox.getAttribute('aria-invalid')).toBe('true');
+    expect(internalRulesCheckbox.getAttribute('aria-invalid')).toBe('true');
+    expect(register).not.toHaveBeenCalled();
   });
 
   it('toggles password and confirmation visibility', () => {
@@ -179,6 +334,38 @@ describe('ComponentInscription', () => {
     fixture.detectChanges();
     expect(password.type).toBe('password');
     expect(confirmation.type).toBe('password');
+  });
+
+  it('shows an error when confirmPassword is left empty after interaction', () => {
+    const confirmPassword = fixture.nativeElement.querySelector(
+      '#confirmPassword',
+    ) as HTMLInputElement;
+    confirmPassword.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Confirmez votre mot de passe.');
+  });
+
+  it('does not call register when pronoun is empty despite form being valid', () => {
+    component['registrationForm'].patchValue({
+      firstName: 'Ada',
+      lastName: 'Lovelace',
+      pronoun: 'Elle',
+      email: 'ada@example.com',
+      phone: '0600000000',
+      password: 'Motdepasse1!',
+      confirmPassword: 'Motdepasse1!',
+      internalRules: true,
+      privacyPolicy: true,
+    });
+    const pronounControl = component['registrationForm'].controls.pronoun;
+    pronounControl.clearValidators();
+    pronounControl.setValue('');
+    pronounControl.updateValueAndValidity();
+
+    component['submit']();
+
+    expect(register).not.toHaveBeenCalled();
   });
 
   it.each([

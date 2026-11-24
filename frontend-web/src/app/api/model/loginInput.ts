@@ -12,5 +12,9 @@
 export interface LoginInput { 
     email: string;
     password: string;
+    /**
+     * Nom de l’association
+     */
+    associationName: string;
 }
 

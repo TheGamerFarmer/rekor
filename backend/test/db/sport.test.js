@@ -12,6 +12,7 @@ const Participant = require('../../db/models/participant');
 const GroupMember = require('../../db/models/group_member');
 const Referee = require('../../db/models/referee');
 const PlayerPosition = require('../../db/models/player_position');
+const { EVENT_TYPE } = require('../../db/enums');
 
 describe('collections sport', () => {
   let mongod;
@@ -28,7 +29,7 @@ describe('collections sport', () => {
     const valid = () => ({
       date: new Date('2024-06-01'),
       place: 'Gymnase A',
-      type: 'Entrainement',
+      type: EVENT_TYPE.ENTRAINEMENT,
       name: 'Entraînement du mardi',
       description: 'Séance classique',
       group: new ObjectId(),
@@ -36,6 +37,12 @@ describe('collections sport', () => {
 
     it('accepte un document valide', async () => {
       await assert.doesNotReject(Event.create(valid()));
+    });
+
+    it('accepte chaque type d’événement défini par l’enum', async () => {
+      for (const [index, type] of Object.values(EVENT_TYPE).entries()) {
+        await assert.doesNotReject(Event.create({ ...valid(), name: `Événement ${index}`, type }));
+      }
     });
 
     for (const field of ['date', 'place', 'type', 'name', 'description', 'group']) {
