@@ -164,6 +164,23 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'get',
+  path: '/users/roles',
+  operationId: 'listUserRoles',
+  tags: ['Users'],
+  summary: 'Liste les rôles utilisateurs disponibles',
+  security: [{ BearerAuth: [] }],
+  responses: {
+    200: { description: 'Les rôles disponibles', content: json(z.array(Role)) },
+    401: failure('Authentification requise ou token invalide'),
+    403: failure('Accès réservé aux administrateurs'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
   path: '/association',
   operationId: 'listAssociations',
   tags: ['Associations'],
@@ -184,6 +201,7 @@ registry.registerPath({
   security: [{ BearerAuth: [] }],
   responses: {
     200: { description: 'Le profil utilisateur', content: json(UserDetails) },
+    400: failure('Identifiant invalide'),
     401: failure('Authentification requise ou token invalide'),
     404: failure('Utilisateur introuvable'),
     429: failure('Trop de requêtes'),
@@ -220,7 +238,9 @@ registry.registerPath({
   security: [{ BearerAuth: [] }],
   responses: {
     204: { description: 'Compte supprimé, sans contenu de réponse' },
+    400: failure('Identifiant invalide'),
     401: failure('Authentification requise ou token invalide'),
+    403: failure('Interdiction de supprimer le dernier administrateur'),
     404: failure('Utilisateur introuvable'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
@@ -258,6 +278,31 @@ registry.registerPath({
   responses: {
     200: { description: "L'utilisateur", content: json(UserDetails) },
     400: failure('Identifiant invalide'),
+    404: failure('Utilisateur introuvable'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/users/{id}/grant/{role}',
+  operationId: 'grantUserRole',
+  tags: ['Users'],
+  summary: 'Attribue un rôle à un utilisateur',
+  security: [{ BearerAuth: [] }],
+  request: {
+    params: z.object({
+      id: Id,
+      role: Role,
+    }),
+  },
+  responses: {
+    204: { description: 'Rôle mis à jour, sans contenu de réponse' },
+    400: failure('Identifiant ou rôle invalide'),
+    401: failure('Authentification requise ou token invalide'),
+    403: failure('Accès interdit ou changement de son propre rôle'),
     404: failure('Utilisateur introuvable'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),

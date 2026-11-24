@@ -402,6 +402,92 @@
         }
       }
     },
+    "/users/roles": {
+      "get": {
+        "operationId": "listUserRoles",
+        "tags": [
+          "Users"
+        ],
+        "summary": "Liste les rôles utilisateurs disponibles",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Les rôles disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "Administrateur",
+                      "Entraineur",
+                      "Capitaine",
+                      "Adhérent",
+                      "Visiteur"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentification requise ou token invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès réservé aux administrateurs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/association": {
       "get": {
         "operationId": "listAssociations",
@@ -465,6 +551,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Identifiant invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -623,8 +719,28 @@
           "204": {
             "description": "Compte supprimé, sans contenu de réponse"
           },
+          "400": {
+            "description": "Identifiant invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Authentification requise ou token invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Interdiction de supprimer le dernier administrateur",
             "content": {
               "application/json": {
                 "schema": {
@@ -807,6 +923,122 @@
           },
           "400": {
             "description": "Identifiant invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur introuvable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/users/{id}/grant/{role}": {
+      "put": {
+        "operationId": "grantUserRole",
+        "tags": [
+          "Users"
+        ],
+        "summary": "Attribue un rôle à un utilisateur",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "Administrateur",
+                "Entraineur",
+                "Capitaine",
+                "Adhérent",
+                "Visiteur"
+              ]
+            },
+            "required": true,
+            "name": "role",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Rôle mis à jour, sans contenu de réponse"
+          },
+          "400": {
+            "description": "Identifiant ou rôle invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentification requise ou token invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès interdit ou changement de son propre rôle",
             "content": {
               "application/json": {
                 "schema": {
