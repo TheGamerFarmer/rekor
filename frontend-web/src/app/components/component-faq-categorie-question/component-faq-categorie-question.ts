@@ -2,9 +2,10 @@ import { Component, inject, input, OnInit } from '@angular/core';
 import { MockFaqService } from '../../services/mock-faq-service';
 import { QuestionReponse } from '../../interfaces/question-reponse-interface';
 import { ComponentFaqQuestion } from '../component-faq-question/component-faq-question';
+import { UpperCasePipe } from '@angular/common';
 
 @Component({
-  imports: [ComponentFaqQuestion],
+  imports: [ComponentFaqQuestion, UpperCasePipe],
   selector: 'app-component-faq-categorie-question',
   styleUrl: './component-faq-categorie-question.css',
   templateUrl: './component-faq-categorie-question.html',
