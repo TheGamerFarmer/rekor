@@ -157,11 +157,19 @@
               "birthday": {
                 "type": "string",
                 "format": "date-time"
+              },
+              "medicalCertificate": {
+                "type": "boolean"
+              },
+              "rightOfPublicity": {
+                "type": "boolean"
               }
             },
             "required": [
               "role",
-              "pronoun"
+              "pronoun",
+              "medicalCertificate",
+              "rightOfPublicity"
             ]
           }
         ]
@@ -192,6 +200,12 @@
               "Iel",
               "Autre"
             ]
+          },
+          "medicalCertificate": {
+            "type": "boolean"
+          },
+          "rightOfPublicity": {
+            "type": "boolean"
           }
         }
       },
@@ -259,6 +273,12 @@
             "type": "string",
             "format": "date",
             "example": "1815-12-10"
+          },
+          "medicalCertificate": {
+            "type": "boolean"
+          },
+          "rightOfPublicity": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -267,7 +287,9 @@
           "email",
           "password",
           "associationName",
-          "pronoun"
+          "pronoun",
+          "medicalCertificate",
+          "rightOfPublicity"
         ]
       },
       "LoginResponse": {

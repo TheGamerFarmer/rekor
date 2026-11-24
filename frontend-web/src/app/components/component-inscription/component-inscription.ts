@@ -138,6 +138,8 @@ export class ComponentInscription {
         pronoun: values.pronoun,
         phoneNumber: values.phone,
         birthday: values.birthday,
+        medicalCertificate: values.healthData,
+        rightOfPublicity: values.imageRights,
       })
       .subscribe({
         next: () =>
