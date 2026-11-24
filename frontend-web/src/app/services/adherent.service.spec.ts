@@ -30,8 +30,16 @@ describe('AdherentService', () => {
     localStorage.clear();
   });
 
-  it('starts with an empty collection when storage is empty', () => {
-    expect(new AdherentService().adherents()).toEqual([]);
+  it('starts with mock members when storage is empty', () => {
+    const members = new AdherentService().adherents();
+
+    expect(members).toHaveLength(5);
+    expect(members.map(({ registrationStatus }) => registrationStatus)).toContain('validated');
+    expect(members.map(({ registrationStatus }) => registrationStatus)).toContain(
+      'pending-validation',
+    );
+    expect(members.map(({ registrationStatus }) => registrationStatus)).toContain('to-validate');
+    expect(members.some(({ birthDate }) => birthDate === null)).toBe(true);
   });
 
   it('loads stored members and migrates legacy birth years', () => {
@@ -74,6 +82,7 @@ describe('AdherentService', () => {
   });
 
   it('updates only the matching member while preserving its identifier', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
     const service = new AdherentService();
     const roles = ['Capitaine'] as AdherentInput['roles'];
 
@@ -88,6 +97,7 @@ describe('AdherentService', () => {
   });
 
   it('removes matching members and persists even when no member matches', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
     const service = new AdherentService();
     service.add(memberInput);
     service.add(memberInput);

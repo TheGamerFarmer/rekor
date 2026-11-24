@@ -64,7 +64,8 @@ a {
 }
 
 .main-nav > a,
-.footer-links a {
+.footer-links a,
+.footer-logout {
   position: relative;
   text-decoration: none;
 }
@@ -73,12 +74,24 @@ a {
   align-self: center;
 }
 
-.footer-links a {
+.footer-links a,
+.footer-logout {
   align-self: flex-start;
 }
 
+.footer-logout {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
 .main-nav > a::after,
-.footer-links a::after {
+.footer-links a::after,
+.footer-logout::after {
   position: absolute;
   right: 0;
   bottom: -4px;
@@ -94,7 +107,9 @@ a {
 .main-nav > a:hover::after,
 .main-nav > a:focus-visible::after,
 .footer-links a:hover::after,
-.footer-links a:focus-visible::after {
+.footer-links a:focus-visible::after,
+.footer-logout:hover::after,
+.footer-logout:focus-visible::after {
   transform: scaleX(1);
 }
 

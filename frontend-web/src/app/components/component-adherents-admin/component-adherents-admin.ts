@@ -15,7 +15,6 @@ import {
   MEMBER_PRONOUNS,
   MEMBER_ROLES,
   type Adherent,
-  type AdherentInput,
   type MemberPronoun,
   type MemberRole,
   type RegistrationStatus,
@@ -71,7 +70,7 @@ export class ComponentAdherentsAdmin {
       nonNullable: true,
       validators: [Validators.required],
     }),
-    birthDate: ['', [Validators.required, this.validateBirthDate]],
+    birthDate: ['', [this.validateBirthDate]],
     phone: ['', [Validators.required, Validators.pattern(/^[0-9+().\s-]{6,20}$/)]],
     email: ['', [Validators.required, Validators.email]],
     roles: new FormControl<MemberRole[]>([], {
@@ -135,10 +134,13 @@ export class ComponentAdherentsAdmin {
       return;
     }
 
-    const values: AdherentInput = this.memberForm.getRawValue();
+    const values = this.memberForm.getRawValue();
     const id = this.editingId();
     if (id !== null) {
-      this.adherentService.update(id, values);
+      this.adherentService.update(id, {
+        ...values,
+        birthDate: values.birthDate || null,
+      });
     }
     this.closeForm();
   }

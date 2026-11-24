@@ -44,9 +44,58 @@ describe('App', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Connexion');
     expect(fixture.nativeElement.textContent).toContain('Inscription');
-    expect(
-      fixture.nativeElement.querySelector('.footer-links a[href="/politique-confidentialite"]'),
-    ).not.toBeNull();
+  });
+
+  it('links footer contact to the club page', () => {
+    const { fixture } = createApp();
+    fixture.detectChanges();
+
+    const links = fixture.nativeElement.querySelectorAll(
+      'footer a',
+    ) as NodeListOf<HTMLAnchorElement>;
+    const contact = Array.from(links).find((link) => link.textContent?.trim() === 'Contact');
+    expect(contact?.getAttribute('href')).toBe('/presentation-club');
+  });
+
+  it('only shows footer registration when logged out', () => {
+    const { fixture } = createApp();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('footer a[href="/inscription"]')).not.toBeNull();
+
+    isAuthenticated.set(true);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('footer a[href="/inscription"]')).toBeNull();
+
+    isAuthenticated.set(false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('footer a[href="/inscription"]')).not.toBeNull();
+  });
+
+  it('switches the footer login link to a working logout action', () => {
+    const { fixture } = createApp();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('footer a[href="/connexion"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('footer .footer-logout')).toBeNull();
+
+    isAuthenticated.set(true);
+    fixture.detectChanges();
+    const navigate = vi.spyOn(TestBed.inject(Router), 'navigate');
+    expect(fixture.nativeElement.querySelector('footer a[href="/connexion"]')).toBeNull();
+    const logoutButton = fixture.nativeElement.querySelector(
+      'footer .footer-logout',
+    ) as HTMLButtonElement;
+    expect(logoutButton.textContent).toContain('Déconnexion');
+    logoutButton.click();
+
+    expect(logout).toHaveBeenCalled();
+    expect(navigate).toHaveBeenCalledWith(['/accueil']);
+
+    isAuthenticated.set(false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('footer a[href="/connexion"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('footer .footer-logout')).toBeNull();
   });
 
   it('shows account and logs out when logged in', () => {
@@ -58,7 +107,11 @@ describe('App', () => {
     expect(fixture.nativeElement.textContent).toContain('Mon compte');
     expect(fixture.nativeElement.textContent).toContain('Déconnexion');
 
-    (fixture.nativeElement.querySelector('.login-link button') as HTMLButtonElement).click();
+    const logoutButton = fixture.nativeElement.querySelector(
+      '.login-link button',
+    ) as HTMLButtonElement;
+    expect(logoutButton.classList.contains('button-uppercase')).toBe(true);
+    logoutButton.click();
 
     expect(logout).toHaveBeenCalled();
     expect(navigate).toHaveBeenCalledWith(['/accueil']);

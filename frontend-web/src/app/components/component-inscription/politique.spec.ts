@@ -21,6 +21,9 @@ describe('ComponentPolitique', () => {
     );
     expect(page.querySelectorAll('.privacy-section')).toHaveLength(10);
     expect(page.textContent).toContain('Droits des personnes concernées');
-    expect(page.querySelector('a[href="/#contact"]')).not.toBeNull();
+    const clubLinks = page.querySelectorAll('a[href="/presentation-club"]');
+    expect(clubLinks).toHaveLength(2);
+    expect(clubLinks[0].textContent).toContain('contacter le club');
+    expect(clubLinks[1].textContent).toContain('par ses canaux de contact');
   });
 });

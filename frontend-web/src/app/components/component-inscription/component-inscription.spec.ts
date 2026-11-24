@@ -4,6 +4,16 @@ import { Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { AuthenticationService } from '../../api';
 
+class MockBroadcastChannel {
+  static channels: MockBroadcastChannel[] = [];
+  onmessage: ((event: MessageEvent<unknown>) => void) | null = null;
+  close = vi.fn();
+
+  constructor(readonly name: string) {
+    MockBroadcastChannel.channels.push(this);
+  }
+}
+
 describe('ComponentInscription', () => {
   let component: ComponentInscription;
   let fixture: ComponentFixture<ComponentInscription>;
@@ -11,6 +21,8 @@ describe('ComponentInscription', () => {
   let navigate: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
+    MockBroadcastChannel.channels = [];
+    vi.stubGlobal('BroadcastChannel', MockBroadcastChannel);
     register = vi.fn().mockReturnValue(of(undefined));
     navigate = vi.fn();
     await TestBed.configureTestingModule({
@@ -30,13 +42,25 @@ describe('ComponentInscription', () => {
     await fixture.whenStable();
   });
 
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
   it('should create', () => {
     expect(component).toBeTruthy();
   });
 
+  it('closes the reading channel when the form is destroyed', () => {
+    const channel = MockBroadcastChannel.channels[0];
+    fixture.destroy();
+    expect(channel.close).toHaveBeenCalledOnce();
+  });
+
   it('links the required privacy consent to the privacy policy page', () => {
     expect(
-      fixture.nativeElement.querySelector('.agreements a[href="/politique-confidentialite"]'),
+      fixture.nativeElement.querySelector(
+        '.agreements a[href^="/politique-confidentialite?lecture="]',
+      ),
     ).not.toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Inscrivez-vous à l’association');
     expect(fixture.nativeElement.textContent).toContain('Gières Volley-Ball');
@@ -81,11 +105,11 @@ describe('ComponentInscription', () => {
 
   it('links the required internal rules consent to the club regulations', () => {
     expect(
-      fixture.nativeElement.querySelector('.agreements a[href="/reglement-interieur"]'),
+      fixture.nativeElement.querySelector('.agreements a[href^="/reglement-interieur?lecture="]'),
     ).not.toBeNull();
   });
 
-  it('unlocks each required agreement checkbox after opening its document link', () => {
+  it('unlocks each required agreement checkbox only after reaching its document bottom', () => {
     const privacyCheckbox = fixture.nativeElement.querySelector(
       '[formControlName="privacyPolicy"]',
     ) as HTMLInputElement;
@@ -93,10 +117,10 @@ describe('ComponentInscription', () => {
       '[formControlName="internalRules"]',
     ) as HTMLInputElement;
     const privacyLink = fixture.nativeElement.querySelector(
-      'a[href="/politique-confidentialite"]',
+      'a[href^="/politique-confidentialite?lecture="]',
     ) as HTMLAnchorElement;
     const internalRulesLink = fixture.nativeElement.querySelector(
-      'a[href="/reglement-interieur"]',
+      'a[href^="/reglement-interieur?lecture="]',
     ) as HTMLAnchorElement;
 
     expect(privacyCheckbox.disabled).toBe(false);
@@ -114,27 +138,32 @@ describe('ComponentInscription', () => {
     expect(privacyCheckbox.checked).toBe(false);
     expect(internalRulesCheckbox.checked).toBe(false);
     expect(fixture.nativeElement.textContent).toContain(
-      'Veuillez ouvrir la politique de confidentialité avant de cocher cette case.',
+      'Veuillez ouvrir la politique de confidentialité et la faire défiler jusqu’en bas',
     );
     expect(fixture.nativeElement.textContent).toContain(
-      'Veuillez ouvrir le règlement intérieur avant de cocher cette case.',
+      'Veuillez ouvrir le règlement intérieur et le faire défiler jusqu’en bas',
     );
 
     privacyLink.click();
+    privacyCheckbox.click();
     fixture.detectChanges();
-    expect(fixture.nativeElement.textContent).not.toContain(
-      'Veuillez ouvrir la politique de confidentialité avant de cocher cette case.',
-    );
+    expect(privacyCheckbox.checked).toBe(false);
     expect(fixture.nativeElement.textContent).toContain(
-      'Veuillez ouvrir le règlement intérieur avant de cocher cette case.',
+      'Veuillez ouvrir la politique de confidentialité et la faire défiler jusqu’en bas',
     );
+    MockBroadcastChannel.channels[0].onmessage?.({ data: 'privacyPolicy' } as MessageEvent);
+    fixture.detectChanges();
     privacyCheckbox.click();
     expect(privacyCheckbox.checked).toBe(true);
+    expect(internalRulesCheckbox.checked).toBe(false);
 
     internalRulesLink.click();
+    internalRulesCheckbox.click();
+    expect(internalRulesCheckbox.checked).toBe(false);
+    MockBroadcastChannel.channels[0].onmessage?.({ data: 'internalRules' } as MessageEvent);
     fixture.detectChanges();
     expect(fixture.nativeElement.textContent).not.toContain(
-      'Veuillez ouvrir le règlement intérieur avant de cocher cette case.',
+      'Veuillez ouvrir le règlement intérieur et le faire défiler jusqu’en bas',
     );
     internalRulesCheckbox.click();
     expect(internalRulesCheckbox.checked).toBe(true);
@@ -207,8 +236,8 @@ describe('ComponentInscription', () => {
     pronoun.value = 'Elle';
     pronoun.dispatchEvent(new Event('change', { bubbles: true }));
 
-    fixture.nativeElement.querySelector('a[href="/politique-confidentialite"]').click();
-    fixture.nativeElement.querySelector('a[href="/reglement-interieur"]').click();
+    MockBroadcastChannel.channels[0].onmessage?.({ data: 'privacyPolicy' } as MessageEvent);
+    MockBroadcastChannel.channels[0].onmessage?.({ data: 'internalRules' } as MessageEvent);
     fixture.detectChanges();
 
     for (const name of ['privacyPolicy', 'internalRules', 'healthData', 'imageRights']) {
