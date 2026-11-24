@@ -56,7 +56,10 @@ void main() {
         }),
       );
 
-      expect(await api.login('ada@exemple.fr', 'motdepasse', 'Gières Volley-Ball',), 'access',);
+      expect(
+        await api.login('ada@exemple.fr', 'motdepasse', 'Gières Volley-Ball'),
+        'access',
+      );
       expect(await api.getRefreshToken(), 'refresh');
     });
 
@@ -72,7 +75,10 @@ void main() {
         ),
       );
 
-      await expectLater(api.login('ada@exemple.fr', 'bad', 'Gières Volley-Ball'), throwsStateError,);
+      await expectLater(
+        api.login('ada@exemple.fr', 'bad', 'Gières Volley-Ball'),
+        throwsStateError,
+      );
       expect(await api.getRefreshToken(), isNull);
     });
 

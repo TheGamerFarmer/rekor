@@ -35,7 +35,9 @@ void main() {
     });
 
     testWidgets('Affiche le champ association', (tester) async {
-      await tester.pumpWidget(const MaterialApp(home: Scaffold(body: MyLoginPage())),);
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: MyLoginPage())),
+      );
 
       expect(find.byIcon(Icons.groups), findsOneWidget);
       expect(find.text('Association'), findsOneWidget);
@@ -100,9 +102,14 @@ void main() {
           const MaterialApp(home: Scaffold(body: MyLoginPage())),
         );
 
-        await tester.enterText(find.byType(TextFormField).at(0), 'Gières Volley-Ball',);
         await tester.enterText(
-          find.byType(TextFormField).at(1), 'ada@exemple.fr',);
+          find.byType(TextFormField).at(0),
+          'Gières Volley-Ball',
+        );
+        await tester.enterText(
+          find.byType(TextFormField).at(1),
+          'ada@exemple.fr',
+        );
         await tester.enterText(find.byType(TextFormField).at(2), 'motdep@sse');
 
         await tester.tap(find.text('Se connecter'));
@@ -117,8 +124,14 @@ void main() {
         const MaterialApp(home: Scaffold(body: MyLoginPage())),
       );
 
-      await tester.enterText(find.byType(TextFormField).at(0), 'Gières Volley-Ball',);
-      await tester.enterText(find.byType(TextFormField).at(1), 'ada@exemple.fr',);
+      await tester.enterText(
+        find.byType(TextFormField).at(0),
+        'Gières Volley-Ball',
+      );
+      await tester.enterText(
+        find.byType(TextFormField).at(1),
+        'ada@exemple.fr',
+      );
       await tester.enterText(find.byType(TextFormField).at(2), 'motdepasse');
 
       await tester.tap(find.text('Se connecter'));
@@ -134,8 +147,14 @@ void main() {
         const MaterialApp(home: Scaffold(body: MyLoginPage())),
       );
 
-      await tester.enterText(find.byType(TextFormField).at(0), 'Gières Volley-Ball',);
-      await tester.enterText(find.byType(TextFormField).at(1), 'ada@exemple.fr',);
+      await tester.enterText(
+        find.byType(TextFormField).at(0),
+        'Gières Volley-Ball',
+      );
+      await tester.enterText(
+        find.byType(TextFormField).at(1),
+        'ada@exemple.fr',
+      );
       await tester.enterText(find.byType(TextFormField).at(2), 'motdepasse');
 
       await tester.tap(find.text('Se connecter'));
@@ -158,8 +177,14 @@ class FakeApiClient extends ApiClient {
   FakeApiClient() : super('http://localhost:3000');
 
   @override
-  Future<String> login(String email, String password, String associationName,) async {
-    if (email == 'ada@exemple.fr' && password == 'motdepasse' && associationName == 'Gières Volley-Ball') {
+  Future<String> login(
+    String email,
+    String password,
+    String associationName,
+  ) async {
+    if (email == 'ada@exemple.fr' &&
+        password == 'motdepasse' &&
+        associationName == 'Gières Volley-Ball') {
       return 'fake-access-token';
     }
 

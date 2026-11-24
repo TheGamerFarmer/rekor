@@ -51,9 +51,17 @@ class ApiClient {
   }
 
   /// Connexion auprès du back-end.
-  Future<String> login(String email, String password, String associationName,) async {
+  Future<String> login(
+    String email,
+    String password,
+    String associationName,
+  ) async {
     final response = await _auth.login(
-      generated.LoginInput(email: email, password: password, associationName: associationName,),
+      generated.LoginInput(
+        email: email,
+        password: password,
+        associationName: associationName,
+      ),
     );
 
     if (response == null || response.accessToken.isEmpty) {
