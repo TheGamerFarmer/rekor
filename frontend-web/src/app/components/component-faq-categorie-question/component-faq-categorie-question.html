@@ -1,8 +1,11 @@
 <section>
+  <!-- Bannière de la catégorie : permet de déplier ou replier son contenu. -->
   <button type="button" class="banniere-categorie" (click)="onClickListener()">
     <h2 class="titre-categorie">{{ titre() | uppercase }}</h2>
     <span class="plus-icon">+</span>
   </button>
+
+  <!-- Contenu des questions/réponses de la catégorie. -->
   <div class="q-r-container">
     @if (estSelectBool) {
       @for (questionrep of qr; track $index) {

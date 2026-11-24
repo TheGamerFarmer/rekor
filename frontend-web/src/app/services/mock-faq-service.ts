@@ -1,8 +1,20 @@
 import { Service } from '@angular/core';
 import { QuestionReponse } from '../interfaces/question-reponse-interface';
 
+/**
+ * Service permettant de gérer les données fictives de la FAQ.
+ *
+ * Centralise les différentes catégories ainsi que leurs questions
+ * et réponses. Les données sont directement définies dans le service
+ * et ne nécessitent pas de connexion à une base de données.
+ */
 @Service()
 export class MockFaqService {
+  /**
+   * Récupère la liste des titres de toutes les catégories de la FAQ.
+   *
+   * @returns Un tableau contenant les titres des catégories disponibles.
+   */
   getAllTitles(): string[] {
     return [
       'Inscription et adhésion',
@@ -14,6 +26,16 @@ export class MockFaqService {
     ];
   }
 
+  /**
+   * Récupère les questions et réponses associées à une catégorie.
+   *
+   * Recherche la catégorie correspondant au titre fourni
+   * et retourne l'ensemble de ses questions/réponses.
+   *
+   * @param title Titre de la catégorie dont on souhaite récupérer les questions.
+   * @returns Un tableau d'objets QuestionReponse contenant les questions
+   * et leurs réponses. Retourne un tableau vide si la catégorie n'existe pas.
+   */
   getQuestionsReponses(title: string): QuestionReponse[] {
     switch (title) {
       case 'Inscription et adhésion':
