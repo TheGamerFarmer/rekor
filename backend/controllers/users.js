@@ -64,11 +64,27 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      const result = await User.deleteOne({ _id: new ObjectId(req.auth.sub) });
-      if (result.deletedCount === 0) {
+      if (!isValidObjectId(req.auth.sub)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
+      const user = await User.findById(req.auth.sub);
+      if (!user) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
-      await RefreshToken.deleteMany({ userId: new ObjectId(req.auth.sub) });
+
+      if (
+        user.role === USER_ROLE.ADMINISTRATEUR &&
+        (await User.countDocuments({ role: USER_ROLE.ADMINISTRATEUR })) <= 1
+      ) {
+        return res
+          .status(403)
+          .json({ message: 'Interdiction de supprimer le dernier administrateur' });
+      }
+
+      await User.deleteOne({ _id: user._id });
+      await RefreshToken.deleteMany({ userId: user._id });
+
       res.status(204).end();
     }),
   );
