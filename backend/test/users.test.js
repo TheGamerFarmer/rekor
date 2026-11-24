@@ -1,10 +1,13 @@
 const { describe, it, before, after, beforeEach } = require('node:test');
 const assert = require('node:assert');
+const express = require('express');
 const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const { ObjectId } = require('mongodb');
 const db = require('../db/db');
 const app = require('../index');
+const createUsersRouter = require('../controllers/users');
+const User = require('../db/models/user');
 const RefreshToken = require('../db/models/refresh-token');
 const {
   signAccessToken,
@@ -137,6 +140,160 @@ describe('/users (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 400);
   });
 
+  it('GET /users/roles exige une authentification', async () => {
+    const res = await request(app).get('/users/roles');
+    assert.strictEqual(res.status, 401);
+  });
+
+  it('GET /users/roles refuse un utilisateur non administrateur', async () => {
+    const res = await request(app).get('/users/roles').set('Authorization', `Bearer ${adaToken}`);
+    assert.strictEqual(res.status, 403);
+  });
+
+  it('GET /users/roles liste les rôles pour un administrateur', async () => {
+    const adminId = new ObjectId('000000000000000000000003');
+    await db
+      .getDb()
+      .collection('users')
+      .insertOne({
+        _id: adminId,
+        name: 'Babbage',
+        firstName: 'Charles',
+        email: 'charles@exemple.fr',
+        password: await hashPassword('mot-de-passe'),
+        role: 'Administrateur',
+        pronoun: 'Il',
+      });
+    const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+
+    const res = await request(app).get('/users/roles').set('Authorization', `Bearer ${token}`);
+
+    assert.strictEqual(res.status, 200);
+    assert.deepStrictEqual(res.body, [
+      'Administrateur',
+      'Entraineur',
+      'Capitaine',
+      'Adhérent',
+      'Visiteur',
+    ]);
+  });
+
+  it('PATCH /users/:id attribue un rôle à un autre utilisateur', async () => {
+    const adminId = new ObjectId('000000000000000000000003');
+    await db
+      .getDb()
+      .collection('users')
+      .insertOne({
+        _id: adminId,
+        name: 'Babbage',
+        firstName: 'Charles',
+        email: 'charles@exemple.fr',
+        password: await hashPassword('mot-de-passe'),
+        role: 'Administrateur',
+        pronoun: 'Il',
+      });
+    const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+
+    const res = await request(app)
+      .patch(`/users/${adaId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'Capitaine' });
+
+    assert.strictEqual(res.status, 204);
+    const updated = await db.getDb().collection('users').findOne({ _id: adaId });
+    assert.strictEqual(updated.role, 'Capitaine');
+  });
+
+  it('PATCH /users/:id refuse un identifiant invalide', async () => {
+    const token = signAccessToken({ _id: adaId, role: 'Administrateur' }, association);
+    const res = await request(app)
+      .patch('/users/pas-un-id')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'Capitaine' });
+
+    assert.strictEqual(res.status, 400);
+  });
+
+  it("PATCH /users/:id renvoie 404 si l'utilisateur n'existe pas", async () => {
+    const adminId = new ObjectId('000000000000000000000003');
+    await db
+      .getDb()
+      .collection('users')
+      .insertOne({
+        _id: adminId,
+        name: 'Babbage',
+        firstName: 'Charles',
+        email: 'charles@exemple.fr',
+        password: await hashPassword('mot-de-passe'),
+        role: 'Administrateur',
+        pronoun: 'Il',
+      });
+    const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+
+    const res = await request(app)
+      .patch(`/users/${UNKNOWN_ID}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'Capitaine' });
+
+    assert.strictEqual(res.status, 404);
+  });
+
+  it('PATCH /users/:id interdit à un administrateur de modifier son propre profil', async () => {
+    const adminId = new ObjectId('000000000000000000000003');
+    await db
+      .getDb()
+      .collection('users')
+      .insertOne({
+        _id: adminId,
+        name: 'Babbage',
+        firstName: 'Charles',
+        email: 'charles@exemple.fr',
+        password: await hashPassword('mot-de-passe'),
+        role: 'Administrateur',
+        pronoun: 'Il',
+      });
+    const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+
+    const res = await request(app)
+      .patch(`/users/${adminId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'Capitaine' });
+
+    assert.strictEqual(res.status, 403);
+  });
+
+  it('PATCH /users/:id refuse un non-administrateur', async () => {
+    const res = await request(app)
+      .patch(`/users/${alanId}`)
+      .set('Authorization', `Bearer ${adaToken}`)
+      .send({ role: 'Capitaine' });
+    assert.strictEqual(res.status, 403);
+  });
+
+  it('PATCH /users/:id refuse un rôle inconnu', async () => {
+    const adminId = new ObjectId('000000000000000000000003');
+    await db
+      .getDb()
+      .collection('users')
+      .insertOne({
+        _id: adminId,
+        name: 'Babbage',
+        firstName: 'Charles',
+        email: 'charles@exemple.fr',
+        password: await hashPassword('mot-de-passe'),
+        role: 'Administrateur',
+        pronoun: 'Il',
+      });
+    const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+
+    const res = await request(app)
+      .patch(`/users/${alanId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'Rôle-inconnu' });
+
+    assert.strictEqual(res.status, 400);
+  });
+
   it('GET /users/me renvoie le profil public du compte authentifié', async () => {
     const res = await request(app).get('/users/me').set('Authorization', `Bearer ${adaToken}`);
 
@@ -167,6 +324,41 @@ describe('/users (avec un vrai mongod)', () => {
     const res = await request(app).get('/users/me').set('Authorization', `Bearer ${token}`);
 
     assert.strictEqual(res.status, 404);
+  });
+
+  it('les routes /users/me renvoient 400 si le sujet du token est mal formé', async () => {
+    const token = signAccessToken(
+      {
+        _id: { toString: () => 'pas-un-identifiant-mongo' },
+        role: 'Visiteur',
+      },
+      association,
+    );
+
+    const get = await request(app).get('/users/me').set('Authorization', `Bearer ${token}`);
+    assert.strictEqual(get.status, 400);
+    assert.strictEqual(get.body.message, 'Identifiant invalide');
+
+    const patch = await request(app)
+      .patch('/users/me')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ name: 'Ada Lovelace' });
+    assert.strictEqual(patch.status, 400);
+    assert.strictEqual(patch.body.message, 'Identifiant invalide');
+
+    const remove = await request(app).delete('/users/me').set('Authorization', `Bearer ${token}`);
+    assert.strictEqual(remove.status, 400);
+    assert.strictEqual(remove.body.message, 'Identifiant invalide');
+
+    const password = await request(app)
+      .put('/users/me/password')
+      .set('Authorization', `Bearer ${token}`)
+      .send({
+        old_password: 'ancien-mot-de-passe',
+        new_password: 'nouveau-mot-de-passe',
+      });
+    assert.strictEqual(password.status, 400);
+    assert.strictEqual(password.body.message, 'Identifiant invalide');
   });
 
   it('PATCH /users/me modifie uniquement les champs autorisés', async () => {
@@ -212,6 +404,85 @@ describe('/users (avec un vrai mongod)', () => {
     assert.strictEqual(unchanged.pronoun, ada.pronoun);
   });
 
+  it('PATCH /users/:id permet à un administrateur de modifier le profil ciblé', async () => {
+    const adminId = new ObjectId('000000000000000000000003');
+    await db
+      .getDb()
+      .collection('users')
+      .insertOne({
+        _id: adminId,
+        name: 'Babbage',
+        firstName: 'Charles',
+        email: 'charles@exemple.fr',
+        password: await hashPassword('mot-de-passe'),
+        role: 'Administrateur',
+        pronoun: 'Il',
+      });
+    const adminToken = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+    const usersApp = express();
+    usersApp.use(express.json());
+    usersApp.use('/users', createUsersRouter({ limit: 100 }));
+
+    const res = await request(usersApp)
+      .patch(`/users/${alanId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        email: 'alan.byron@exemple.fr',
+        name: 'Byron',
+        firstName: 'Augusta',
+        birthday: '1815-12-11',
+        pronoun: 'Elle',
+        medicalCertificate: true,
+        rightOfPublicity: false,
+        role: 'Entraineur',
+      });
+
+    assert.strictEqual(res.status, 204);
+    const updatedUser = await db.getDb().collection('users').findOne({ _id: alanId });
+    assert.strictEqual(updatedUser.email, 'alan.byron@exemple.fr');
+    assert.strictEqual(updatedUser.name, 'Byron');
+    assert.strictEqual(updatedUser.firstName, 'Augusta');
+    assert.strictEqual(updatedUser.birthday.toISOString(), '1815-12-11T00:00:00.000Z');
+    assert.strictEqual(updatedUser.pronoun, 'Elle');
+    assert.strictEqual(updatedUser.medicalCertificate, true);
+    assert.strictEqual(updatedUser.rightOfPublicity, false);
+    assert.strictEqual(updatedUser.role, 'Entraineur');
+
+    const unchangedAdmin = await db.getDb().collection('users').findOne({ _id: adminId });
+    assert.strictEqual(unchangedAdmin.email, 'charles@exemple.fr');
+    assert.strictEqual(unchangedAdmin.role, 'Administrateur');
+  });
+
+  it('PATCH /users/:id renvoie 404 si le compte disparaît avant sa mise à jour', async () => {
+    const adminId = new ObjectId('000000000000000000000003');
+    await db
+      .getDb()
+      .collection('users')
+      .insertOne({
+        _id: adminId,
+        name: 'Babbage',
+        firstName: 'Charles',
+        email: 'charles@exemple.fr',
+        password: await hashPassword('mot-de-passe'),
+        role: 'Administrateur',
+        pronoun: 'Il',
+      });
+    const adminToken = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+    const originalUpdateOne = User.updateOne;
+    User.updateOne = async () => ({ matchedCount: 0 });
+
+    try {
+      const response = await request(app)
+        .patch(`/users/${alanId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ role: 'Entraineur' });
+      assert.strictEqual(response.status, 404);
+      assert.strictEqual(response.body.message, 'Utilisateur introuvable');
+    } finally {
+      User.updateOne = originalUpdateOne;
+    }
+  });
+
   it('PATCH /users/me renvoie 404 si le compte n’existe plus', async () => {
     const token = signAccessToken(
       {
@@ -255,6 +526,37 @@ describe('/users (avec un vrai mongod)', () => {
     const res = await request(app).delete('/users/me').set('Authorization', `Bearer ${token}`);
 
     assert.strictEqual(res.status, 404);
+  });
+
+  it('DELETE /users/me interdit la suppression du dernier administrateur', async () => {
+    await db
+      .getDb()
+      .collection('users')
+      .updateOne({ _id: adaId }, { $set: { role: 'Administrateur' } });
+    const adminToken = signAccessToken({ _id: adaId, role: 'Administrateur' }, association);
+
+    const res = await request(app).delete('/users/me').set('Authorization', `Bearer ${adminToken}`);
+
+    assert.strictEqual(res.status, 403);
+    assert.strictEqual(res.body.message, 'Interdiction de supprimer le dernier administrateur');
+    assert.ok(await db.getDb().collection('users').findOne({ _id: adaId }));
+  });
+
+  it('DELETE /users/me permet la suppression d’un administrateur quand un autre existe', async () => {
+    await db
+      .getDb()
+      .collection('users')
+      .updateOne({ _id: adaId }, { $set: { role: 'Administrateur' } });
+    await db
+      .getDb()
+      .collection('users')
+      .updateOne({ _id: alanId }, { $set: { role: 'Administrateur' } });
+    const adminToken = signAccessToken({ _id: adaId, role: 'Administrateur' }, association);
+
+    const res = await request(app).delete('/users/me').set('Authorization', `Bearer ${adminToken}`);
+
+    assert.strictEqual(res.status, 204);
+    assert.strictEqual(await db.getDb().collection('users').findOne({ _id: adaId }), null);
   });
 
   it('PUT /users/me/password vérifie le mot de passe actuel avant de le remplacer', async () => {
