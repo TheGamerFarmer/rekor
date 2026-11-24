@@ -129,6 +129,8 @@ describe('ComponentCompte', () => {
       email: 'alex@example.com',
       pronoun: UserDetails.PronounEnum.Iel,
       role: UserDetails.RoleEnum.Adhrent,
+      medicalCertificate: false,
+      rightOfPublicity: false,
     });
     pending.detectChanges();
     expect(pending.nativeElement.querySelector('#medical-certificate')).not.toBeNull();
