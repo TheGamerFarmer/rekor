@@ -170,11 +170,11 @@ describe('/users (avec un vrai mongod)', () => {
 
     assert.strictEqual(res.status, 200);
     assert.deepStrictEqual(res.body, [
-      'Administrateur',
-      'Entraineur',
-      'Capitaine',
-      'Adhérent',
       'Visiteur',
+      'Adhérent',
+      'Capitaine',
+      'Entraineur',
+      'Administrateur',
     ]);
   });
 

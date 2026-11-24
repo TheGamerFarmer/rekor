@@ -241,11 +241,11 @@
               "role": {
                 "type": "string",
                 "enum": [
-                  "Administrateur",
-                  "Entraineur",
-                  "Capitaine",
+                  "Visiteur",
                   "Adhérent",
-                  "Visiteur"
+                  "Capitaine",
+                  "Entraineur",
+                  "Administrateur"
                 ]
               }
             },
@@ -751,11 +751,11 @@
                   "items": {
                     "type": "string",
                     "enum": [
-                      "Administrateur",
-                      "Entraineur",
-                      "Capitaine",
+                      "Visiteur",
                       "Adhérent",
-                      "Visiteur"
+                      "Capitaine",
+                      "Entraineur",
+                      "Administrateur"
                     ]
                   }
                 }

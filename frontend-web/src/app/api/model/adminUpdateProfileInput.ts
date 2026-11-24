@@ -29,11 +29,11 @@ export namespace AdminUpdateProfileInput {
     } as const;
     export type PronounEnum = typeof PronounEnum[keyof typeof PronounEnum];
     export const RoleEnum = {
-        Administrateur: 'Administrateur',
-        Entraineur: 'Entraineur',
-        Capitaine: 'Capitaine',
-        Adhrent: 'Adhérent',
         Visiteur: 'Visiteur',
+        Adhrent: 'Adhérent',
+        Capitaine: 'Capitaine',
+        Entraineur: 'Entraineur',
+        Administrateur: 'Administrateur',
     } as const;
     export type RoleEnum = typeof RoleEnum[keyof typeof RoleEnum];
 }
