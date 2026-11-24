@@ -30,7 +30,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
-      const user = await User.findById(req.auth.sub);
+      const user = await User.findById({ $eq: req.auth.sub });
       if (!user) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -57,7 +57,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
         changes.birthday = new Date(`${birthday}T00:00:00.000Z`);
       }
 
-      const result = await User.updateOne({ _id: req.auth.sub }, { $set: changes });
+      const result = await User.updateOne({ _id: { $eq: req.auth.sub } }, { $set: changes });
       if (result.matchedCount === 0) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -74,7 +74,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
-      const user = await User.findById(req.auth.sub);
+      const user = await User.findById({ $eq: req.auth.sub });
       if (!user) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -104,7 +104,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
       }
 
       const { old_password, new_password } = req.body;
-      const currentUser = await User.findById(req.auth.sub);
+      const currentUser = await User.findById({ $eq: req.auth.sub });
       if (!currentUser) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
