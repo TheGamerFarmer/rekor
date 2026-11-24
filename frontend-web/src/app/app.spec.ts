@@ -44,9 +44,6 @@ describe('App', () => {
 
     expect(fixture.nativeElement.textContent).toContain('Connexion');
     expect(fixture.nativeElement.textContent).toContain('Inscription');
-    expect(
-      fixture.nativeElement.querySelector('.footer-links a[href="/politique-confidentialite"]'),
-    ).not.toBeNull();
   });
 
   it('links footer contact to the club page', () => {

@@ -82,6 +82,7 @@ describe('AdherentService', () => {
   });
 
   it('updates only the matching member while preserving its identifier', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
     const service = new AdherentService();
     const roles = ['Capitaine'] as AdherentInput['roles'];
 
@@ -96,6 +97,7 @@ describe('AdherentService', () => {
   });
 
   it('removes matching members and persists even when no member matches', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
     const service = new AdherentService();
     service.add(memberInput);
     service.add(memberInput);
