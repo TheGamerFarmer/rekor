@@ -3,13 +3,13 @@
 }
 
 .account-page {
-  align-items: center;
+  align-items: flex-start;
   background: #f4f7fb;
   display: flex;
   font-family: Inter, 'Segoe UI', sans-serif;
   justify-content: center;
   min-height: 100vh;
-  padding: 2rem 1rem;
+  padding: 8rem 1rem 2rem;
 }
 
 .account-card {

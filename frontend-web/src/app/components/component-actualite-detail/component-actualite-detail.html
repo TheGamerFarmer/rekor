@@ -8,11 +8,7 @@
   <main class="actualite-detail">
     <article class="actualite-card">
       <div class="actualite-content">
-        <div class="actualite-body">
-          @for (paragraph of currentActualite.corps; track $index) {
-            <p>{{ paragraph }}</p>
-          }
-        </div>
+        <div class="actualite-body" [innerHTML]="currentActualite.corps"></div>
         @if (currentActualite.id === 3) {
           <app-button
             variant="primary"

@@ -1,6 +1,12 @@
 import { Injectable, signal } from '@angular/core';
 
-export const MEMBER_ROLES = ['Administrateur', 'Entraîneur', 'Capitaine', 'Adhérent'] as const;
+export const MEMBER_ROLES = [
+  'Administrateur',
+  'Entraîneur',
+  'Capitaine',
+  'Adhérent',
+  'Visiteur',
+] as const;
 export type MemberRole = (typeof MEMBER_ROLES)[number];
 
 export const REGISTRATION_STATUSES = ['validated', 'pending-validation', 'to-validate'] as const;
@@ -24,6 +30,64 @@ export interface Adherent {
 export type AdherentInput = Omit<Adherent, 'id'>;
 
 const MEMBERS_STORAGE_KEY = 'rekor-adherents';
+
+const MOCK_ADHERENTS: Adherent[] = [
+  {
+    id: 1,
+    lastName: 'Martin',
+    firstName: 'Alex',
+    pronoun: 'Iel',
+    birthDate: '2000-05-12',
+    phone: '0600000001',
+    email: 'alex.martin@example.fr',
+    roles: ['Adhérent', 'Capitaine'],
+    registrationStatus: 'validated',
+  },
+  {
+    id: 2,
+    lastName: 'Durand',
+    firstName: 'Sam',
+    pronoun: 'Il',
+    birthDate: '1998-11-03',
+    phone: '0600000002',
+    email: 'sam.durand@example.fr',
+    roles: ['Adhérent'],
+    registrationStatus: 'to-validate',
+  },
+  {
+    id: 3,
+    lastName: 'Bernard',
+    firstName: 'Camille',
+    pronoun: 'Elle',
+    birthDate: '2002-02-21',
+    phone: '0600000003',
+    email: 'camille.bernard@example.fr',
+    roles: ['Entraîneur'],
+    registrationStatus: 'pending-validation',
+  },
+  {
+    id: 4,
+    lastName: 'Petit',
+    firstName: 'Noa',
+    pronoun: 'Autre',
+    birthDate: null,
+    phone: '0600000004',
+    email: 'noa.petit@example.fr',
+    roles: ['Adhérent'],
+    registrationStatus: 'to-validate',
+  },
+  {
+    id: 5,
+    lastName: 'Robert',
+    firstName: 'Lina',
+    pronoun: 'Elle',
+    birthDate: '1995-08-17',
+    phone: '0600000005',
+    email: 'lina.robert@example.fr',
+    roles: ['Adhérent'],
+    registrationStatus: 'validated',
+  },
+];
 
 @Injectable({ providedIn: 'root' })
 export class AdherentService {
@@ -64,7 +128,7 @@ export class AdherentService {
 
     const stored = localStorage.getItem(MEMBERS_STORAGE_KEY);
     if (!stored) {
-      return [];
+      return MOCK_ADHERENTS.map((member) => ({ ...member, roles: [...member.roles] }));
     }
 
     try {

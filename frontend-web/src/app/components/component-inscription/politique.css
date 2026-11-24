@@ -52,6 +52,7 @@
 .privacy-section li {
   font-size: 15px;
   line-height: 1.65;
+  text-align: justify;
 }
 
 .privacy-section p {
