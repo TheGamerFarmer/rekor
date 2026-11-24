@@ -1,8 +1,7 @@
 require('../db/db');
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
-const { isValidObjectId } = require('mongoose');
-const { wrapAsync } = require('./services/shared');
+const { wrapAsync, isValidId } = require('./services/shared');
 const {
   InvalidTokenError,
   signAccessToken,
@@ -139,7 +138,7 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         throw error;
       }
 
-      if (!isValidObjectId(claims.sub)) {
+      if (!isValidId(claims.sub)) {
         return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
       }
 
@@ -199,7 +198,7 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         throw error;
       }
 
-      if (!isValidObjectId(claims.sub)) {
+      if (!isValidId(claims.sub)) {
         return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
       }
 

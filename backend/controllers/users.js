@@ -1,14 +1,12 @@
 require('../db/db');
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
-const { isValidObjectId } = require('mongoose');
 const User = require('../db/models/user');
 const RefreshToken = require('../db/models/refresh-token');
-const { wrapAsync, toPublicUser, toEssentialPublicUser } = require('./services/shared');
+const { wrapAsync, toPublicUser, toEssentialPublicUser, isValidId } = require('./services/shared');
 const { authenticate, authorize } = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
 const { USER_ROLE } = require('../db/enums');
-const mongoose = require('mongoose');
 
 function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   const router = express.Router();
@@ -27,7 +25,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      if (!mongoose.isObjectIdOrHexString(req.auth.sub)) {
+      if (!isValidId(req.auth.sub)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
@@ -43,7 +41,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      if (!isValidObjectId(req.auth.sub)) {
+      if (!isValidId(req.auth.sub)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
@@ -71,7 +69,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      if (!mongoose.isObjectIdOrHexString(req.auth.sub)) {
+      if (!isValidId(req.auth.sub)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
@@ -100,7 +98,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me/password',
     authenticate,
     wrapAsync(async (req, res) => {
-      if (!mongoose.isObjectIdOrHexString(req.auth.sub)) {
+      if (!isValidId(req.auth.sub)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
@@ -142,7 +140,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   router.get(
     '/:id',
     wrapAsync(async (req, res) => {
-      if (!isValidObjectId(req.params.id)) {
+      if (!isValidId(req.params.id)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
@@ -157,7 +155,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     authenticate,
     authorize(USER_ROLE.ADMINISTRATEUR),
     wrapAsync(async (req, res) => {
-      if (!isValidObjectId(req.params.id)) {
+      if (!isValidId(req.params.id)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
