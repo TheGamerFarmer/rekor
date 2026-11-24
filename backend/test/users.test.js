@@ -1,10 +1,13 @@
 const { describe, it, before, after, beforeEach } = require('node:test');
 const assert = require('node:assert');
+const express = require('express');
 const request = require('supertest');
 const { MongoMemoryServer } = require('mongodb-memory-server');
 const { ObjectId } = require('mongodb');
 const db = require('../db/db');
 const app = require('../index');
+const createUsersRouter = require('../controllers/users');
+const User = require('../db/models/user');
 const RefreshToken = require('../db/models/refresh-token');
 const {
   signAccessToken,
@@ -175,7 +178,7 @@ describe('/users (avec un vrai mongod)', () => {
     ]);
   });
 
-  it('PUT /users/:id/grant/:role attribue un rôle à un autre utilisateur', async () => {
+  it('PATCH /users/:id attribue un rôle à un autre utilisateur', async () => {
     const adminId = new ObjectId('000000000000000000000003');
     await db
       .getDb()
@@ -192,24 +195,26 @@ describe('/users (avec un vrai mongod)', () => {
     const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
 
     const res = await request(app)
-      .put(`/users/${adaId}/grant/Capitaine`)
-      .set('Authorization', `Bearer ${token}`);
+      .patch(`/users/${adaId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'Capitaine' });
 
     assert.strictEqual(res.status, 204);
     const updated = await db.getDb().collection('users').findOne({ _id: adaId });
     assert.strictEqual(updated.role, 'Capitaine');
   });
 
-  it('PUT /users/:id/grant/:role refuse un identifiant invalide', async () => {
+  it('PATCH /users/:id refuse un identifiant invalide', async () => {
     const token = signAccessToken({ _id: adaId, role: 'Administrateur' }, association);
     const res = await request(app)
-      .put('/users/pas-un-id/grant/Capitaine')
-      .set('Authorization', `Bearer ${token}`);
+      .patch('/users/pas-un-id')
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'Capitaine' });
 
     assert.strictEqual(res.status, 400);
   });
 
-  it("PUT /users/:id/grant/:role renvoie 404 si l'utilisateur n'existe pas", async () => {
+  it("PATCH /users/:id renvoie 404 si l'utilisateur n'existe pas", async () => {
     const adminId = new ObjectId('000000000000000000000003');
     await db
       .getDb()
@@ -226,13 +231,14 @@ describe('/users (avec un vrai mongod)', () => {
     const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
 
     const res = await request(app)
-      .put(`/users/${UNKNOWN_ID}/grant/Capitaine`)
-      .set('Authorization', `Bearer ${token}`);
+      .patch(`/users/${UNKNOWN_ID}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'Capitaine' });
 
     assert.strictEqual(res.status, 404);
   });
 
-  it('PUT /users/:id/grant/:role interdit de modifier son propre rôle', async () => {
+  it('PATCH /users/:id interdit à un administrateur de modifier son propre profil', async () => {
     const adminId = new ObjectId('000000000000000000000003');
     await db
       .getDb()
@@ -249,20 +255,22 @@ describe('/users (avec un vrai mongod)', () => {
     const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
 
     const res = await request(app)
-      .put(`/users/${adminId}/grant/Capitaine`)
-      .set('Authorization', `Bearer ${token}`);
+      .patch(`/users/${adminId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'Capitaine' });
 
     assert.strictEqual(res.status, 403);
   });
 
-  it('PUT /users/:id/grant/:role refuse un non-administrateur', async () => {
+  it('PATCH /users/:id refuse un non-administrateur', async () => {
     const res = await request(app)
-      .put(`/users/${alanId}/grant/Capitaine`)
-      .set('Authorization', `Bearer ${adaToken}`);
+      .patch(`/users/${alanId}`)
+      .set('Authorization', `Bearer ${adaToken}`)
+      .send({ role: 'Capitaine' });
     assert.strictEqual(res.status, 403);
   });
 
-  it('PUT /users/:id/grant/:role refuse un rôle inconnu', async () => {
+  it('PATCH /users/:id refuse un rôle inconnu', async () => {
     const adminId = new ObjectId('000000000000000000000003');
     await db
       .getDb()
@@ -279,8 +287,9 @@ describe('/users (avec un vrai mongod)', () => {
     const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
 
     const res = await request(app)
-      .put(`/users/${alanId}/grant/Rôle-inconnu`)
-      .set('Authorization', `Bearer ${token}`);
+      .patch(`/users/${alanId}`)
+      .set('Authorization', `Bearer ${token}`)
+      .send({ role: 'Rôle-inconnu' });
 
     assert.strictEqual(res.status, 400);
   });
@@ -393,6 +402,85 @@ describe('/users (avec un vrai mongod)', () => {
     assert.strictEqual(unchanged.phoneNumber, ada.phoneNumber);
     assert.strictEqual(unchanged.birthday.toISOString(), ada.birthday.toISOString());
     assert.strictEqual(unchanged.pronoun, ada.pronoun);
+  });
+
+  it('PATCH /users/:id permet à un administrateur de modifier le profil ciblé', async () => {
+    const adminId = new ObjectId('000000000000000000000003');
+    await db
+      .getDb()
+      .collection('users')
+      .insertOne({
+        _id: adminId,
+        name: 'Babbage',
+        firstName: 'Charles',
+        email: 'charles@exemple.fr',
+        password: await hashPassword('mot-de-passe'),
+        role: 'Administrateur',
+        pronoun: 'Il',
+      });
+    const adminToken = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+    const usersApp = express();
+    usersApp.use(express.json());
+    usersApp.use('/users', createUsersRouter({ limit: 100 }));
+
+    const res = await request(usersApp)
+      .patch(`/users/${alanId}`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({
+        email: 'alan.byron@exemple.fr',
+        name: 'Byron',
+        firstName: 'Augusta',
+        birthday: '1815-12-11',
+        pronoun: 'Elle',
+        medicalCertificate: true,
+        rightOfPublicity: false,
+        role: 'Entraineur',
+      });
+
+    assert.strictEqual(res.status, 204);
+    const updatedUser = await db.getDb().collection('users').findOne({ _id: alanId });
+    assert.strictEqual(updatedUser.email, 'alan.byron@exemple.fr');
+    assert.strictEqual(updatedUser.name, 'Byron');
+    assert.strictEqual(updatedUser.firstName, 'Augusta');
+    assert.strictEqual(updatedUser.birthday.toISOString(), '1815-12-11T00:00:00.000Z');
+    assert.strictEqual(updatedUser.pronoun, 'Elle');
+    assert.strictEqual(updatedUser.medicalCertificate, true);
+    assert.strictEqual(updatedUser.rightOfPublicity, false);
+    assert.strictEqual(updatedUser.role, 'Entraineur');
+
+    const unchangedAdmin = await db.getDb().collection('users').findOne({ _id: adminId });
+    assert.strictEqual(unchangedAdmin.email, 'charles@exemple.fr');
+    assert.strictEqual(unchangedAdmin.role, 'Administrateur');
+  });
+
+  it('PATCH /users/:id renvoie 404 si le compte disparaît avant sa mise à jour', async () => {
+    const adminId = new ObjectId('000000000000000000000003');
+    await db
+      .getDb()
+      .collection('users')
+      .insertOne({
+        _id: adminId,
+        name: 'Babbage',
+        firstName: 'Charles',
+        email: 'charles@exemple.fr',
+        password: await hashPassword('mot-de-passe'),
+        role: 'Administrateur',
+        pronoun: 'Il',
+      });
+    const adminToken = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+    const originalUpdateOne = User.updateOne;
+    User.updateOne = async () => ({ matchedCount: 0 });
+
+    try {
+      const response = await request(app)
+        .patch(`/users/${alanId}`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ role: 'Entraineur' });
+      assert.strictEqual(response.status, 404);
+      assert.strictEqual(response.body.message, 'Utilisateur introuvable');
+    } finally {
+      User.updateOne = originalUpdateOne;
+    }
   });
 
   it('PATCH /users/me renvoie 404 si le compte n’existe plus', async () => {

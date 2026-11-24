@@ -57,6 +57,11 @@ const UpdateProfileInput = z
   })
   .openapi('UpdateProfileInput');
 
+const AdminUpdateProfileInput = UpdateProfileInput.extend({
+  email: z.email().optional(),
+  role: Role,
+}).openapi('AdminUpdateProfileInput');
+
 const LoginInput = z
   .object({
     email: z.email().openapi({ example: 'ada@exemple.fr' }),
@@ -292,23 +297,21 @@ registry.registerPath({
 });
 
 registry.registerPath({
-  method: 'put',
-  path: '/users/{id}/grant/{role}',
-  operationId: 'grantUserRole',
+  method: 'patch',
+  path: '/users/{id}',
+  operationId: 'updateUser',
   tags: ['Users'],
-  summary: 'Attribue un rôle à un utilisateur',
+  summary: 'Modifie le profil d’un utilisateur',
   security: [{ BearerAuth: [] }],
   request: {
-    params: z.object({
-      id: Id,
-      role: Role,
-    }),
+    params: z.object({ id: Id }),
+    body: { required: true, content: json(AdminUpdateProfileInput) },
   },
   responses: {
-    204: { description: 'Rôle mis à jour, sans contenu de réponse' },
+    204: { description: 'Profil modifié, sans contenu de réponse' },
     400: failure('Identifiant ou rôle invalide'),
     401: failure('Authentification requise ou token invalide'),
-    403: failure('Accès interdit ou changement de son propre rôle'),
+    403: failure('Accès interdit ou modification de son propre profil'),
     404: failure('Utilisateur introuvable'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
@@ -330,6 +333,21 @@ registry.registerPath({
     404: failure('Association introuvable'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/auth/re-register',
+  operationId: 'reregister',
+  tags: ['Authentication'],
+  summary: 'Réinscrit le compte authentifié dans une association',
+  security: [{ BearerAuth: [] }],
+  responses: {
+    501: failure('La réinscription n’est pas encore disponible'),
+    401: failure('Authentification requise ou token invalide'),
+    429: failure('Trop de requêtes'),
     500: failure('Erreur interne du serveur'),
   },
 });

@@ -67,12 +67,17 @@ test('GET /api-docs.json documente les routes d’administration des utilisateur
   assert.deepStrictEqual(res.body.paths['/users/roles'].get.security, [{ BearerAuth: [] }]);
   assert.ok(res.body.paths['/users/roles'].get.responses['403']);
 
-  const grant = res.body.paths['/users/{id}/grant/{role}'].put;
-  assert.strictEqual(grant.operationId, 'grantUserRole');
-  assert.deepStrictEqual(grant.security, [{ BearerAuth: [] }]);
-  assert.ok(grant.responses['400']);
-  assert.ok(grant.responses['403']);
-  assert.ok(grant.responses['404']);
+  const updateUser = res.body.paths['/users/{id}'].patch;
+  assert.strictEqual(updateUser.operationId, 'updateUser');
+  assert.deepStrictEqual(updateUser.security, [{ BearerAuth: [] }]);
+  assert.strictEqual(
+    updateUser.requestBody.content['application/json'].schema.$ref,
+    '#/components/schemas/AdminUpdateProfileInput',
+  );
+  assert.ok(updateUser.responses['400']);
+  assert.ok(updateUser.responses['403']);
+  assert.ok(updateUser.responses['404']);
+  assert.ok(!res.body.paths['/users/{id}/grant/{role}']);
 });
 
 test("GET /api-docs/ sert l'interface swagger UI", async () => {

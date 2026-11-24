@@ -8,6 +8,39 @@ const { authenticate, authorize } = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
 const { USER_ROLE } = require('../db/enums');
 
+function buildProfileChanges(body, includeRole = false) {
+  const {
+    email,
+    name,
+    firstName,
+    phoneNumber,
+    birthday,
+    pronoun,
+    medicalCertificate,
+    rightOfPublicity,
+    role,
+  } = body;
+
+  const changes = {};
+  if (email !== undefined && email !== null) changes.email = email;
+  if (firstName !== undefined && firstName !== null) changes.firstName = firstName;
+  if (name !== undefined && name !== null) changes.name = name;
+  if (phoneNumber !== undefined && phoneNumber !== null) changes.phoneNumber = phoneNumber;
+  if (pronoun !== undefined && pronoun !== null) changes.pronoun = pronoun;
+  if (medicalCertificate !== undefined && medicalCertificate !== null) {
+    changes.medicalCertificate = medicalCertificate;
+  }
+  if (rightOfPublicity !== undefined && rightOfPublicity !== null) {
+    changes.rightOfPublicity = rightOfPublicity;
+  }
+  if (birthday !== undefined && birthday !== null) {
+    changes.birthday = new Date(`${birthday}T00:00:00.000Z`);
+  }
+  if (includeRole && role !== undefined && role !== null) changes.role = role;
+
+  return changes;
+}
+
 function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   const router = express.Router();
 
@@ -45,31 +78,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
-      const {
-        name,
-        firstName,
-        phoneNumber,
-        birthday,
-        pronoun,
-        medicalCertificate,
-        rightOfPublicity,
-      } = req.body;
-
-      const changes = {};
-      if (firstName !== undefined && firstName !== null) changes.firstName = firstName;
-      if (name !== undefined && name !== null) changes.name = name;
-      if (phoneNumber !== undefined && phoneNumber !== null) changes.phoneNumber = phoneNumber;
-      if (pronoun !== undefined && pronoun !== null) changes.pronoun = pronoun;
-      if (medicalCertificate !== undefined && medicalCertificate !== null) {
-        changes.medicalCertificate = medicalCertificate;
-      }
-      if (rightOfPublicity !== undefined && rightOfPublicity !== null) {
-        changes.rightOfPublicity = rightOfPublicity;
-      }
-      if (birthday !== undefined && birthday !== null) {
-        changes.birthday = new Date(`${birthday}T00:00:00.000Z`);
-      }
-
+      const changes = buildProfileChanges(req.body);
       const result = await User.updateOne({ _id: { $eq: req.auth.sub } }, { $set: changes });
       if (result.matchedCount === 0) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
@@ -164,8 +173,8 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     }),
   );
 
-  router.put(
-    '/:id/grant/:role',
+  router.patch(
+    '/:id',
     authenticate,
     authorize(USER_ROLE.ADMINISTRATEUR),
     wrapAsync(async (req, res) => {
@@ -173,21 +182,27 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
-      const user = await User.findById(req.params.id);
-      if (!user) {
+      if (!(await User.exists({ _id: { $eq: req.params.id } }))) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
 
-      const role = req.params.role;
+      if (req.params.id === req.auth.sub) {
+        return res
+          .status(403)
+          .json({ message: 'Interdiction de changer son propre profil par cette méthode' });
+      }
+
+      const { role } = req.body;
+
       if (!Object.values(USER_ROLE).includes(role)) {
         return res.status(400).json({ message: 'Rôle inconnu' });
       }
 
-      if (user._id.equals(req.auth.sub)) {
-        return res.status(403).json({ message: 'Interdiction de changer son propre rôle' });
+      const changes = buildProfileChanges(req.body, true);
+      const result = await User.updateOne({ _id: { $eq: req.params.id } }, { $set: changes });
+      if (result.matchedCount === 0) {
+        return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
-
-      await User.updateOne({ _id: user._id }, { $set: { role: role } });
 
       return res.status(204).end();
     }),

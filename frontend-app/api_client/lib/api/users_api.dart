@@ -197,57 +197,6 @@ class UsersApi {
     return null;
   }
 
-  /// Attribue un rôle à un utilisateur
-  ///
-  /// Note: This method returns the HTTP [Response].
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [String] role (required):
-  Future<Response> grantUserRoleWithHttpInfo(String id, String role, { Future<void>? abortTrigger, }) async {
-    // ignore: prefer_const_declarations
-    final path = r'/users/{id}/grant/{role}'
-      .replaceAll('{id}', id)
-      .replaceAll('{role}', role);
-
-    // ignore: prefer_final_locals
-    Object? postBody;
-
-    final queryParams = <QueryParam>[];
-    final headerParams = <String, String>{};
-    final formParams = <String, String>{};
-
-    const contentTypes = <String>[];
-
-
-    return apiClient.invokeAPI(
-      path,
-      'PUT',
-      queryParams,
-      postBody,
-      headerParams,
-      formParams,
-      contentTypes.isEmpty ? null : contentTypes.first,
-      abortTrigger: abortTrigger,
-    );
-  }
-
-  /// Attribue un rôle à un utilisateur
-  ///
-  /// Parameters:
-  ///
-  /// * [String] id (required):
-  ///
-  /// * [String] role (required):
-  Future<void> grantUserRole(String id, String role, { Future<void>? abortTrigger, }) async {
-    final response = await grantUserRoleWithHttpInfo(id, role, abortTrigger: abortTrigger,);
-    if (response.statusCode >= HttpStatus.badRequest) {
-      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
-    }
-  }
-
   /// Liste les rôles utilisateurs disponibles
   ///
   /// Note: This method returns the HTTP [Response].
@@ -384,6 +333,56 @@ class UsersApi {
   /// * [UpdateProfileInput] updateProfileInput (required):
   Future<void> updateMyProfile(UpdateProfileInput updateProfileInput, { Future<void>? abortTrigger, }) async {
     final response = await updateMyProfileWithHttpInfo(updateProfileInput, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Modifie le profil d’un utilisateur
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AdminUpdateProfileInput] adminUpdateProfileInput (required):
+  Future<Response> updateUserWithHttpInfo(String id, AdminUpdateProfileInput adminUpdateProfileInput, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/users/{id}'
+      .replaceAll('{id}', id);
+
+    // ignore: prefer_final_locals
+    Object? postBody = adminUpdateProfileInput;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'PATCH',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Modifie le profil d’un utilisateur
+  ///
+  /// Parameters:
+  ///
+  /// * [String] id (required):
+  ///
+  /// * [AdminUpdateProfileInput] adminUpdateProfileInput (required):
+  Future<void> updateUser(String id, AdminUpdateProfileInput adminUpdateProfileInput, { Future<void>? abortTrigger, }) async {
+    final response = await updateUserWithHttpInfo(id, adminUpdateProfileInput, abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

@@ -226,6 +226,35 @@
           "new_password"
         ]
       },
+      "AdminUpdateProfileInput": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UpdateProfileInput"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "Administrateur",
+                  "Entraineur",
+                  "Capitaine",
+                  "Adhérent",
+                  "Visiteur"
+                ]
+              }
+            },
+            "required": [
+              "role"
+            ]
+          }
+        ]
+      },
       "RegisterInput": {
         "type": "object",
         "properties": {
@@ -994,15 +1023,13 @@
             }
           }
         }
-      }
-    },
-    "/users/{id}/grant/{role}": {
-      "put": {
-        "operationId": "grantUserRole",
+      },
+      "patch": {
+        "operationId": "updateUser",
         "tags": [
           "Users"
         ],
-        "summary": "Attribue un rôle à un utilisateur",
+        "summary": "Modifie le profil d’un utilisateur",
         "security": [
           {
             "BearerAuth": []
@@ -1018,26 +1045,21 @@
             "required": true,
             "name": "id",
             "in": "path"
-          },
-          {
-            "schema": {
-              "type": "string",
-              "enum": [
-                "Administrateur",
-                "Entraineur",
-                "Capitaine",
-                "Adhérent",
-                "Visiteur"
-              ]
-            },
-            "required": true,
-            "name": "role",
-            "in": "path"
           }
         ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateProfileInput"
+              }
+            }
+          }
+        },
         "responses": {
           "204": {
-            "description": "Rôle mis à jour, sans contenu de réponse"
+            "description": "Profil modifié, sans contenu de réponse"
           },
           "400": {
             "description": "Identifiant ou rôle invalide",
@@ -1060,7 +1082,7 @@
             }
           },
           "403": {
-            "description": "Accès interdit ou changement de son propre rôle",
+            "description": "Accès interdit ou modification de son propre profil",
             "content": {
               "application/json": {
                 "schema": {
@@ -1185,6 +1207,62 @@
           },
           "503": {
             "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/re-register": {
+      "post": {
+        "operationId": "reregister",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Réinscrit le compte authentifié dans une association",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Authentification requise ou token invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "La réinscription n’est pas encore disponible",
             "content": {
               "application/json": {
                 "schema": {
