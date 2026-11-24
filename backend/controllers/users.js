@@ -8,6 +8,7 @@ const { wrapAsync, toPublicUser, toEssentialPublicUser } = require('./services/s
 const { authenticate, authorize } = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
 const { USER_ROLE } = require('../db/enums');
+const mongoose = require('mongoose');
 
 function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   const router = express.Router();
@@ -26,11 +27,11 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      if (!isValidObjectId(req.auth.sub)) {
+      if (!mongoose.isObjectIdOrHexString(req.auth.sub)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
-      const user = await User.findById({ $eq: req.auth.sub });
+      const user = await User.findById(req.auth.sub);
       if (!user) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -70,11 +71,11 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      if (!isValidObjectId(req.auth.sub)) {
+      if (!mongoose.isObjectIdOrHexString(req.auth.sub)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
-      const user = await User.findById({ $eq: req.auth.sub });
+      const user = await User.findById(req.auth.sub);
       if (!user) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -99,12 +100,12 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me/password',
     authenticate,
     wrapAsync(async (req, res) => {
-      if (!isValidObjectId(req.auth.sub)) {
+      if (!mongoose.isObjectIdOrHexString(req.auth.sub)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
       const { old_password, new_password } = req.body;
-      const currentUser = await User.findById({ $eq: req.auth.sub });
+      const currentUser = await User.findById(req.auth.sub);
       if (!currentUser) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
