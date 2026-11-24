@@ -18,6 +18,7 @@
         class="login-link"
         variant="outline"
         size="small"
+        [uppercase]="true"
         text="Déconnexion"
         (click)="logout()"
       ></app-button>
@@ -51,12 +52,20 @@
       <a href="/actualites">Actus</a>
       <a href="/evenements">Événements</a>
       <a href="/presentation-club">Le club</a>
-      <a href="/inscription">Inscription</a>
+      @if (!authService.isAuthenticated()) {
+        <a href="/inscription">Inscription</a>
+      }
     </nav>
     <nav class="footer-links" aria-label="Aide et compte">
       <a href="/regles">FAQ</a>
-      <a href="/#contact">Contact</a>
-      <a id="connexion" href="/connexion"><strong>Connexion</strong></a>
+      <a href="/presentation-club">Contact</a>
+      @if (authService.isAuthenticated()) {
+        <button type="button" class="footer-logout" (click)="logout()">
+          <strong>Déconnexion</strong>
+        </button>
+      } @else {
+        <a id="connexion" href="/connexion"><strong>Connexion</strong></a>
+      }
     </nav>
   </div>
   <a class="footer-brand" href="/#accueil" aria-label="Rekor, accueil">

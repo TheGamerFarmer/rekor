@@ -14,7 +14,7 @@ export class App {
   protected readonly authService = inject(AuthService);
   private readonly router = inject(Router);
 
-  /** Ends the current session from the site header. */
+  /** Ends the current session. */
   protected logout(): void {
     this.authService.logout();
     void this.router.navigate(['/accueil']);
