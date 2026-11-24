@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/arbitrage.dart';
 import 'package:frontend_app/mobile_pages/parametres_page.dart';
 
+import '../mobile_pages/actualites_page.dart';
 import '../mobile_pages/covoiturage_page.dart';
 import '../mobile_pages/evenement_page.dart';
 import '../mobile_pages/gestion.dart';
@@ -150,6 +151,12 @@ void naviguerVersPage(BuildContext context, String page) {
     Navigator.push(
       context,
       MaterialPageRoute(builder: (context) => const ParametresPage()),
+    );
+  }
+  if (page == 'News') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ActualitesPage()),
     );
   }
 }
