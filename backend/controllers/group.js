@@ -1,10 +1,7 @@
 require('../db/db');
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
-const {
-  isValidObjectId,
-  Types: { ObjectId },
-} = require('mongoose');
+const { isValidObjectId } = require('mongoose');
 const User = require('../db/models/user');
 const Group = require('../db/models/group');
 const GroupMembre = require('../db/models/group_member');
@@ -68,7 +65,7 @@ function createGroupsRouter({ limit = 100, windowMs = 60_000 } = {}) {
     authenticate,
     authorize(USER_ROLE.ENTRAINEUR),
     wrapAsync(async (req, res) => {
-      let { name, owner, members } = req.body;
+      const { name, owner, members } = req.body;
 
       let errorMessage;
 
@@ -77,8 +74,6 @@ function createGroupsRouter({ limit = 100, windowMs = 60_000 } = {}) {
       if (!owner && !errorMessage) errorMessage = 'Propriétaire invalide';
 
       if (errorMessage) return res.status(400).json({ message: errorMessage });
-
-      owner = new ObjectId(owner);
 
       const userResult = await User.findById(owner);
 
@@ -131,7 +126,7 @@ function createGroupsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       const changes = {};
       if (name) changes.name = name;
-      if (owner) changes.owner = new ObjectId(owner);
+      if (owner) changes.owner = owner;
 
       if (changes.owner) {
         const userResult = await User.findById(changes.owner);

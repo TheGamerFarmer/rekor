@@ -1,10 +1,7 @@
 require('../db/db');
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
-const {
-  isValidObjectId,
-  Types: { ObjectId },
-} = require('mongoose');
+const { isValidObjectId } = require('mongoose');
 const Event = require('../db/models/event');
 const Group = require('../db/models/group');
 const GroupMembre = require('../db/models/group_member');
@@ -103,7 +100,7 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       if (errorMessage) return res.status(400).json({ message: errorMessage });
 
-      const userId = new ObjectId(req.auth.sub);
+      const userId = req.auth.sub;
 
       const group = await Group.create({ name, owner: userId });
 
@@ -144,7 +141,7 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
       if (type && Object.values(EVENT_TYPE).includes(type)) changes.type = type;
       if (name) changes.name = name;
       if (description) changes.description = description;
-      if (group) changes.group = new ObjectId(group);
+      if (group) changes.group = group;
 
       const groupResult = await Group.findById(changes.group);
 
@@ -212,7 +209,7 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
       }
 
       if (participate) {
-        const userId = new ObjectId(req.auth.sub);
+        const userId = req.auth.sub;
         const existing = await GroupMembre.findOne({ group: event.group, user: userId });
         if (!existing) {
           await GroupMembre.create({ group: event.group, user: userId });
