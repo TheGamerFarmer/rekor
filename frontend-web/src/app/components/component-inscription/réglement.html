@@ -5,11 +5,27 @@
 />
 
 <main class="reglement-page">
-  <article class="reglement-card" aria-labelledby="reglement-title">
+  <article
+    class="reglement-card"
+    aria-labelledby="reglement-title"
+    appDocumentReading="internalRules"
+    #reading="documentReading"
+  >
     <header class="reglement-header">
-      <h2 id="reglement-title">Règlement intérieur</h2>
       <p>Gières Volley-Ball · Version du 1er novembre 2026</p>
     </header>
+
+    @if (reading.readingId) {
+      <p role="status">
+        @if (reading.unavailable) {
+          Votre navigateur ne permet pas de confirmer la lecture. Essayez avec un navigateur récent.
+        } @else if (reading.completed()) {
+          Vous avez atteint la fin du document. Vous pouvez revenir à l’inscription.
+        } @else {
+          Faites défiler ce document jusqu’en bas pour pouvoir cocher la case d’inscription.
+        }
+      </p>
+    }
 
     <section class="reglement-article" aria-labelledby="article-1">
       <h3 id="article-1">Article 1 – Objet du règlement</h3>

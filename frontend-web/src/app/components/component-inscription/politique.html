@@ -5,11 +5,27 @@
 />
 
 <main class="privacy-page">
-  <article class="privacy-card" aria-labelledby="privacy-title">
+  <article
+    class="privacy-card"
+    aria-labelledby="privacy-title"
+    appDocumentReading="privacyPolicy"
+    #reading="documentReading"
+  >
     <header class="privacy-header">
-      <h2 id="privacy-title">Politique de confidentialité</h2>
       <p class="updated">Gières Volley-Ball · Dernière mise à jour : 1er novembre 2026</p>
     </header>
+
+    @if (reading.readingId) {
+      <p role="status">
+        @if (reading.unavailable) {
+          Votre navigateur ne permet pas de confirmer la lecture. Essayez avec un navigateur récent.
+        } @else if (reading.completed()) {
+          Vous avez atteint la fin du document. Vous pouvez revenir à l’inscription.
+        } @else {
+          Faites défiler ce document jusqu’en bas pour pouvoir cocher la case d’inscription.
+        }
+      </p>
+    }
 
     <section class="privacy-section" aria-labelledby="privacy-intro">
       <h3 id="privacy-intro">1. Introduction</h3>
@@ -28,7 +44,7 @@
         Le responsable du traitement est l'association Gières Volley-Ball, représentée par sa
         présidente. Son adresse est le Gymnase de la Plaine des sports, 1 Rue des Sports, 38610
         Gières. Pour toute question relative aux données personnelles, vous pouvez
-        <a class="privacy-contact" href="/#contact">contacter le club</a>.
+        <a class="privacy-contact" href="/presentation-club">contacter le club</a>.
       </p>
     </section>
 
@@ -141,8 +157,8 @@
       </ul>
       <p>
         Pour exercer ces droits, adressez une demande au club
-        <a class="privacy-contact" href="/#contact">par ses canaux de contact</a>. Le club s'engage
-        à répondre dans les délais prévus par la réglementation. En cas de difficulté, une
+        <a class="privacy-contact" href="/presentation-club">par ses canaux de contact</a>. Le club
+        s'engage à répondre dans les délais prévus par la réglementation. En cas de difficulté, une
         réclamation peut être adressée à la Commission nationale de l'informatique et des libertés
         (CNIL).
       </p>
