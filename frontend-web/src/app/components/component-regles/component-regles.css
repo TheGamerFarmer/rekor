@@ -111,8 +111,6 @@ p {
   height: 52px;
   margin: 10px 0 8px;
   object-fit: contain;
-  filter: brightness(0) saturate(100%) invert(20%) sepia(80%) saturate(1561%) hue-rotate(202deg)
-    brightness(94%) contrast(94%);
 }
 
 .step h3 {
@@ -208,8 +206,6 @@ p {
   height: 56px;
   flex: 0 0 auto;
   object-fit: contain;
-  filter: brightness(0) saturate(100%) invert(82%) sepia(96%) saturate(1440%) hue-rotate(359deg)
-    brightness(104%) contrast(104%);
 }
 
 .takeaway-ball {
@@ -220,7 +216,6 @@ p {
   height: 160px;
   object-fit: contain;
   opacity: 0.14;
-  filter: brightness(0) invert(1);
 }
 
 @media (max-width: 760px) {

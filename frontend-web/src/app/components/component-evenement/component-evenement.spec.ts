@@ -1,7 +1,7 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { signal } from '@angular/core';
 import { ComponentEvenement } from './component-evenement';
-import { getDateDuJour, getHeureEvenement } from './evenements.data';
+import { defaultEvenements, getDateDuJour, getHeureEvenement } from './evenements.data';
 import { createTestEvenements, dateRelativeToToday } from './evenements.test-data';
 import { EvenementService } from '../../services/evenement.service';
 
@@ -43,6 +43,9 @@ describe('ComponentEvenement', () => {
   });
 
   it('renders upcoming events by default', () => {
+    events.set([{ ...defaultEvenements[3], date: '2999-01-01T20:00:00' }]);
+    fixture.detectChanges();
+
     expect(fixture.nativeElement.textContent).toContain('Entraînement');
     expect(fixture.nativeElement.querySelector('.event-list')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('a[href="/admin/evenements"]')).not.toBeNull();
@@ -64,7 +67,10 @@ describe('ComponentEvenement', () => {
   });
 
   it('links each event to its detail page', () => {
-    const link = fixture.nativeElement.querySelector('a[href="/evenements/6"]');
+    events.set([{ ...defaultEvenements[0], date: '2999-01-01' }]);
+    fixture.detectChanges();
+
+    const link = fixture.nativeElement.querySelector('a[href="/evenements/1"]');
 
     expect(link).not.toBeNull();
   });

@@ -32,6 +32,12 @@ describe('ComponentInscription', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('links the required privacy consent to the privacy policy page', () => {
+    expect(
+      fixture.nativeElement.querySelector('.agreements a[href="/politique-confidentialite"]'),
+    ).not.toBeNull();
     expect(fixture.nativeElement.textContent).toContain('Inscrivez-vous à l’association');
     expect(fixture.nativeElement.textContent).toContain('Gières Volley-Ball');
     expect(fixture.nativeElement.querySelector('[formControlName="associationName"]')).toBeNull();
@@ -71,6 +77,67 @@ describe('ComponentInscription', () => {
     fixture.detectChanges();
 
     expect(fixture.nativeElement.querySelector('[role="alert"]')).not.toBeNull();
+  });
+
+  it('links the required internal rules consent to the club regulations', () => {
+    expect(
+      fixture.nativeElement.querySelector('.agreements a[href="/reglement-interieur"]'),
+    ).not.toBeNull();
+  });
+
+  it('unlocks each required agreement checkbox after opening its document link', () => {
+    const privacyCheckbox = fixture.nativeElement.querySelector(
+      '[formControlName="privacyPolicy"]',
+    ) as HTMLInputElement;
+    const internalRulesCheckbox = fixture.nativeElement.querySelector(
+      '[formControlName="internalRules"]',
+    ) as HTMLInputElement;
+    const privacyLink = fixture.nativeElement.querySelector(
+      'a[href="/politique-confidentialite"]',
+    ) as HTMLAnchorElement;
+    const internalRulesLink = fixture.nativeElement.querySelector(
+      'a[href="/reglement-interieur"]',
+    ) as HTMLAnchorElement;
+
+    expect(privacyCheckbox.disabled).toBe(false);
+    expect(internalRulesCheckbox.disabled).toBe(false);
+    expect(privacyLink.closest('label')?.textContent?.replace(/\s+/g, ' ')).toContain(
+      'J’ai pris connaissance de la politique de confidentialité de l’association.',
+    );
+    expect(internalRulesLink.closest('label')?.textContent?.replace(/\s+/g, ' ')).toContain(
+      'J’atteste avoir lu et accepté le règlement intérieur de l’association.',
+    );
+
+    privacyCheckbox.click();
+    internalRulesCheckbox.click();
+    fixture.detectChanges();
+    expect(privacyCheckbox.checked).toBe(false);
+    expect(internalRulesCheckbox.checked).toBe(false);
+    expect(fixture.nativeElement.textContent).toContain(
+      'Veuillez ouvrir la politique de confidentialité avant de cocher cette case.',
+    );
+    expect(fixture.nativeElement.textContent).toContain(
+      'Veuillez ouvrir le règlement intérieur avant de cocher cette case.',
+    );
+
+    privacyLink.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Veuillez ouvrir la politique de confidentialité avant de cocher cette case.',
+    );
+    expect(fixture.nativeElement.textContent).toContain(
+      'Veuillez ouvrir le règlement intérieur avant de cocher cette case.',
+    );
+    privacyCheckbox.click();
+    expect(privacyCheckbox.checked).toBe(true);
+
+    internalRulesLink.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain(
+      'Veuillez ouvrir le règlement intérieur avant de cocher cette case.',
+    );
+    internalRulesCheckbox.click();
+    expect(internalRulesCheckbox.checked).toBe(true);
   });
 
   it('keeps one password hint and highlights it only while the password is invalid', () => {
@@ -139,6 +206,10 @@ describe('ComponentInscription', () => {
     ) as HTMLSelectElement;
     pronoun.value = 'Elle';
     pronoun.dispatchEvent(new Event('change', { bubbles: true }));
+
+    fixture.nativeElement.querySelector('a[href="/politique-confidentialite"]').click();
+    fixture.nativeElement.querySelector('a[href="/reglement-interieur"]').click();
+    fixture.detectChanges();
 
     for (const name of ['privacyPolicy', 'internalRules', 'healthData', 'imageRights']) {
       const checkbox = fixture.nativeElement.querySelector(
