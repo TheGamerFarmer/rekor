@@ -33,4 +33,18 @@ void main() {
     await tester.pump();
     expect(find.byType(Calendrier), findsOneWidget);
   });
+
+  testWidgets('Calendrier tient sur un écran étroit sans débordement', (
+    tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(280, 640));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
+    await tester.pumpWidget(
+      const MaterialApp(home: Scaffold(body: Calendrier())),
+    );
+    await tester.pump();
+
+    expect(tester.takeException(), isNull);
+  });
 }

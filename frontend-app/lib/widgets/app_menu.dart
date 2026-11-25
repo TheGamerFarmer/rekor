@@ -62,7 +62,8 @@ class AppMenu extends StatelessWidget {
               child: GridView.count(
                 crossAxisCount: 3,
                 crossAxisSpacing: 15,
-                mainAxisSpacing: 45,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.8,
                 padding: const EdgeInsets.all(20),
                 children: [
                   // Boucle pour les 9 pages dans elements
@@ -76,15 +77,20 @@ class AppMenu extends StatelessWidget {
                           onTap: () => naviguerVersPage(context, element.$2),
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(element.$1, color: Colors.white, size: 35),
-                              const SizedBox(height: 10),
-                              Text(
-                                element.$2,
-                                textAlign: TextAlign.center,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 16,
+                              Icon(element.$1, color: Colors.white, size: 32),
+                              const SizedBox(height: 8),
+                              Flexible(
+                                child: Text(
+                                  element.$2,
+                                  textAlign: TextAlign.center,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                  ),
                                 ),
                               ),
                             ],
