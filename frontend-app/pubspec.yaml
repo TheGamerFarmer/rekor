@@ -38,6 +38,7 @@ dependencies:
   rekor_api:
     path: api_client
   flutter_secure_storage: ^11.2.0
+  image_picker: ^1.2.4
 
 dev_dependencies:
   flutter_test:
@@ -64,8 +65,9 @@ flutter:
   uses-material-design: true
 
   assets:
-    - public/img/volley_ball1.jpg
-    - public/logo/logomark_noir.png
+    - public/logo/
+    - public/img/
+    - public/icons/
 
   # To add assets to your application, add an assets section, like this:
   # assets:

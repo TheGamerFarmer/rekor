@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend_app/main.dart';
+import 'package:frontend_app/mobile_pages/home_page.dart';
 
 void main() {
   group('MyApp', () {
@@ -35,7 +36,8 @@ void main() {
     ) async {
       await tester.pumpWidget(MyApp(sessionFuture: Future.value(true)));
       await tester.pumpAndSettle();
-      expect(find.text('Bienvenue sur la page d\u2019accueil'), findsOneWidget);
+      expect(find.byType(MyHomePage), findsOneWidget);
+      expect(find.text('Gières Volley ball Club'), findsOneWidget);
     });
   });
 }

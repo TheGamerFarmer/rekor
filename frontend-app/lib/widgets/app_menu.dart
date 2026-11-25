@@ -1,6 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:frontend_app/mobile_pages/arbitrage.dart';
+import 'package:frontend_app/mobile_pages/parametres_page.dart';
 
+import '../mobile_pages/actualites_page.dart';
+import '../mobile_pages/covoiturage_page.dart';
+import '../mobile_pages/evenement_page.dart';
+import '../mobile_pages/gestion.dart';
+import '../mobile_pages/groupe.dart';
 import '../mobile_pages/home_page.dart';
+import '../mobile_pages/statistique_page.dart';
 
 // Menu de l'application mobile avec la navigation vers les différentes pages
 class AppMenu extends StatelessWidget {
@@ -16,7 +24,7 @@ class AppMenu extends StatelessWidget {
       (Icons.chat, 'Discussions'),
       (Icons.directions_car, 'Covoiturage'),
       (Icons.calendar_month, 'Évènements'),
-      (Icons.emoji_events, 'Compétition'),
+      (Icons.emoji_events, 'Gestion'),
       (Icons.sports, 'Arbitrage'),
       (Icons.bar_chart, 'Statistiques'),
       (Icons.campaign, 'News'),
@@ -101,6 +109,54 @@ void naviguerVersPage(BuildContext context, String page) {
       MaterialPageRoute(
         builder: (context) => const MyHomePage(title: 'Accueil'),
       ),
+    );
+  }
+  if (page == 'Covoiturage') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const CovoituragePage()),
+    );
+  }
+  if (page == 'Évènements') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const Evenementpage()),
+    );
+  }
+  if (page == 'Arbitrage') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ArbitragePage()),
+    );
+  }
+  if (page == 'Statistiques') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const StatistiquePage()),
+    );
+  }
+  if (page == 'Discussions') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const GroupesPage()),
+    );
+  }
+  if (page == 'Gestion') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const GestionPage()),
+    );
+  }
+  if (page == 'Paramètres') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ParametresPage()),
+    );
+  }
+  if (page == 'News') {
+    Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => const ActualitesPage()),
     );
   }
 }
