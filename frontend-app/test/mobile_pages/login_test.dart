@@ -70,12 +70,12 @@ void main() {
       expect(find.text('Se connecter'), findsOneWidget);
     });
 
-    testWidgets('Affiche l\'option Mot de passe oublié', (tester) async {
+    testWidgets('Affiche l\'option Mot de passe oublié ?', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(home: Scaffold(body: MyLoginPage())),
       );
 
-      expect(find.text('Mot de passe oublié'), findsOneWidget);
+      expect(find.text('Mot de passe oublié ?'), findsOneWidget);
     });
 
     testWidgets('Changer le visible du mot de passe', (tester) async {

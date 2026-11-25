@@ -260,9 +260,9 @@ class MyLoginPageState extends State<MyLoginPage> {
                 // Mot de passe oublié
                 TextButton(
                   onPressed: () {
-                    // Envoyer un mail pour réinitialiser le mot de passe
+                    // Appeler le back pour qu'il crée un nouveau mot de passe et l'envoie par mail à l'utilisateur.
                   },
-                  child: const Text('Mot de passe oublié'),
+                  child: const Text('Mot de passe oublié ?'),
                 ),
               ],
             ),
