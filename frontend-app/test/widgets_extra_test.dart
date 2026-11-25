@@ -74,9 +74,7 @@ void main() {
     },
   );
 
-  testWidgets('EvenementCard bascule entre absent et présent', (
-    tester,
-  ) async {
+  testWidgets('EvenementCard bascule entre absent et présent', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         home: Scaffold(

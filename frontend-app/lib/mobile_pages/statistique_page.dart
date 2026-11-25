@@ -218,9 +218,7 @@ class _StatistiquePageState extends State<StatistiquePage> {
         : tousLesMatchs[matchIndex];
 
     // 1) Quels matchs ?  2) Quelles actions ?
-    final matchs = _vue == VueStats.match
-        ? [?matchChoisi]
-        : tousLesMatchs;
+    final matchs = _vue == VueStats.match ? [?matchChoisi] : tousLesMatchs;
 
     final actions = switch (_vue) {
       VueStats.joueur =>
