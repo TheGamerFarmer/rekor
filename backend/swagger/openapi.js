@@ -321,6 +321,26 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'post',
+  path: '/users/{id}/validate',
+  operationId: 'validateUser',
+  tags: ['Users'],
+  summary: 'Valide un compte visiteur et le passe au rôle Adhérent',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ id: Id }) },
+  responses: {
+    204: { description: 'Utilisateur validé, sans contenu de réponse' },
+    400: failure('Identifiant invalide ou utilisateur déjà validé'),
+    401: failure('Authentification requise ou token invalide'),
+    403: failure('Accès réservé aux administrateurs'),
+    404: failure('Utilisateur introuvable'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
   path: '/auth/register',
   operationId: 'register',
   tags: ['Authentication'],
