@@ -3,10 +3,14 @@ const express = require('express');
 const { rateLimit } = require('express-rate-limit');
 const User = require('../db/models/user');
 const RefreshToken = require('../db/models/refresh-token');
+const Participant = require('../db/models/participant');
+const GroupMember = require('../db/models/group_member');
+const Group = require('../db/models/group');
 const { wrapAsync, toPublicUser, toEssentialPublicUser, isValidId } = require('./services/shared');
 const { authenticate, authorize } = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
 const { USER_ROLE } = require('../db/enums');
+const groupService = require('./services/groupService');
 
 function buildProfileChanges(body, includeRole = false) {
   const {
@@ -51,6 +55,14 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
       standardHeaders: true,
       legacyHeaders: false,
       message: { message: 'Trop de requêtes, réessaie plus tard' },
+    }),
+  );
+
+  router.get(
+    '/',
+    wrapAsync(async (req, res) => {
+      const users = await User.find({}).sort({ _id: 1 });
+      res.json(users.map(toEssentialPublicUser));
     }),
   );
 
@@ -113,6 +125,15 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
       await User.deleteOne({ _id: user._id });
       await RefreshToken.deleteMany({ userId: user._id });
 
+      await GroupMember.deleteMany({ user: user });
+      const groups = await Group.find({ owner: user });
+
+      for (const group of groups) {
+        await groupService.changeOwnerFromGroup(group._id);
+      }
+
+      await Participant.deleteMany({ user: user._id });
+
       res.status(204).end();
     }),
   );
@@ -145,14 +166,6 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       await RefreshToken.deleteMany({ userId: currentUser._id });
       res.status(204).end();
-    }),
-  );
-
-  router.get(
-    '/',
-    wrapAsync(async (req, res) => {
-      const users = await User.find({}).sort({ _id: 1 });
-      res.json(users.map(toEssentialPublicUser));
     }),
   );
 

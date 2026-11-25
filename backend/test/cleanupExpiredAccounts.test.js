@@ -90,14 +90,14 @@ describe('cleanupExpiredAccounts', () => {
 
   // --- Autres rôles ---
 
-  it('supprime un Adhérent créé il y a plus de 14 mois sans inscription récente', async () => {
+  it('supprime un Adhérent créé il y a plus de 36 mois sans inscription récente', async () => {
     const id = new ObjectId();
     await User.collection.insertOne({
       ...baseUser,
       _id: id,
       email: 'adherent-expire@exemple.fr',
       role: 'Adhérent',
-      created_at: dateMonthsAgo(15),
+      created_at: dateMonthsAgo(45),
     });
 
     await cleanupExpiredAccounts();
@@ -105,14 +105,14 @@ describe('cleanupExpiredAccounts', () => {
     assert.strictEqual(await User.findById(id), null);
   });
 
-  it("conserve un Adhérent créé il y a plus de 14 mois s'il a une inscription récente", async () => {
+  it("conserve un Adhérent créé il y a plus de 36 mois s'il a une inscription récente", async () => {
     const id = new ObjectId();
     await User.collection.insertOne({
       ...baseUser,
       _id: id,
       email: 'adherent-actif@exemple.fr',
       role: 'Adhérent',
-      created_at: dateMonthsAgo(15),
+      created_at: dateMonthsAgo(45),
     });
     const assocId = new ObjectId();
     await Registration.collection.insertOne({
@@ -152,14 +152,14 @@ describe('cleanupExpiredAccounts', () => {
         _id: expiredId,
         email: 'entraineur-expire@exemple.fr',
         role: 'Entraineur',
-        created_at: dateMonthsAgo(15),
+        created_at: dateMonthsAgo(45),
       },
       {
         ...baseUser,
         _id: activeId,
         email: 'entraineur-actif@exemple.fr',
         role: 'Entraineur',
-        created_at: dateMonthsAgo(15),
+        created_at: dateMonthsAgo(45),
       },
     ]);
     await Registration.collection.insertOne({
@@ -189,7 +189,7 @@ describe('cleanupExpiredAccounts', () => {
     assert.notStrictEqual(await User.findById(visiteurId), null);
   });
 
-  it("ne tient pas compte d'une inscription trop ancienne (>14 mois)", async () => {
+  it("ne tient pas compte d'une inscription trop ancienne (>36 mois)", async () => {
     const id = new ObjectId();
     const assocId = new ObjectId();
     await User.collection.insertOne({
@@ -197,12 +197,12 @@ describe('cleanupExpiredAccounts', () => {
       _id: id,
       email: 'adherent-vieille-inscription@exemple.fr',
       role: 'Adhérent',
-      created_at: dateMonthsAgo(20),
+      created_at: dateMonthsAgo(40),
     });
     await Registration.collection.insertOne({
       association: assocId,
       created_by: id,
-      created_at: dateMonthsAgo(15),
+      created_at: dateMonthsAgo(39),
     });
 
     await cleanupExpiredAccounts();
