@@ -1,11 +1,24 @@
+import { HttpErrorResponse } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
-import { Observable, catchError, map, of, shareReplay, switchMap, tap, throwError } from 'rxjs';
+import {
+  Observable,
+  catchError,
+  finalize,
+  map,
+  of,
+  shareReplay,
+  switchMap,
+  tap,
+  throwError,
+} from 'rxjs';
 import { AuthenticationService } from '../api/api/authentication.service';
 import { UsersService } from '../api/api/users.service';
 import type { LoginInput } from '../api/model/loginInput';
+import type { LoginResponse } from '../api/model/loginResponse';
 import { UserDetails } from '../api/model/userDetails';
 
 const ACCESS_TOKEN_KEY = 'rekor-access-token';
+const REFRESH_TOKEN_KEY = 'rekor-refresh-token';
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
@@ -15,12 +28,24 @@ export class AuthService {
   readonly role = signal<UserDetails.RoleEnum | null>(null);
   readonly roleLoadError = signal(false);
   private roleRequest: Observable<UserDetails.RoleEnum> | null = null;
+  private refreshRequest: Observable<string> | null = null;
+  private sessionVersion = 0;
+
+  get accessToken(): string | null {
+    return typeof localStorage !== 'undefined' ? localStorage.getItem(ACCESS_TOKEN_KEY) : null;
+  }
+
+  get sessionId(): number {
+    return this.sessionVersion;
+  }
 
   /** Authenticates a user and stores the returned access token. */
   login(credentials: LoginInput): Observable<void> {
     return this.authenticationService.login(credentials).pipe(
-      tap(({ access_token }) => {
-        this.setStoredToken(access_token);
+      tap((tokens) => {
+        this.sessionVersion++;
+        this.refreshRequest = null;
+        this.storeTokens(tokens);
         this.role.set(null);
         this.roleLoadError.set(false);
         this.roleRequest = null;
@@ -47,15 +72,21 @@ export class AuthService {
     }
 
     if (!this.roleRequest) {
+      const sessionId = this.sessionVersion;
       this.roleRequest = this.usersService.getMyProfile().pipe(
         map(({ role: profileRole }) => profileRole),
         tap((profileRole) => {
+          if (sessionId !== this.sessionVersion) {
+            throw new Error('La session a changé pendant le chargement du rôle.');
+          }
           this.role.set(profileRole);
           this.roleLoadError.set(false);
         }),
         catchError((error: unknown) => {
-          this.roleRequest = null;
-          this.roleLoadError.set(true);
+          if (sessionId === this.sessionVersion) {
+            this.roleRequest = null;
+            this.roleLoadError.set(this.isAuthenticated());
+          }
           return throwError(() => error);
         }),
         shareReplay({ bufferSize: 1, refCount: false }),
@@ -64,10 +95,56 @@ export class AuthService {
     return this.roleRequest;
   }
 
+  /** Refreshes the current session, sharing one request between concurrent callers. */
+  refresh(): Observable<string> {
+    if (this.refreshRequest) {
+      return this.refreshRequest;
+    }
+
+    const refreshToken =
+      typeof localStorage !== 'undefined' ? localStorage.getItem(REFRESH_TOKEN_KEY) : null;
+    if (!refreshToken) {
+      this.logout();
+      return throwError(() => new Error('Aucun jeton de renouvellement disponible.'));
+    }
+
+    const sessionId = this.sessionVersion;
+    const request = this.authenticationService.refreshTokens({ refresh_token: refreshToken }).pipe(
+      map((tokens) => {
+        if (sessionId !== this.sessionVersion) {
+          throw new Error('La session a changé pendant son renouvellement.');
+        }
+        this.storeTokens(tokens);
+        return tokens.access_token;
+      }),
+      catchError((error: unknown) => {
+        if (
+          sessionId === this.sessionVersion &&
+          error instanceof HttpErrorResponse &&
+          error.status === 401
+        ) {
+          this.logout();
+        }
+        return throwError(() => error);
+      }),
+      finalize(() => {
+        if (this.refreshRequest === request) {
+          this.refreshRequest = null;
+        }
+      }),
+      shareReplay({ bufferSize: 1, refCount: false }),
+    );
+    this.refreshRequest = request;
+    return request;
+  }
+
   /** Clears the local session. */
   logout(): void {
+    this.sessionVersion++;
+    this.refreshRequest = null;
     if (typeof localStorage !== 'undefined') {
       localStorage.removeItem(ACCESS_TOKEN_KEY);
+      localStorage.removeItem(REFRESH_TOKEN_KEY);
     }
     this.role.set(null);
     this.roleLoadError.set(false);
@@ -80,10 +157,11 @@ export class AuthService {
     return typeof localStorage !== 'undefined' && Boolean(localStorage.getItem(ACCESS_TOKEN_KEY));
   }
 
-  /** Persists the access token returned by the authentication API. */
-  private setStoredToken(token: string): void {
+  /** Persists both tokens returned by the authentication API. */
+  private storeTokens(tokens: LoginResponse): void {
     if (typeof localStorage !== 'undefined') {
-      localStorage.setItem(ACCESS_TOKEN_KEY, token);
+      localStorage.setItem(ACCESS_TOKEN_KEY, tokens.access_token);
+      localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refresh_token);
     }
   }
 }

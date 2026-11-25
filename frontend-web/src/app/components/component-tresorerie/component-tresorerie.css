@@ -218,7 +218,8 @@
   outline-offset: 1px;
 }
 
-.description-field {
+.description-field,
+.document-field {
   grid-column: 1 / -1;
 }
 
@@ -336,6 +337,22 @@ td.amount {
   text-underline-offset: 3px;
 }
 
+.document-download {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.document-download:hover,
+.document-download:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
 @media (max-width: 900px) {
   .summary-grid {
     grid-template-columns: 1fr;
@@ -387,7 +404,8 @@ td.amount {
     grid-template-columns: 1fr;
   }
 
-  .description-field {
+  .description-field,
+  .document-field {
     grid-column: 1;
   }
 

@@ -119,7 +119,7 @@
               <input
                 type="checkbox"
                 formControlName="healthData"
-                (change)="certificateConsentError.set(false)"
+                (change)="certificateConsentError.set(false); certificateUnavailable.set(false)"
               />
               <span
                 >J’accepte que mon certificat médical soit collecté dans le cadre de mon inscription
@@ -180,7 +180,7 @@
           <section class="surface-card account-card" aria-labelledby="certificate-title">
             <h2 id="certificate-title">Certificat médical</h2>
             <p class="certificate-information">
-              Vous pourrez transmettre votre certificat ici ou le remettre directement au club.
+              Le dépôt du certificat depuis votre compte n’est pas encore disponible.
             </p>
             <div class="field">
               <label for="medical-certificate">Déposer un certificat médical</label>
@@ -188,16 +188,39 @@
             </div>
             <div class="field">
               <label for="certificate-date">Date du certificat médical</label>
-              <input id="certificate-date" type="date" />
+              <input
+                #certificateDate
+                id="certificate-date"
+                type="date"
+                [min]="certificateMinimumDate"
+                [max]="certificateMaximumDate"
+                [attr.aria-invalid]="certificateDateError()"
+                [attr.aria-describedby]="certificateDateError() ? 'certificate-date-error' : null"
+                (input)="
+                  validateCertificateDate(certificateDate); certificateUnavailable.set(false)
+                "
+              />
+              @if (certificateDateError()) {
+                <p id="certificate-date-error" class="error" role="alert">
+                  La date du certificat doit être comprise entre aujourd’hui et trois ans
+                  auparavant.
+                </p>
+              }
             </div>
             <app-button
               text="Transmettre le certificat"
-              (click)="transmitCertificate()"
+              (click)="transmitCertificate(certificateDate)"
             ></app-button>
             @if (certificateConsentError()) {
               <p class="error" role="alert">
                 Cochez la case autorisant la collecte de votre certificat médical dans vos
                 informations personnelles avant de le transmettre.
+              </p>
+            }
+            @if (certificateUnavailable()) {
+              <p class="error" role="alert">
+                Le certificat n’a pas été transmis : le dépôt depuis votre compte n’est pas encore
+                disponible.
               </p>
             }
           </section>

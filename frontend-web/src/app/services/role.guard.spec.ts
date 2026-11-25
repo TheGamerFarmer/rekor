@@ -10,6 +10,7 @@ import { Observable, firstValueFrom, of, throwError } from 'rxjs';
 import { UserDetails } from '../api/model/userDetails';
 import { AuthService } from './auth.service';
 import { administratorGuard, eventManagementGuard } from './role.guard';
+import { routes } from '../app.routes';
 
 describe('role guards', () => {
   const authService = {
@@ -53,6 +54,29 @@ describe('role guards', () => {
 
     expect(result).toEqual(TestBed.inject(Router).createUrlTree(['/connexion']));
     expect(authService.loadRole).not.toHaveBeenCalled();
+  });
+
+  it('protects the news creation route with the administrator guard', () => {
+    const route = routes.find(({ path }) => path === 'admin/actualites/nouveau');
+    expect(route?.canActivate).toContain(administratorGuard);
+  });
+
+  it.each([
+    UserDetails.RoleEnum.Entraineur,
+    UserDetails.RoleEnum.Capitaine,
+    UserDetails.RoleEnum.Adhrent,
+  ])('denies the administrator route to %s', async (role) => {
+    authService.isAuthenticated.mockReturnValue(true);
+    authService.loadRole.mockReturnValue(of(role));
+    expect(await runGuard(administratorGuard)).toEqual(
+      TestBed.inject(Router).createUrlTree(['/evenements']),
+    );
+  });
+
+  it('allows administrators to access the administrator route', async () => {
+    authService.isAuthenticated.mockReturnValue(true);
+    authService.loadRole.mockReturnValue(of(UserDetails.RoleEnum.Administrateur));
+    expect(await runGuard(administratorGuard)).toBe(true);
   });
 
   it('limits members and treasury routes to administrators', async () => {

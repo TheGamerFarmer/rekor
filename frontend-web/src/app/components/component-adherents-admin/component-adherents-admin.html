@@ -138,23 +138,11 @@
             <div class="member-consents">
               <p>
                 Collecte du certificat médical :
-                {{
-                  member.medicalCertificate === null
-                    ? 'Inconnu'
-                    : member.medicalCertificate
-                      ? 'Acceptée'
-                      : 'Refusée'
-                }}
+                {{ member.medicalCertificate === true ? 'Acceptée' : 'Refusée' }}
               </p>
               <p>
                 Droit à l’image :
-                {{
-                  member.rightOfPublicity === null
-                    ? 'Inconnu'
-                    : member.rightOfPublicity
-                      ? 'Accepté'
-                      : 'Refusé'
-                }}
+                {{ member.rightOfPublicity === true ? 'Accepté' : 'Refusé' }}
               </p>
               @if (member.medicalCertificateReceivedDate) {
                 <p>
@@ -170,6 +158,24 @@
                   Adhésion payée le
                   {{ member.membershipPaymentDate + 'T00:00:00Z' | date: 'dd/MM/yyyy' : 'UTC' }}
                 </p>
+                @if (member.registrationStatus === 'validated') {
+                  <p>
+                    La finalisation après dépôt du certificat depuis le compte n’est pas encore
+                    disponible.
+                  </p>
+                }
+                @if (member.paymentDetails?.comment) {
+                  <p>Commentaire : {{ member.paymentDetails?.comment }}</p>
+                }
+                @if (member.paymentDetails?.document; as document) {
+                  <button
+                    type="button"
+                    class="document-download"
+                    (click)="downloadPaymentDocument(document)"
+                  >
+                    Télécharger le justificatif : {{ document.name }}
+                  </button>
+                }
               }
             </div>
           </div>
@@ -193,57 +199,12 @@
                 (click)="deleteMember(member.id)"
               ></app-button>
             } @else if (member.registrationStatus === 'validated') {
-              @if (!member.medicalCertificateReceivedDate) {
-                <form
-                  class="confirmation-form"
-                  (submit)="
-                    $event.preventDefault();
-                    confirmRequirement(member, 'certificate', certificateDate)
-                  "
-                >
-                  <label class="field" [for]="'certificate-date-' + member.id">
-                    Date de réception du certificat
-                    <input
-                      #certificateDate
-                      [id]="'certificate-date-' + member.id"
-                      type="date"
-                      min="1900-01-01"
-                      [max]="currentDate"
-                      required
-                      [disabled]="member.medicalCertificate !== true"
-                    />
-                  </label>
-                  <app-button
-                    type="submit"
-                    size="small"
-                    variant="success"
-                    text="Confirmer la réception du certificat"
-                    [ariaLabel]="
-                      'Confirmer la réception du certificat de ' +
-                      member.firstName +
-                      ' ' +
-                      member.lastName
-                    "
-                    [disabled]="member.medicalCertificate !== true"
-                  ></app-button>
-                </form>
-                @if (member.medicalCertificate !== true) {
-                  <p class="certificate-notice">
-                    @if (member.medicalCertificate === false) {
-                      Confirmation impossible : l’adhérent n’a pas accepté la collecte du certificat
-                      médical.
-                    } @else {
-                      Confirmation impossible : le consentement à la collecte du certificat médical
-                      est inconnu.
-                    }
-                  </p>
-                }
-              }
               @if (!member.membershipPaymentDate) {
                 <form
                   class="confirmation-form"
                   (submit)="
-                    $event.preventDefault(); confirmRequirement(member, 'payment', paymentDate)
+                    $event.preventDefault();
+                    confirmPayment(member, paymentDate, paymentComment, paymentDocument)
                   "
                 >
                   <label class="field" [for]="'payment-date-' + member.id">
@@ -257,11 +218,32 @@
                       required
                     />
                   </label>
+                  <label class="field" [for]="'payment-comment-' + member.id">
+                    Commentaire (facultatif)
+                    <textarea
+                      #paymentComment
+                      [id]="'payment-comment-' + member.id"
+                      maxlength="1000"
+                    ></textarea>
+                  </label>
+                  <label class="field" [for]="'payment-document-' + member.id">
+                    Justificatif (facultatif, PDF, JPEG ou PNG, 1 Mo maximum)
+                    <input
+                      #paymentDocument
+                      [id]="'payment-document-' + member.id"
+                      type="file"
+                      accept=".pdf,image/jpeg,image/png"
+                    />
+                  </label>
+                  @if (paymentErrors()[member.id]) {
+                    <p class="payment-error" role="alert">{{ paymentErrors()[member.id] }}</p>
+                  }
                   <app-button
                     type="submit"
                     size="small"
                     variant="success"
                     text="Confirmer le paiement de l’adhésion"
+                    [disabled]="paymentSaving().has(member.id)"
                     [ariaLabel]="
                       'Confirmer le paiement de l’adhésion de ' +
                       member.firstName +

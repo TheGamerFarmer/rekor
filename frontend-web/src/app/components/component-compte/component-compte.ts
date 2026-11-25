@@ -38,6 +38,8 @@ export class ComponentCompte {
   protected readonly profileError = signal<string | null>(null);
   protected readonly profileRole = signal<UserDetails.RoleEnum | null>(null);
   protected readonly certificateConsentError = signal(false);
+  protected readonly certificateUnavailable = signal(false);
+  protected readonly certificateDateError = signal(false);
 
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
@@ -102,8 +104,33 @@ export class ComponentCompte {
     }
   }
 
-  protected transmitCertificate(): void {
-    this.certificateConsentError.set(!this.accountForm.controls.healthData.value);
+  protected get certificateMinimumDate(): string {
+    const today = new Date();
+    const year = today.getFullYear() - 3;
+    const month = today.getMonth();
+    const day = Math.min(today.getDate(), new Date(year, month + 1, 0).getDate());
+    return `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+  }
+
+  protected get certificateMaximumDate(): string {
+    const today = new Date();
+    return `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  }
+
+  protected validateCertificateDate(input: HTMLInputElement): boolean {
+    const invalid =
+      input.validity.badInput ||
+      (!!input.value &&
+        (input.value < this.certificateMinimumDate || input.value > this.certificateMaximumDate));
+    this.certificateDateError.set(invalid);
+    return !invalid;
+  }
+
+  protected transmitCertificate(dateInput: HTMLInputElement): void {
+    const hasConsent = this.accountForm.controls.healthData.value;
+    this.certificateConsentError.set(!hasConsent);
+    const validDate = this.validateCertificateDate(dateInput);
+    this.certificateUnavailable.set(hasConsent && validDate);
   }
 
   /** Deletes the account only after the user confirms the action. */

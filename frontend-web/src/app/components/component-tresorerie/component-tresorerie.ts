@@ -90,11 +90,19 @@ const INITIAL_TRANSACTIONS: TreasuryTransaction[] = [
 export class ComponentTresorerie {
   protected readonly year = signal(CURRENT_YEAR);
   private readonly operations = signal(INITIAL_TRANSACTIONS.map(toBankOperation));
-  protected readonly transactions = computed(() => this.operations().map(toTreasuryTransaction));
+  private readonly attachments = signal(new Map<number, File>());
+  protected readonly transactions = computed(() =>
+    this.operations()
+      .map(toTreasuryTransaction)
+      .map((transaction) => ({
+        ...transaction,
+        document: this.attachments().get(transaction.id),
+      })),
+  );
   protected readonly showAllIncome = signal(false);
   protected readonly showAllExpenses = signal(false);
   protected readonly statusMessage = signal('');
-  protected readonly years = Array.from({ length: 6 }, (_, index) => CURRENT_YEAR - index);
+  protected readonly years = Array.from({ length: 10 }, (_, index) => CURRENT_YEAR - index);
   protected readonly incomeCategories = ['Adhésion', 'Subvention', 'Don', 'Autre'];
   protected readonly expenseCategories = ['Matériel', 'Nourriture/ Boisson', 'Service', 'Autre'];
 
@@ -127,12 +135,14 @@ export class ComponentTresorerie {
     category: ['Adhésion', Validators.required],
     amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     description: [''],
+    document: [null as File | null],
   });
   protected readonly expenseForm = new FormBuilder().nonNullable.group({
     date: [this.dateForYear(CURRENT_YEAR), Validators.required],
     category: ['Matériel', Validators.required],
     amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     description: [''],
+    document: [null as File | null],
   });
   private nextId = Math.max(...INITIAL_TRANSACTIONS.map((transaction) => transaction.id)) + 1;
 
@@ -150,6 +160,15 @@ export class ComponentTresorerie {
       }
       this.showAllIncome.set(false);
       this.showAllExpenses.set(false);
+    }
+  }
+
+  /** Stores an optional supporting document selected for an income or expense. */
+  protected onDocumentChange(type: TransactionType, event: Event): void {
+    const input = event.currentTarget;
+    if (input instanceof HTMLInputElement && input.type === 'file') {
+      const form = type === 'income' ? this.incomeForm : this.expenseForm;
+      form.controls.document.setValue(input.files?.[0] ?? null);
     }
   }
 
@@ -180,10 +199,32 @@ export class ComponentTresorerie {
       category: type === 'income' ? 'Adhésion' : 'Matériel',
       amount: null,
       description: '',
+      document: null,
     });
+    const attachedDocument = values.document;
+    if (attachedDocument) {
+      this.attachments.update((attachments) =>
+        new Map(attachments).set(transaction.id, attachedDocument),
+      );
+    }
     this.statusMessage.set(
       type === 'income' ? 'Recette ajoutée au bilan.' : 'Dépense ajoutée au bilan.',
     );
+  }
+
+  /** Downloads the supporting document attached to a transaction. */
+  protected downloadDocument(transaction: TreasuryTransaction): void {
+    if (!transaction.document) {
+      return;
+    }
+
+    const url = URL.createObjectURL(transaction.document);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = transaction.document.name;
+    link.click();
+    URL.revokeObjectURL(url);
+    this.statusMessage.set(`Document ${transaction.document.name} téléchargé.`);
   }
 
   /** Downloads the selected year's income and expense summary as a CSV file. */

@@ -1,0 +1,56 @@
+<app-component-banner
+  title="Créer une actualité"
+  subtitle="Partagez les nouvelles du club."
+  image="/images/volley2.jpg"
+/>
+
+<main class="admin-event-page">
+  <section class="admin-event-card" aria-label="Créer une actualité">
+    <form [formGroup]="newsForm" (ngSubmit)="save()" novalidate>
+      <div class="form-grid">
+        <label class="field field-wide" for="titre">
+          Titre
+          <input id="titre" type="text" formControlName="titre" />
+          @if (newsForm.controls.titre.invalid && newsForm.controls.titre.touched) {
+            <small>Le titre est obligatoire.</small>
+          }
+        </label>
+        <label class="field field-wide" for="summary">
+          Résumé
+          <textarea id="summary" rows="3" formControlName="summary"></textarea>
+          @if (newsForm.controls.summary.invalid && newsForm.controls.summary.touched) {
+            <small>Le résumé est obligatoire.</small>
+          }
+        </label>
+        <label class="field field-wide" for="image">
+          Adresse de l'image
+          <input id="image" type="text" formControlName="image" placeholder="/images/volley2.jpg" />
+          @if (newsForm.controls.image.invalid && newsForm.controls.image.touched) {
+            <small>L'adresse de l'image est obligatoire.</small>
+          }
+        </label>
+        <label class="field" for="date">
+          Date
+          <input id="date" type="date" formControlName="date" />
+          @if (newsForm.controls.date.invalid && newsForm.controls.date.touched) {
+            <small>La date est obligatoire.</small>
+          }
+        </label>
+        <label class="field field-wide" for="corps">
+          Contenu
+          <textarea id="corps" rows="8" formControlName="corps"></textarea>
+          @if (newsForm.controls.corps.invalid && newsForm.controls.corps.touched) {
+            <small>Le contenu est obligatoire.</small>
+          }
+        </label>
+      </div>
+      @if (saveError()) {
+        <p role="alert">Impossible d'enregistrer l'actualité dans ce navigateur.</p>
+      }
+      <div class="actions">
+        <app-button variant="secondary" href="/actualites" text="Annuler"></app-button>
+        <app-button type="submit" text="Enregistrer l’actualité"></app-button>
+      </div>
+    </form>
+  </section>
+</main>

@@ -154,6 +154,9 @@ describe('App', () => {
     expect(
       fixture.nativeElement.querySelector('.admin-submenu a[href="/admin/evenements"]'),
     ).not.toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('.admin-submenu a[href="/actualites"]'),
+    ).not.toBeNull();
 
     role.set(UserDetails.RoleEnum.Entraineur);
     fixture.detectChanges();
@@ -167,6 +170,7 @@ describe('App', () => {
     expect(
       fixture.nativeElement.querySelector('.admin-submenu a[href="/admin/tresorerie"]'),
     ).toBeNull();
+    expect(fixture.nativeElement.querySelector('.admin-submenu a[href="/actualites"]')).toBeNull();
 
     role.set(UserDetails.RoleEnum.Adhrent);
     fixture.detectChanges();

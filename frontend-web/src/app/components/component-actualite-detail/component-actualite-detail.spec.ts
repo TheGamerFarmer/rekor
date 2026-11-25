@@ -2,12 +2,14 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap, ParamMap } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { ComponentActualiteDetail } from './component-actualite-detail';
+import { ActualiteService } from '../../services/actualite.service';
 
 describe('ComponentActualiteDetail', () => {
   let fixture: ComponentFixture<ComponentActualiteDetail>;
   let params: BehaviorSubject<ParamMap>;
 
   beforeEach(async () => {
+    localStorage.removeItem('rekor-actualites');
     params = new BehaviorSubject(convertToParamMap({ id: '2' }));
     await TestBed.configureTestingModule({
       imports: [ComponentActualiteDetail],
@@ -21,6 +23,10 @@ describe('ComponentActualiteDetail', () => {
 
     fixture = TestBed.createComponent(ComponentActualiteDetail);
     fixture.detectChanges();
+  });
+
+  afterEach(() => {
+    localStorage.removeItem('rekor-actualites');
   });
 
   it('renders the selected actualite detail and a link back to the news list', () => {
@@ -47,6 +53,26 @@ describe('ComponentActualiteDetail', () => {
       'Les inscriptions sont ouvertes !',
     );
     expect(fixture.nativeElement.querySelector('a[href="/inscription"]')).not.toBeNull();
+  });
+
+  it('displays a newly created news item from the shared service', () => {
+    TestBed.inject(ActualiteService).add({
+      titre: 'Une nouvelle actualité',
+      summary: 'Résumé',
+      image: '/images/volley2.jpg',
+      date: '2026-12-01',
+      association: 'Gières Volley-Ball',
+      corps: 'Premier paragraphe\nDeuxième paragraphe',
+    });
+    params.next(convertToParamMap({ id: '5' }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain(
+      'Une nouvelle actualité',
+    );
+    expect(fixture.nativeElement.querySelector('.actualite-body')?.textContent).toContain(
+      'Deuxième paragraphe',
+    );
   });
 
   it('provides a fallback for an unknown actualite ID', () => {

@@ -4,7 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
-import { actualites } from '../component-actualite/actualites.data';
+import { ActualiteService } from '../../services/actualite.service';
 
 @Component({
   imports: [Banner, Button, DatePipe],
@@ -14,11 +14,12 @@ import { actualites } from '../component-actualite/actualites.data';
 })
 export class ComponentActualiteDetail {
   private readonly route = inject(ActivatedRoute);
+  protected readonly actualiteService = inject(ActualiteService);
   private readonly params = toSignal(this.route.paramMap);
 
   /** Resolves the news item identified by the route ID. */
   protected readonly actualite = computed(() => {
     const id = Number(this.params()?.get('id'));
-    return Number.isInteger(id) ? actualites.find((actualite) => actualite.id === id) : undefined;
+    return Number.isInteger(id) ? this.actualiteService.findById(id) : undefined;
   });
 }

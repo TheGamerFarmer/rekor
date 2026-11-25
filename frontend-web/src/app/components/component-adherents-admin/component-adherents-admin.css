@@ -52,7 +52,8 @@
 }
 
 input:not([type='checkbox']),
-select {
+select,
+textarea {
   width: 100%;
   min-width: 0;
   box-sizing: border-box;
@@ -65,7 +66,8 @@ select {
 }
 
 input:focus-visible,
-select:focus-visible {
+select:focus-visible,
+textarea:focus-visible {
   border-color: var(--color-primary);
   outline: 3px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
   outline-offset: 1px;
@@ -168,11 +170,23 @@ small {
   gap: 8px;
 }
 
-.certificate-notice {
-  flex-basis: 100%;
+.payment-error {
   margin: 0;
-  color: var(--color-text-muted);
+  color: var(--color-primary);
   font-size: 13px;
+}
+
+.document-download {
+  justify-self: start;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-primary);
+  cursor: pointer;
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 760px) {

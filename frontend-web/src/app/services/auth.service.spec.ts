@@ -52,6 +52,7 @@ describe('AuthService', () => {
     });
 
     expect(localStorage.getItem('rekor-access-token')).toBe('token-123');
+    expect(localStorage.getItem('rekor-refresh-token')).toBe('refresh-123');
     expect(service.isAuthenticated()).toBe(true);
     expect(service.role()).toBe(UserDetails.RoleEnum.Administrateur);
     service.loadRole().subscribe((role) => {
@@ -93,12 +94,14 @@ describe('AuthService', () => {
 
   it('restores and clears a stored session', () => {
     localStorage.setItem('rekor-access-token', 'existing-token');
+    localStorage.setItem('rekor-refresh-token', 'existing-refresh');
     const service = TestBed.inject(AuthService);
 
     expect(service.isAuthenticated()).toBe(true);
     service.logout();
 
     expect(localStorage.getItem('rekor-access-token')).toBeNull();
+    expect(localStorage.getItem('rekor-refresh-token')).toBeNull();
     expect(service.isAuthenticated()).toBe(false);
   });
 

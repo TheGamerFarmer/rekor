@@ -39,6 +39,9 @@
     subtitle="Cette actualité n’existe pas ou n’est plus disponible."
   />
   <main class="actualite-detail not-found">
+    @if (actualiteService.hasStorageError()) {
+      <p role="alert">Impossible de charger les actualités enregistrées dans ce navigateur.</p>
+    }
     <app-button variant="primary" href="/actualites" text="Voir toutes les actualités"></app-button>
   </main>
 }
