@@ -12,6 +12,8 @@ export * from './groupPatchInput';
 export * from './healthResponse';
 export * from './loginInput';
 export * from './loginResponse';
+export * from './messageDetails';
+export * from './messageInput';
 export * from './participantListItem';
 export * from './publication';
 export * from './refreshTokenInput';

@@ -33,6 +33,7 @@ part 'api/authentication_api.dart';
 part 'api/events_api.dart';
 part 'api/groups_api.dart';
 part 'api/health_api.dart';
+part 'api/messages_api.dart';
 part 'api/users_api.dart';
 
 part 'model/admin_update_profile_input.dart';
@@ -49,6 +50,8 @@ part 'model/group_patch_input.dart';
 part 'model/health_response.dart';
 part 'model/login_input.dart';
 part 'model/login_response.dart';
+part 'model/message_details.dart';
+part 'model/message_input.dart';
 part 'model/participant_list_item.dart';
 part 'model/publication.dart';
 part 'model/refresh_token_input.dart';

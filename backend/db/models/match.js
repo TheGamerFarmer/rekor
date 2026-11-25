@@ -3,6 +3,7 @@ const { Schema, model } = require('mongoose');
 const matchSchema = new Schema(
   {
     event: { type: Schema.Types.ObjectId, ref: 'Event', required: true },
+    team: { type: Schema.Types.ObjectId, ref: 'Team', required: true },
     opponent: { type: String, required: true },
   },
   { collection: 'match', versionKey: false },

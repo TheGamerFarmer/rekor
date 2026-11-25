@@ -1,6 +1,5 @@
 const User = require('../../db/models/user');
 const Group = require('../../db/models/group');
-const GroupMembre = require('../../db/models/group_member');
 const GroupMember = require('../../db/models/group_member');
 const { USER_ROLE } = require('../../db/enums');
 
@@ -52,7 +51,7 @@ async function createGroup({ name, owner, members }) {
 
   if (members && members.length > 0) {
     const memberDocs = members.map((userId) => ({ group: group._id, user: userId }));
-    await GroupMembre.insertMany(memberDocs);
+    await GroupMember.insertMany(memberDocs);
   }
 
   return { success: true, group: group };
@@ -98,8 +97,7 @@ async function updateGroup(id, userId, { name, owner }) {
     if (!userResult) return { error: 'USER_NOT_FOUND' };
   }
 
-  const result = await Group.updateOne({ _id: id }, { $set: changes });
-  if (result.matchedCount === 0) return { error: 'GROUP_NOT_FOUND' };
+  await Group.updateOne({ _id: id }, { $set: changes });
 
   return { success: true };
 }
@@ -118,10 +116,9 @@ async function deleteGroup(id, senderId) {
 
   if (!isOwnerResult.isOwner) return { error: 'USER_NOT_OWNER' };
 
-  await GroupMembre.deleteMany({ group: id });
+  await GroupMember.deleteMany({ group: id });
 
-  const result = await Group.deleteOne({ _id: id });
-  if (result.deletedCount === 0) return { error: 'GROUP_NOT_FOUND' };
+  await Group.deleteOne({ _id: id });
 
   return { success: true };
 }
@@ -136,7 +133,7 @@ async function getGroupMembers(id) {
   const doc = await Group.findOne({ _id: { $eq: id } });
   if (!doc) return { error: 'GROUP_NOT_FOUND' };
 
-  const memberships = await GroupMembre.find({ group: doc._id });
+  const memberships = await GroupMember.find({ group: doc._id });
   const usersId = memberships.map((member) => member.user);
   const users = await User.find({ _id: { $in: usersId } });
 
@@ -161,7 +158,7 @@ async function addMemberToGroup(groupId, userId, senderId) {
   if (groupResult.owner.toString() !== senderId.toString()) return { error: 'USER_NOT_OWNER' };
 
   try {
-    await GroupMembre.create({ group: groupId, user: userId });
+    await GroupMember.create({ group: groupId, user: userId });
   } catch (error) {
     if (error.code === 11000) return { error: 'DUPLICATE' };
     throw error;
@@ -194,7 +191,7 @@ async function removeMemberFromGroup(groupId, userId, senderId) {
   )
     return { error: 'USER_NOT_OWNER' };
 
-  const result = await GroupMembre.deleteOne({ group: groupId, user: userId });
+  const result = await GroupMember.deleteOne({ group: groupId, user: userId });
   if (result.deletedCount === 0) return { error: 'MEMBERSHIP_NOT_FOUND' };
 
   if (groupResult.owner.toString() === userId.toString()) await changeOwnerFromGroup(groupId);

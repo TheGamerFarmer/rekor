@@ -744,7 +744,7 @@ describe('/event (avec un vrai mongod)', () => {
 
   // ── PUT /event/:id/register ────────────────────────────────────────────────
 
-  it('PUT /event/:id/register updates participation and returns 204', async () => {
+  it('PUT /event/:id/register updates participation to false and returns 204', async () => {
     const userId = new ObjectId('000000000000000000000003');
     await db.getDb().collection('participant').insertOne({
       event: eventId,
@@ -756,6 +756,22 @@ describe('/event (avec un vrai mongod)', () => {
       .put(`/event/${eventId}/register`)
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ participate: 'false' });
+
+    assert.strictEqual(res.status, 204);
+  });
+
+  it('PUT /event/:id/register updates participation to true and adds user to group', async () => {
+    const userId = new ObjectId('000000000000000000000003');
+    await db.getDb().collection('participant').insertOne({
+      event: eventId,
+      participe: false,
+      created_by: userId,
+    });
+
+    const res = await request(directApp)
+      .put(`/event/${eventId}/register`)
+      .set('Authorization', `Bearer ${entraineurToken}`)
+      .send({ participate: 'true' });
 
     assert.strictEqual(res.status, 204);
   });
