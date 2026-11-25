@@ -117,7 +117,7 @@ export class EventsService extends BaseService {
     }
 
     /**
-     * Deletes an event (requires Entraineur role or above)
+     * Deletes an event and its group (requires Entraineur role or above, must be group owner)
      * @endpoint delete /event/{id}
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -235,7 +235,7 @@ export class EventsService extends BaseService {
     }
 
     /**
-     * Lists participants of an event (requires Visiteur role or above)
+     * Lists participants of an event (requires authentication)
      * @endpoint get /event/{id}/participants
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -349,7 +349,7 @@ export class EventsService extends BaseService {
     }
 
     /**
-     * Registers participation for an event and joins the group if accepting (requires Entraineur role or above)
+     * Registers participation for an event and joins the group if accepting (requires authentication, Visiteurs excluded from match compétitif)
      * @endpoint post /event/{id}/register
      * @param id 
      * @param registerParticipationInput 
@@ -495,7 +495,7 @@ export class EventsService extends BaseService {
     }
 
     /**
-     * Updates participation for an event (requires Entraineur role or above)
+     * Updates participation for an event (requires authentication)
      * @endpoint put /event/{id}/register
      * @param id 
      * @param registerParticipationInput 

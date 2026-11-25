@@ -44,7 +44,7 @@ export class GroupsService extends BaseService {
     }
 
     /**
-     * Adds a user to a group (requires Entraineur role or above)
+     * Adds a user to a group (requires Adhérent role or above, must be owner)
      * @endpoint post /group/{id}/members/{userId}
      * @param id 
      * @param userId 
@@ -107,7 +107,7 @@ export class GroupsService extends BaseService {
     }
 
     /**
-     * Creates a new group (requires Entraineur role or above)
+     * Creates a new group (requires Adhérent role or above)
      * @endpoint post /group
      * @param groupInput 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -176,7 +176,7 @@ export class GroupsService extends BaseService {
     }
 
     /**
-     * Deletes a group (requires Entraineur role or above)
+     * Deletes a group (requires Adhérent role or above, must be owner)
      * @endpoint delete /group/{id}
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -235,7 +235,7 @@ export class GroupsService extends BaseService {
     }
 
     /**
-     * Retrieves a group by its identifier (requires Adhérent role or above)
+     * Retrieves a group by its identifier (requires authentication)
      * @endpoint get /group/{id}
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -294,7 +294,7 @@ export class GroupsService extends BaseService {
     }
 
     /**
-     * Lists the members of a group (requires Adhérent role or above)
+     * Lists the members of a group (requires authentication)
      * @endpoint get /group/{id}/members
      * @param id 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
@@ -353,7 +353,62 @@ export class GroupsService extends BaseService {
     }
 
     /**
-     * Removes a user from a group (requires Entraineur role or above)
+     * Lists all groups (requires authentication)
+     * @endpoint get /group
+     * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
+     * @param reportProgress flag to report request and response progress.
+     * @param options additional options
+     */
+    public listGroups(observe?: 'body', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<Array<GroupDetails>>;
+    public listGroups(observe?: 'response', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpResponse<Array<GroupDetails>>>;
+    public listGroups(observe?: 'events', reportProgress?: boolean, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<HttpEvent<Array<GroupDetails>>>;
+    public listGroups(observe: any = 'body', reportProgress: boolean = false, options?: {httpHeaderAccept?: 'application/json', context?: HttpContext, transferCache?: boolean}): Observable<any> {
+
+        let localVarHeaders = this.defaultHeaders;
+
+        // authentication (BearerAuth) required
+        localVarHeaders = this.configuration.addCredentialToHeaders('BearerAuth', 'Authorization', localVarHeaders, 'Bearer ');
+
+        const localVarHttpHeaderAcceptSelected: string | undefined = options?.httpHeaderAccept ?? this.configuration.selectHeaderAccept([
+            'application/json'
+        ]);
+        if (localVarHttpHeaderAcceptSelected !== undefined) {
+            localVarHeaders = localVarHeaders.set('Accept', localVarHttpHeaderAcceptSelected);
+        }
+
+        const localVarHttpContext: HttpContext = options?.context ?? new HttpContext();
+
+        const localVarTransferCache: boolean = options?.transferCache ?? true;
+
+
+        let responseType_: 'text' | 'json' | 'blob' = 'json';
+        if (localVarHttpHeaderAcceptSelected) {
+            if (localVarHttpHeaderAcceptSelected.startsWith('text')) {
+                responseType_ = 'text';
+            } else if (this.configuration.isJsonMime(localVarHttpHeaderAcceptSelected)) {
+                responseType_ = 'json';
+            } else {
+                responseType_ = 'blob';
+            }
+        }
+
+        let localVarPath = `/group`;
+        const { basePath, withCredentials } = this.configuration;
+        return this.httpClient.request<Array<GroupDetails>>('get', `${basePath}${localVarPath}`,
+            {
+                context: localVarHttpContext,
+                responseType: <any>responseType_,
+                ...(withCredentials ? { withCredentials } : {}),
+                headers: localVarHeaders,
+                observe: observe,
+                ...(localVarTransferCache !== undefined ? { transferCache: localVarTransferCache } : {}),
+                reportProgress: reportProgress
+            }
+        );
+    }
+
+    /**
+     * Removes a user from a group (requires authentication, owner or self)
      * @endpoint delete /group/{id}/members/{userId}
      * @param id 
      * @param userId 
@@ -416,7 +471,7 @@ export class GroupsService extends BaseService {
     }
 
     /**
-     * Partially updates a group (requires Entraineur role or above)
+     * Partially updates a group (requires Adhérent role or above, must be owner)
      * @endpoint patch /group/{id}
      * @param id 
      * @param groupPatchInput 

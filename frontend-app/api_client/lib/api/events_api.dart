@@ -61,7 +61,7 @@ class EventsApi {
     }
   }
 
-  /// Deletes an event (requires Entraineur role or above)
+  /// Deletes an event and its group (requires Entraineur role or above, must be group owner)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -95,7 +95,7 @@ class EventsApi {
     );
   }
 
-  /// Deletes an event (requires Entraineur role or above)
+  /// Deletes an event and its group (requires Entraineur role or above, must be group owner)
   ///
   /// Parameters:
   ///
@@ -161,7 +161,7 @@ class EventsApi {
     return null;
   }
 
-  /// Lists participants of an event (requires Visiteur role or above)
+  /// Lists participants of an event (requires authentication)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -195,7 +195,7 @@ class EventsApi {
     );
   }
 
-  /// Lists participants of an event (requires Visiteur role or above)
+  /// Lists participants of an event (requires authentication)
   ///
   /// Parameters:
   ///
@@ -266,7 +266,7 @@ class EventsApi {
     return null;
   }
 
-  /// Registers participation for an event and joins the group if accepting (requires Entraineur role or above)
+  /// Registers participation for an event and joins the group if accepting (requires authentication, Visiteurs excluded from match compétitif)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -302,7 +302,7 @@ class EventsApi {
     );
   }
 
-  /// Registers participation for an event and joins the group if accepting (requires Entraineur role or above)
+  /// Registers participation for an event and joins the group if accepting (requires authentication, Visiteurs excluded from match compétitif)
   ///
   /// Parameters:
   ///
@@ -366,7 +366,7 @@ class EventsApi {
     }
   }
 
-  /// Updates participation for an event (requires Entraineur role or above)
+  /// Updates participation for an event (requires authentication)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -402,7 +402,7 @@ class EventsApi {
     );
   }
 
-  /// Updates participation for an event (requires Entraineur role or above)
+  /// Updates participation for an event (requires authentication)
   ///
   /// Parameters:
   ///

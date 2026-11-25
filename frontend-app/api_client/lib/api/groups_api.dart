@@ -16,7 +16,7 @@ class GroupsApi {
 
   final ApiClient apiClient;
 
-  /// Adds a user to a group (requires Entraineur role or above)
+  /// Adds a user to a group (requires Adhérent role or above, must be owner)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -53,7 +53,7 @@ class GroupsApi {
     );
   }
 
-  /// Adds a user to a group (requires Entraineur role or above)
+  /// Adds a user to a group (requires Adhérent role or above, must be owner)
   ///
   /// Parameters:
   ///
@@ -67,7 +67,7 @@ class GroupsApi {
     }
   }
 
-  /// Creates a new group (requires Entraineur role or above)
+  /// Creates a new group (requires Adhérent role or above)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -100,7 +100,7 @@ class GroupsApi {
     );
   }
 
-  /// Creates a new group (requires Entraineur role or above)
+  /// Creates a new group (requires Adhérent role or above)
   ///
   /// Parameters:
   ///
@@ -112,7 +112,7 @@ class GroupsApi {
     }
   }
 
-  /// Deletes a group (requires Entraineur role or above)
+  /// Deletes a group (requires Adhérent role or above, must be owner)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -146,7 +146,7 @@ class GroupsApi {
     );
   }
 
-  /// Deletes a group (requires Entraineur role or above)
+  /// Deletes a group (requires Adhérent role or above, must be owner)
   ///
   /// Parameters:
   ///
@@ -158,7 +158,7 @@ class GroupsApi {
     }
   }
 
-  /// Retrieves a group by its identifier (requires Adhérent role or above)
+  /// Retrieves a group by its identifier (requires authentication)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -192,7 +192,7 @@ class GroupsApi {
     );
   }
 
-  /// Retrieves a group by its identifier (requires Adhérent role or above)
+  /// Retrieves a group by its identifier (requires authentication)
   ///
   /// Parameters:
   ///
@@ -212,7 +212,7 @@ class GroupsApi {
     return null;
   }
 
-  /// Lists the members of a group (requires Adhérent role or above)
+  /// Lists the members of a group (requires authentication)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -246,7 +246,7 @@ class GroupsApi {
     );
   }
 
-  /// Lists the members of a group (requires Adhérent role or above)
+  /// Lists the members of a group (requires authentication)
   ///
   /// Parameters:
   ///
@@ -269,7 +269,55 @@ class GroupsApi {
     return null;
   }
 
-  /// Removes a user from a group (requires Entraineur role or above)
+  /// Lists all groups (requires authentication)
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> listGroupsWithHttpInfo({ Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/group';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'GET',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Lists all groups (requires authentication)
+  Future<List<GroupDetails>?> listGroups({ Future<void>? abortTrigger, }) async {
+    final response = await listGroupsWithHttpInfo(abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      final responseBody = await _decodeBodyBytes(response);
+      return (await apiClient.deserializeAsync(responseBody, 'List<GroupDetails>') as List)
+        .cast<GroupDetails>()
+        .toList(growable: false);
+
+    }
+    return null;
+  }
+
+  /// Removes a user from a group (requires authentication, owner or self)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -306,7 +354,7 @@ class GroupsApi {
     );
   }
 
-  /// Removes a user from a group (requires Entraineur role or above)
+  /// Removes a user from a group (requires authentication, owner or self)
   ///
   /// Parameters:
   ///
@@ -320,7 +368,7 @@ class GroupsApi {
     }
   }
 
-  /// Partially updates a group (requires Entraineur role or above)
+  /// Partially updates a group (requires Adhérent role or above, must be owner)
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -356,7 +404,7 @@ class GroupsApi {
     );
   }
 
-  /// Partially updates a group (requires Entraineur role or above)
+  /// Partially updates a group (requires Adhérent role or above, must be owner)
   ///
   /// Parameters:
   ///

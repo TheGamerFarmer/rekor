@@ -2183,7 +2183,7 @@
         "tags": [
           "Events"
         ],
-        "summary": "Deletes an event (requires Entraineur role or above)",
+        "summary": "Deletes an event and its group (requires Entraineur role or above, must be group owner)",
         "security": [
           {
             "BearerAuth": []
@@ -2203,7 +2203,7 @@
         ],
         "responses": {
           "204": {
-            "description": "Event deleted, no response content"
+            "description": "Event and group deleted, no response content"
           },
           "400": {
             "description": "Invalid identifier",
@@ -2226,7 +2226,7 @@
             }
           },
           "403": {
-            "description": "Insufficient permissions",
+            "description": "Insufficient permissions or not the group owner",
             "content": {
               "application/json": {
                 "schema": {
@@ -2236,7 +2236,7 @@
             }
           },
           "404": {
-            "description": "Event not found",
+            "description": "Event or group not found",
             "content": {
               "application/json": {
                 "schema": {
@@ -2274,7 +2274,7 @@
         "tags": [
           "Events"
         ],
-        "summary": "Registers participation for an event and joins the group if accepting (requires Entraineur role or above)",
+        "summary": "Registers participation for an event and joins the group if accepting (requires authentication, Visiteurs excluded from match compétitif)",
         "security": [
           {
             "BearerAuth": []
@@ -2327,7 +2327,7 @@
             }
           },
           "403": {
-            "description": "Insufficient permissions",
+            "description": "Visiteur cannot participate in competitive matches",
             "content": {
               "application/json": {
                 "schema": {
@@ -2383,7 +2383,7 @@
         "tags": [
           "Events"
         ],
-        "summary": "Updates participation for an event (requires Entraineur role or above)",
+        "summary": "Updates participation for an event (requires authentication)",
         "security": [
           {
             "BearerAuth": []
@@ -2412,7 +2412,7 @@
           }
         },
         "responses": {
-          "201": {
+          "204": {
             "description": "Participation updated, no response content"
           },
           "400": {
@@ -2435,18 +2435,8 @@
               }
             }
           },
-          "403": {
-            "description": "Insufficient permissions",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
           "404": {
-            "description": "Event not found",
+            "description": "Event not found or no existing participation",
             "content": {
               "application/json": {
                 "schema": {
@@ -2484,7 +2474,7 @@
         "tags": [
           "Events"
         ],
-        "summary": "Lists participants of an event (requires Visiteur role or above)",
+        "summary": "Lists participants of an event (requires authentication)",
         "security": [
           {
             "BearerAuth": []
@@ -2579,13 +2569,169 @@
         }
       }
     },
+    "/group": {
+      "get": {
+        "operationId": "listGroups",
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Lists all groups (requires authentication)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The groups",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GroupDetails"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createGroup",
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Creates a new group (requires Adhérent role or above)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Group created, no response content"
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owner user or member not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Group already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/group/{id}": {
       "get": {
         "operationId": "getGroup",
         "tags": [
           "Groups"
         ],
-        "summary": "Retrieves a group by its identifier (requires Adhérent role or above)",
+        "summary": "Retrieves a group by its identifier (requires authentication)",
         "security": [
           {
             "BearerAuth": []
@@ -2681,7 +2827,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Partially updates a group (requires Entraineur role or above)",
+        "summary": "Partially updates a group (requires Adhérent role or above, must be owner)",
         "security": [
           {
             "BearerAuth": []
@@ -2734,7 +2880,7 @@
             }
           },
           "403": {
-            "description": "Insufficient permissions",
+            "description": "Insufficient permissions or not the group owner",
             "content": {
               "application/json": {
                 "schema": {
@@ -2780,7 +2926,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Deletes a group (requires Entraineur role or above)",
+        "summary": "Deletes a group (requires Adhérent role or above, must be owner)",
         "security": [
           {
             "BearerAuth": []
@@ -2823,7 +2969,7 @@
             }
           },
           "403": {
-            "description": "Insufficient permissions",
+            "description": "Insufficient permissions or not the group owner",
             "content": {
               "application/json": {
                 "schema": {
@@ -2865,112 +3011,13 @@
         }
       }
     },
-    "/group": {
-      "post": {
-        "operationId": "createGroup",
-        "tags": [
-          "Groups"
-        ],
-        "summary": "Creates a new group (requires Entraineur role or above)",
-        "security": [
-          {
-            "BearerAuth": []
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/GroupInput"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Group created, no response content"
-          },
-          "400": {
-            "description": "Invalid request body",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "401": {
-            "description": "Authentication required or invalid token",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "403": {
-            "description": "Insufficient permissions",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Owner user or member not found",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "409": {
-            "description": "Group already exists",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "429": {
-            "description": "Too many requests",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          },
-          "500": {
-            "description": "Internal server error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorResponse"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/group/{id}/members": {
       "get": {
         "operationId": "listGroupMembers",
         "tags": [
           "Groups"
         ],
-        "summary": "Lists the members of a group (requires Adhérent role or above)",
+        "summary": "Lists the members of a group (requires authentication)",
         "security": [
           {
             "BearerAuth": []
@@ -3071,7 +3118,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Adds a user to a group (requires Entraineur role or above)",
+        "summary": "Adds a user to a group (requires Adhérent role or above, must be owner)",
         "security": [
           {
             "BearerAuth": []
@@ -3124,7 +3171,7 @@
             }
           },
           "403": {
-            "description": "Insufficient permissions",
+            "description": "Insufficient permissions or not the group owner",
             "content": {
               "application/json": {
                 "schema": {
@@ -3180,7 +3227,7 @@
         "tags": [
           "Groups"
         ],
-        "summary": "Removes a user from a group (requires Entraineur role or above)",
+        "summary": "Removes a user from a group (requires authentication, owner or self)",
         "security": [
           {
             "BearerAuth": []
@@ -3233,7 +3280,7 @@
             }
           },
           "403": {
-            "description": "Insufficient permissions",
+            "description": "Not the group owner and not removing self",
             "content": {
               "application/json": {
                 "schema": {
