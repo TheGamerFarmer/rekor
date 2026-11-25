@@ -8,7 +8,25 @@ Projet de SAE (BUT Informatique, semestre 5), réalisé en équipe.
 
 ## Équipe
 
-<!-- À compléter : noms et rôles. -->
+### Chef de projet :
+   - Célia Moulin
+
+### Frontend web :
+   - Emma Dhoury
+   - Timotée Dagand
+   - Célia Moulin
+
+### Frontend mobile :
+   - Kyllian Botrel
+   - Sarah Sekma
+   - Marion Pacaud
+
+### Backend :
+   - Yvan Giordano
+   - Raphaël Matheret
+
+### Responsable VM
+   - Raphaël Matheret
 
 ## Architecture
 

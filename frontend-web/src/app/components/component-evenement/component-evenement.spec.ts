@@ -1,102 +1,150 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { signal } from '@angular/core';
 import { ComponentEvenement } from './component-evenement';
-import { evenements, type Evenement } from './evenements.data';
+import { defaultEvenements, getDateDuJour, getHeureEvenement } from './evenements.data';
+import { createTestEvenements, dateRelativeToToday } from './evenements.test-data';
+import { EvenementService } from '../../services/evenement.service';
+import { AuthService } from '../../services/auth.service';
+import { UserDetails } from '../../api/model/userDetails';
 
 describe('ComponentEvenement', () => {
   let fixture: ComponentFixture<ComponentEvenement>;
+  let events = signal(createTestEvenements());
+  let role = signal<UserDetails.RoleEnum | null>(UserDetails.RoleEnum.Administrateur);
 
   beforeEach(async () => {
+    events = signal(createTestEvenements());
+    role = signal<UserDetails.RoleEnum | null>(UserDetails.RoleEnum.Administrateur);
     await TestBed.configureTestingModule({
       imports: [ComponentEvenement],
+      providers: [
+        {
+          provide: EvenementService,
+          useValue: { evenements: events },
+        },
+        { provide: AuthService, useValue: { role } },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ComponentEvenement);
     fixture.detectChanges();
   });
 
-  it('renders the club news with their images and destinations', () => {
-    const cards = fixture.nativeElement.querySelectorAll('.news-card');
-    const links = fixture.nativeElement.querySelectorAll('.news-link a');
-
-    expect(fixture.nativeElement.querySelector('h1')?.textContent).toContain(
-      'Actualités et événements',
-    );
-    expect(cards.length).toBe(3);
-    expect(fixture.nativeElement.textContent).toContain('Goûter organisé');
-    expect(fixture.nativeElement.textContent).toContain('Les inscriptions');
-    expect(fixture.nativeElement.textContent).toContain('Le club part');
-    expect(Array.from(links, (link: Element) => link.getAttribute('href'))).toEqual([
-      '/evenements/gouter-du-club',
-      '/evenements/inscriptions-ouvertes',
-      '/evenements/vacances-dete',
-    ]);
-    expect(cards[0].getAttribute('style')).toContain('/img/gouter.jpg');
-    expect(fixture.nativeElement.querySelector('.pagination')?.textContent).toContain('1');
-    expect(
-      (fixture.nativeElement.querySelector('.pagination-previous button') as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
-    expect(
-      (fixture.nativeElement.querySelector('.pagination-next button') as HTMLButtonElement)
-        .disabled,
-    ).toBe(true);
+  it.each([
+    ['2026-11-13T08:30:00', '08:30'],
+    ['2026-11-13 08:30:00', '08:30'],
+    ['2026-11-13', ''],
+  ])('extracts the hour from %s', (date, expectedHour) => {
+    expect(getHeureEvenement(date)).toBe(expectedHour);
   });
 
-  it('shows at most five events and navigates between pages', () => {
-    const additionalEvents: Evenement[] = Array.from({ length: 9 }, (_, index) => ({
-      ...evenements[0],
-      slug: `actualite-${index + 1}`,
-      title: `Actualité ${index + 1}`,
-    }));
-    fixture.componentRef.setInput('events', [...evenements, ...additionalEvents]);
+  it('formats the current date for event filtering', () => {
+    const now = new Date();
+    const expected = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(
+      now.getDate(),
+    ).padStart(2, '0')}`;
+
+    expect(getDateDuJour()).toBe(expected);
+  });
+
+  it('renders upcoming events by default', () => {
+    events.set([{ ...defaultEvenements[3], date: '2999-01-01T20:00:00' }]);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelectorAll('.news-card').length).toBe(5);
+    expect(fixture.nativeElement.textContent).toContain('Entraînement');
+    expect(fixture.nativeElement.querySelector('.event-list')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('a[href="/admin/evenements"]')).not.toBeNull();
+  });
 
-    const pageTwo = fixture.nativeElement.querySelector(
-      '.pagination-page:nth-child(2) button',
-    ) as HTMLButtonElement;
-    pageTwo.click();
+  it('shows event management only for administrators, coaches, and captains', () => {
+    for (const authorizedRole of [
+      UserDetails.RoleEnum.Administrateur,
+      UserDetails.RoleEnum.Entraineur,
+      UserDetails.RoleEnum.Capitaine,
+    ]) {
+      role.set(authorizedRole);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('a[href="/admin/evenements"]')).not.toBeNull();
+    }
+
+    for (const unauthorizedRole of [
+      null,
+      UserDetails.RoleEnum.Adhrent,
+      UserDetails.RoleEnum.Visiteur,
+    ]) {
+      role.set(unauthorizedRole);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('a[href="/admin/evenements"]')).toBeNull();
+    }
+  });
+
+  it('switches between upcoming and past events', () => {
+    const buttons = fixture.nativeElement.querySelectorAll('.event-filters button');
+
+    buttons[1].click();
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelectorAll('.news-card').length).toBe(5);
-    expect(fixture.nativeElement.querySelector('.news-card h2')?.textContent).toContain(
-      'Actualité 3',
+    expect(fixture.nativeElement.textContent).toContain('Match amical - Gières vs Lyon');
+    expect(fixture.nativeElement.textContent).not.toContain('Match - Gières vs Grenoble');
+
+    buttons[0].click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Match - Gières vs Grenoble');
+  });
+
+  it('links each event to its detail page', () => {
+    events.set([{ ...defaultEvenements[0], date: '2999-01-01' }]);
+    fixture.detectChanges();
+
+    const link = fixture.nativeElement.querySelector('a[href="/evenements/1"]');
+
+    expect(link).not.toBeNull();
+  });
+
+  it('shows pagination and clamps navigation to the available pages', () => {
+    events.set([
+      ...createTestEvenements(),
+      ...createTestEvenements().map((event, index) => ({
+        ...event,
+        id: event.id + 10 + index,
+        date: `${dateRelativeToToday(14)}T20:00:00`,
+      })),
+    ]);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('.pagination')).not.toBeNull();
+    const next = fixture.nativeElement.querySelector('.pagination app-button:last-child button');
+    next.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Page 2 sur 2');
+    const previous = fixture.nativeElement.querySelector(
+      '.pagination app-button:first-child button',
     );
-    expect(
-      fixture.nativeElement
-        .querySelector('.pagination-page button[aria-current="page"]')
-        ?.textContent.trim(),
-    ).toBe('2');
-
-    const previousPage = fixture.nativeElement.querySelector(
-      '.pagination-previous button',
-    ) as HTMLButtonElement;
-    previousPage.click();
+    previous.click();
     fixture.detectChanges();
-    expect(
-      fixture.nativeElement
-        .querySelector('.pagination-page button[aria-current="page"]')
-        ?.textContent.trim(),
-    ).toBe('1');
+    expect(fixture.nativeElement.textContent).toContain('Page 1 sur 2');
 
-    const nextPage = fixture.nativeElement.querySelector(
-      '.pagination-next button',
-    ) as HTMLButtonElement;
-    nextPage.click();
+    fixture.componentInstance['goToPage'](0);
     fixture.detectChanges();
-    expect(
-      fixture.nativeElement
-        .querySelector('.pagination-page button[aria-current="page"]')
-        ?.textContent.trim(),
-    ).toBe('2');
+    expect(fixture.nativeElement.textContent).toContain('Page 1 sur 2');
 
-    const lastPage = fixture.nativeElement.querySelector(
-      '.pagination-pages app-button:last-child button',
-    ) as HTMLButtonElement;
-    lastPage.click();
+    fixture.componentInstance['goToPage'](3);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Page 2 sur 2');
+  });
+
+  it('shows an empty state when no events match the filter', () => {
+    events.set([]);
     fixture.detectChanges();
 
-    expect(fixture.nativeElement.querySelectorAll('.news-card').length).toBe(2);
+    expect(fixture.nativeElement.querySelector('.empty-state')?.textContent).toContain(
+      'Aucun événement',
+    );
+  });
+
+  it('displays the event hour from the date field', () => {
+    expect(fixture.nativeElement.textContent).toContain('20:00');
   });
 });

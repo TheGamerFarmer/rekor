@@ -1,8 +1,4 @@
-import { Component, inject } from '@angular/core';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, map, of } from 'rxjs';
-
-import { HealthService } from '../../api';
+import { Component } from '@angular/core';
 import { Banner } from '../component-banner/banner';
 import { RouterLink } from '@angular/router';
 
@@ -12,13 +8,4 @@ import { RouterLink } from '@angular/router';
   styleUrl: './component-accueil.css',
   templateUrl: './component-accueil.html',
 })
-export class ComponentAccueil {
-  private readonly health = inject(HealthService);
-
-  protected readonly backendStatus = toSignal(
-    this.health.getHealth().pipe(
-      map((response) => response.status),
-      catchError(() => of('indisponible')),
-    ),
-  );
-}
+export class ComponentAccueil {}

@@ -1,16 +1,18 @@
 <app-component-banner
-  image="/img/team.jpg"
+  image="/images/team.jpg"
   title="Rejoignez le club"
-  subtitle="Inscrivez-vous à l’association de volley-ball de Gières."
+  subtitle="Inscrivez-vous à l’association."
 />
 
-<main class="registration-page">
-  <section class="registration-card" aria-labelledby="registration-title">
+<main class="form-page registration-page">
+  <section class="surface-card registration-card" aria-labelledby="registration-title">
     <header class="registration-header">
       <h2 id="registration-title">Inscription</h2>
       <p class="subtitle">
-        Inscrivez-vous à l’association en remplissant ce formulaire. Votre candidature sera ensuite
-        étudiée par un responsable. Les champs marqués d’un astérisque (*) sont obligatoires.
+        Inscrivez-vous à l’association
+        {{ registrationForm.controls.associationName.value }}
+        en remplissant ce formulaire. Votre candidature sera ensuite étudiée par un responsable. Les
+        champs marqués d’un astérisque (*) sont obligatoires.
       </p>
     </header>
 
@@ -60,6 +62,39 @@
           ) {
             <p class="error">Saisissez votre nom.</p>
           }
+        </div>
+      </div>
+
+      <div class="name-fields">
+        <div class="field">
+          <label for="pronoun"
+            >Pronom <span class="required-marker" aria-hidden="true">*</span></label
+          >
+          <select
+            id="pronoun"
+            formControlName="pronoun"
+            required
+            [attr.aria-invalid]="
+              (submitted() || registrationForm.controls.pronoun.dirty) &&
+              registrationForm.controls.pronoun.invalid
+            "
+          >
+            <option value="">Sélectionnez votre pronom</option>
+            @for (pronoun of pronouns; track pronoun) {
+              <option [value]="pronoun">{{ pronoun }}</option>
+            }
+          </select>
+          @if (
+            (submitted() || registrationForm.controls.pronoun.dirty) &&
+            registrationForm.controls.pronoun.invalid
+          ) {
+            <p class="error">Sélectionnez votre pronom.</p>
+          }
+        </div>
+
+        <div class="field">
+          <label for="birthday">Date de naissance</label>
+          <input id="birthday" type="date" formControlName="birthday" autocomplete="bday" />
         </div>
       </div>
 
@@ -193,6 +228,13 @@
 
       <fieldset class="agreements">
         <legend>Consentements et autorisations</legend>
+        <p>Ouvrez chaque document et faites-le défiler jusqu’en bas avant de cocher sa case.</p>
+        @if (readingUnavailable) {
+          <p class="error" role="alert">
+            Votre navigateur ne permet pas de confirmer la lecture. Essayez avec un navigateur
+            récent.
+          </p>
+        }
         <label class="checkbox-field">
           <input
             type="checkbox"
@@ -200,12 +242,27 @@
             required
             [class.invalid]="submitted() && registrationForm.controls.privacyPolicy.invalid"
             [attr.aria-invalid]="submitted() && registrationForm.controls.privacyPolicy.invalid"
+            (click)="rejectPrivacyPolicyBeforeReading($event)"
           />
           <span>
-            J’ai pris connaissance de la politique de confidentialité de l’association.
+            J’ai pris connaissance de la
+            <a
+              [href]="'/politique-confidentialite?lecture=' + readingId"
+              target="_blank"
+              rel="noopener"
+              [class.document-link-opened]="privacyPolicyRead()"
+              >politique de confidentialité</a
+            >
+            de l’association.
             <span class="required-marker" aria-hidden="true">*</span>
           </span>
         </label>
+        @if (privacyPolicyCheckboxAttempted() && !privacyPolicyRead()) {
+          <p class="error agreement-error" role="alert">
+            Veuillez ouvrir la politique de confidentialité et la faire défiler jusqu’en bas avant
+            de cocher cette case.
+          </p>
+        }
         <label class="checkbox-field">
           <input
             type="checkbox"
@@ -213,12 +270,27 @@
             required
             [class.invalid]="submitted() && registrationForm.controls.internalRules.invalid"
             [attr.aria-invalid]="submitted() && registrationForm.controls.internalRules.invalid"
+            (click)="rejectInternalRulesBeforeReading($event)"
           />
           <span>
-            J’atteste avoir lu et accepté le règlement intérieur de l’association.
+            J’atteste avoir lu et accepté le
+            <a
+              [href]="'/reglement-interieur?lecture=' + readingId"
+              target="_blank"
+              rel="noopener"
+              [class.document-link-opened]="internalRulesRead()"
+              >règlement intérieur</a
+            >
+            de l’association.
             <span class="required-marker" aria-hidden="true">*</span>
           </span>
         </label>
+        @if (internalRulesCheckboxAttempted() && !internalRulesRead()) {
+          <p class="error agreement-error" role="alert">
+            Veuillez ouvrir le règlement intérieur et le faire défiler jusqu’en bas avant de cocher
+            cette case.
+          </p>
+        }
         <label class="checkbox-field">
           <input type="checkbox" formControlName="healthData" />
           <span
@@ -237,6 +309,10 @@
         </label>
       </fieldset>
 
+      @if (registrationError()) {
+        <p class="form-message error" role="alert">{{ registrationError() }}</p>
+      }
+
       @if (submitted() && registrationForm.invalid) {
         <p class="form-message error" role="alert">
           Veuillez compléter les champs requis et cocher la politique de confidentialité et le
@@ -245,13 +321,8 @@
       }
 
       <div class="actions">
-        <app-button
-          variant="secondary"
-          href="/"
-          [fullWidth]="true"
-          text="Retour à l’accueil"
-        ></app-button>
-        <app-button type="submit" [fullWidth]="true" text="Valider"></app-button>
+        <app-button variant="secondary" href="/" text="Retour"></app-button>
+        <app-button type="submit" text="Valider"></app-button>
       </div>
     </form>
   </section>

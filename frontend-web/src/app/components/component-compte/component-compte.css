@@ -3,55 +3,40 @@
 }
 
 .account-page {
-  align-items: center;
-  background: #f4f7fb;
-  display: flex;
-  font-family: Inter, 'Segoe UI', sans-serif;
-  justify-content: center;
-  min-height: 100vh;
-  padding: 2rem 1rem;
+  padding: 3rem 1rem;
+}
+
+.account-layout {
+  margin: 0 auto;
+  max-width: 72rem;
+}
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: start;
+  gap: 1.5rem;
+}
+
+.account-column {
+  display: grid;
+  gap: 1.5rem;
+  min-width: 0;
+  align-content: start;
 }
 
 .account-card {
-  background: #fff;
-  border: 1px solid #e3e9f2;
-  border-radius: 1.25rem;
-  box-shadow: 0 1rem 3rem rgb(28 52 84 / 10%);
-  max-width: 42rem;
-  padding: 2.5rem;
-  width: 100%;
-}
-
-.account-header {
-  align-items: center;
-  display: flex;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.brand {
-  align-items: center;
-  background: #2355c4;
-  border-radius: 0.75rem;
-  color: #fff;
-  display: flex;
-  flex: 0 0 auto;
-  font-size: 1.5rem;
-  font-weight: 800;
-  height: 3rem;
-  justify-content: center;
-  width: 3rem;
+  min-width: 0;
+  padding: 1.75rem;
 }
 
 h1 {
-  color: #18243a;
+  color: var(--color-text);
   font-size: 1.75rem;
   margin: 0 0 0.5rem;
 }
 
-.subtitle,
 .form-message {
-  color: #62708a;
   line-height: 1.5;
   margin: 0;
 }
@@ -62,69 +47,44 @@ h1 {
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.field {
-  margin-bottom: 1.25rem;
+.required-marker {
+  color: var(--color-error);
 }
 
-label {
-  color: #26354f;
-  display: block;
-  font-size: 0.9rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
-}
-
-input {
-  background: #fff;
-  border: 1px solid #cbd5e3;
-  border-radius: 0.625rem;
-  box-sizing: border-box;
-  color: #18243a;
-  font: inherit;
-  padding: 0.8rem 0.9rem;
-  transition:
-    border-color 150ms ease,
-    box-shadow 150ms ease;
-  width: 100%;
-}
-
-input:focus {
-  border-color: #2355c4;
-  box-shadow: 0 0 0 3px rgb(38 89 216 / 15%);
-  outline: none;
-}
-
-input[aria-invalid='true'] {
-  border-color: #c93636;
+.optional-label {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+  font-weight: 400;
 }
 
 .error {
-  color: #b52e2e;
+  color: var(--color-error);
   font-size: 0.8rem;
   margin: 0.4rem 0 0;
 }
 
 .form-message {
-  color: #20734a;
+  color: var(--color-success);
   font-size: 0.85rem;
   margin: 0 0 1rem;
   text-align: center;
 }
 
-.account-section {
-  border-top: 1px solid #e3e9f2;
-  margin-top: 2rem;
-  padding-top: 2rem;
-}
-
-.account-section h2 {
-  color: #18243a;
+.account-card h2 {
+  color: var(--color-text);
   font-size: 1.2rem;
   margin: 0 0 1.25rem;
 }
 
+.certificate-information {
+  color: var(--color-text-muted);
+  font-size: 0.9rem;
+  line-height: 1.5;
+  margin: 0 0 1rem;
+}
+
 .account-danger {
-  color: #62708a;
+  color: var(--color-text-muted);
 }
 
 .account-danger p {
@@ -144,7 +104,7 @@ input[aria-invalid='true'] {
 }
 
 .checkbox-field input {
-  accent-color: #2355c4;
+  accent-color: var(--color-primary);
   flex: 0 0 auto;
   height: 1rem;
   margin: 0.15rem 0 0;
@@ -161,9 +121,15 @@ input[aria-invalid='true'] {
 }
 
 .account-danger app-button,
-.account-card > app-button {
+.account-layout > app-button {
   display: block;
   margin-top: 1.5rem;
+}
+
+@media (max-width: 760px) {
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 600px) {

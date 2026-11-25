@@ -9,7 +9,13 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideBrowserGlobalErrorListeners(),
     provideHttpClient(),
-    provideApi('/api'),
+    provideApi({
+      basePath: '/api',
+      accessToken: () =>
+        typeof localStorage !== 'undefined'
+          ? (localStorage.getItem('rekor-access-token') ?? '')
+          : '',
+    }),
     provideRouter(routes),
   ],
 };

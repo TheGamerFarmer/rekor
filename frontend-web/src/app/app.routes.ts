@@ -3,18 +3,65 @@ import { Routes } from '@angular/router';
 import { ComponentAccueil } from './components/component-accueil/component-accueil';
 import { ComponentCompte } from './components/component-compte/component-compte';
 import { ComponentConnexion } from './components/component-connexion/component-connexion';
-import { ComponentEvenement } from './components/component-evenement/component-evenement';
-import { ComponentEvenementDetail } from './components/component-evenement-detail/component-evenement-detail';
+import { ComponentActualite } from './components/component-actualite/component-actualite';
+import { ComponentActualiteDetail } from './components/component-actualite-detail/component-actualite-detail';
 import { ComponentInscription } from './components/component-inscription/component-inscription';
-import { PresentationClubComponent } from './components/presentation-club-component/presentation-club-component';
+import { ComponentClub } from './components/component-club/component-club';
+import { ComponentEvenement } from './components/component-evenement/component-evenement';
+import { ComponentEvenementDetails } from './components/component-evenement-details/component-evenement-details';
+import { ComponentEvenementAdmin } from './components/component-evenement-admin/component-evenement-admin';
+import { ComponentEvenementsAdmin } from './components/component-evenements-admin/component-evenements-admin';
+import { ComponentRegles } from './components/component-regles/component-regles';
+import { ComponentAdherentsAdmin } from './components/component-adherents-admin/component-adherents-admin';
+import { ComponentPolitique } from './components/component-inscription/politique';
+import { ComponentReglement } from './components/component-inscription/reglement';
+import { ComponentCredits } from './components/component-credits/component-credits';
+import { ComponentTresorerie } from './components/component-tresorerie/component-tresorerie';
+import { administratorGuard, eventManagementGuard } from './services/role.guard';
 
 export const routes: Routes = [
   { path: '', component: ComponentAccueil },
   { path: 'compte', component: ComponentCompte },
   { path: 'connexion', component: ComponentConnexion },
-  { path: 'evenements', component: ComponentEvenement },
-  { path: 'evenements/:slug', component: ComponentEvenementDetail },
+  { path: 'actualites', component: ComponentActualite },
+  { path: 'actualites/:id', component: ComponentActualiteDetail },
   { path: 'inscription', component: ComponentInscription },
-  { path: 'presentation-club', component: PresentationClubComponent },
+  { path: 'politique-confidentialite', component: ComponentPolitique },
+  { path: 'reglement-interieur', component: ComponentReglement },
+  { path: 'credits', component: ComponentCredits },
+  { path: 'presentation-club', component: ComponentClub },
+  { path: 'regles', component: ComponentRegles },
+  { path: 'evenements', component: ComponentEvenement },
+  { path: 'evenements/:id', component: ComponentEvenementDetails },
+  {
+    path: 'admin/evenements',
+    component: ComponentEvenementsAdmin,
+    canActivate: [eventManagementGuard],
+  },
+  {
+    path: 'admin/evenements/nouveau',
+    component: ComponentEvenementAdmin,
+    canActivate: [eventManagementGuard],
+  },
+  {
+    path: 'admin/evenements/:id/modifier',
+    component: ComponentEvenementAdmin,
+    canActivate: [eventManagementGuard],
+  },
+  {
+    path: 'admin/evenements/:slug/modifier',
+    component: ComponentEvenementAdmin,
+    canActivate: [eventManagementGuard],
+  },
+  {
+    path: 'admin/adherents',
+    component: ComponentAdherentsAdmin,
+    canActivate: [administratorGuard],
+  },
+  {
+    path: 'admin/tresorerie',
+    component: ComponentTresorerie,
+    canActivate: [administratorGuard],
+  },
   { path: '**', redirectTo: '' },
 ];

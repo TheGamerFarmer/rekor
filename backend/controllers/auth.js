@@ -1,10 +1,33 @@
 require('../db/db');
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
-const User = require('../db/models/user');
-const { wrapAsync } = require('./services/shared');
-const { signAccessToken } = require('./services/auth-middleware');
+const { wrapAsync, isValidId } = require('./services/shared');
+const {
+  InvalidTokenError,
+  signAccessToken,
+  signRefreshToken,
+  verifyRefreshToken,
+  hashRefreshToken,
+  revokeSession,
+} = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
+const { userContext } = require('../db/plugins/audit');
+const User = require('../db/models/user');
+const Association = require('../db/models/association');
+const Registeration = require('../db/models/registration');
+const RefreshToken = require('../db/models/refresh-token');
+const { USER_ROLE } = require('../db/enums');
+
+async function createRefreshSession(user, association) {
+  const refresh = signRefreshToken(user, association);
+  await RefreshToken.create({
+    _id: refresh.sessionId,
+    userId: user._id,
+    tokenHash: hashRefreshToken(refresh.token),
+    expiresAt: refresh.expiresAt,
+  });
+  return refresh;
+}
 
 function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
   const router = express.Router();
@@ -22,10 +45,31 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
   router.post(
     '/register',
     wrapAsync(async (req, res) => {
-      const { name, firstName, email, password, phoneNumber, birthday, pronoun } = req.body;
+      const {
+        name,
+        firstName,
+        email,
+        password,
+        phoneNumber,
+        birthday,
+        pronoun,
+        associationName,
+        medicalCertificate,
+        rightOfPublicity,
+      } = req.body;
 
       if (await User.exists({ email: { $eq: email } })) {
         return res.status(409).json({ message: 'Un utilisateur avec cet e-mail existe déjà' });
+      }
+
+      const association = await Association.findOne({ name: { $eq: associationName } });
+      if (!association) {
+        return res.status(404).json({ message: "L'association n'existe pas" });
+      }
+
+      let role = USER_ROLE.VISITEUR;
+      if (!(await User.exists({}))) {
+        role = USER_ROLE.ADMINISTRATEUR;
       }
 
       try {
@@ -35,33 +79,158 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
           email,
           password: await hashPassword(password),
           phoneNumber,
-          role: 'Visiteur',
+          role: role,
           ...(birthday ? { birthday: new Date(`${birthday}T00:00:00.000Z`) } : {}),
           pronoun,
+          medicalCertificate,
+          rightOfPublicity,
         });
-        res.status(201).end();
       } catch (error) {
         if (error.code === 11000) {
           return res.status(409).json({ message: 'Un utilisateur avec cet e-mail existe déjà' });
         }
         throw error;
       }
+
+      const user = await User.findOne({ email: { $eq: email } });
+
+      const store = userContext.getStore();
+      if (store) store.userId = user._id;
+
+      try {
+        await Registeration.create({
+          association: association._id,
+        });
+      } catch (error) {
+        if (error.code === 11000) {
+          return res
+            .status(409)
+            .json({ message: "L'utilisateur est déjà inscrit dans cet association" });
+        }
+        throw error;
+      }
+
+      return res.status(201).end();
     }),
   );
 
   router.post(
     '/login',
     wrapAsync(async (req, res) => {
-      const { email, password } = req.body;
-      const user = await User.findOne({ email: { $eq: email } });
+      const { email, password, associationName } = req.body;
 
+      const association = await Association.findOne({ name: { $eq: associationName } });
+      if (!association) {
+        return res.status(404).json({ message: "L'association n'existe pas" });
+      }
+
+      const user = await User.findOne({ email: { $eq: email } });
       if (!user || !(await verifyPassword(password, user.password))) {
         return res.status(401).json({ message: 'E-mail ou mot de passe incorrect' });
       }
 
+      const session = await createRefreshSession(user, association);
       res.json({
-        access_token: signAccessToken(user),
+        access_token: signAccessToken(user, association, session.sessionId),
+        refresh_token: session.token,
       });
+    }),
+  );
+
+  router.post(
+    '/refresh',
+    wrapAsync(async (req, res) => {
+      let claims;
+      try {
+        claims = verifyRefreshToken(req.body.refresh_token);
+      } catch (error) {
+        if (error instanceof InvalidTokenError) {
+          return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+        }
+        throw error;
+      }
+
+      if (!isValidId(claims.sub)) {
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      const oldTokenHash = hashRefreshToken(req.body.refresh_token);
+      const session = await RefreshToken.findOne({
+        _id: { $eq: claims.sid },
+        userId: { $eq: claims.sub },
+        tokenHash: { $eq: oldTokenHash },
+        expiresAt: { $gt: new Date() },
+      });
+      if (!session) {
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      const user = await User.findById(session.userId);
+      if (!user) {
+        await RefreshToken.deleteOne({ _id: session._id });
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      const association = await Association.findOne({ name: { $eq: claims.association } });
+      if (!association) {
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      const refresh = signRefreshToken(user, association, session._id);
+      const updated = await RefreshToken.updateOne(
+        { _id: session._id, tokenHash: oldTokenHash, expiresAt: { $gt: new Date() } },
+        {
+          $set: {
+            tokenHash: hashRefreshToken(refresh.token),
+            expiresAt: refresh.expiresAt,
+          },
+        },
+      );
+      if (updated.matchedCount === 0) {
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      res.json({
+        access_token: signAccessToken(user, association, session._id),
+        refresh_token: refresh.token,
+      });
+    }),
+  );
+
+  router.post(
+    '/logout',
+    wrapAsync(async (req, res) => {
+      let claims;
+      try {
+        claims = verifyRefreshToken(req.body.refresh_token);
+      } catch (error) {
+        if (error instanceof InvalidTokenError) {
+          return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+        }
+        throw error;
+      }
+
+      if (!isValidId(claims.sub)) {
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      const userId = claims.sub;
+      const session = await RefreshToken.findOne({
+        _id: { $eq: claims.sid },
+        userId: { $eq: userId },
+        tokenHash: { $eq: hashRefreshToken(req.body.refresh_token) },
+        expiresAt: { $gt: new Date() },
+      });
+      if (!session) {
+        return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
+      }
+
+      await revokeSession(claims.sid);
+      await RefreshToken.deleteOne({
+        _id: { $eq: claims.sid },
+        userId: { $eq: userId },
+      });
+      res.status(204).end();
     }),
   );
 

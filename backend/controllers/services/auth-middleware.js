@@ -1,12 +1,15 @@
-const { createHmac, timingSafeEqual } = require('node:crypto');
+const { createHash, createHmac, randomUUID, timingSafeEqual } = require('node:crypto');
+const { getRedis } = require('./redisCache');
 const { userContext } = require('../../db/plugins/audit');
-const { USER_ROLES } = require('../../db/enums');
+const { USER_ROLE } = require('../../db/enums');
 
-const ROLES = USER_ROLES;
 /** Validity duration of access tokens, in seconds. */
-const TOKEN_LIFETIME_SECONDS = 15 * 60;
+const ACCESS_TOKEN_LIFETIME_SECONDS = 15 * 60;
+/** Validity duration of refresh tokens, in seconds. */
+const REFRESH_TOKEN_LIFETIME_SECONDS = 30 * 24 * 60 * 60;
 
 class InvalidTokenError extends Error {}
+class RevokedSessionError extends Error {}
 
 function getSecret() {
   const secret = process.env.JWT_SECRET;
@@ -26,19 +29,59 @@ function encode(value) {
  * Signs and returns a JWT access token for the given user.
  *
  * @param {{ _id: { toString(): string }, role: string }} user
+ * @param association
+ * @param sessionId
  * @returns {string} Signed JWT
  */
-function signAccessToken(user) {
+function signAccessToken(user, association, sessionId = randomUUID()) {
   const now = Math.floor(Date.now() / 1000);
+  return signToken(
+    {
+      sub: user._id.toString(),
+      role: user.role,
+      association: association.name,
+      sid: sessionId,
+      iat: now,
+      exp: now + ACCESS_TOKEN_LIFETIME_SECONDS,
+    },
+    getSecret(),
+  );
+}
+
+/**
+ * Signs and returns a JWT refresh token for the given user.
+ *
+ * @param {{ _id: { toString(): string }, role: string }} user
+ * @param association
+ * @param sessionId
+ * @returns {string} Signed JWT
+ */
+function signRefreshToken(user, association, sessionId = randomUUID()) {
+  const now = Math.floor(Date.now() / 1000);
+  return {
+    token: signToken(
+      {
+        sub: user._id.toString(),
+        role: user.role,
+        association: association.name,
+        sid: sessionId,
+        jti: randomUUID(),
+        token_use: 'refresh',
+        iat: now,
+        exp: now + REFRESH_TOKEN_LIFETIME_SECONDS,
+      },
+      getRefreshSecret(),
+    ),
+    sessionId,
+    expiresAt: new Date((now + REFRESH_TOKEN_LIFETIME_SECONDS) * 1000),
+  };
+}
+
+function signToken(payload, secret) {
   const header = encode({ alg: 'HS256', typ: 'JWT' });
-  const payload = encode({
-    sub: user._id.toString(),
-    role: user.role,
-    iat: now,
-    exp: now + TOKEN_LIFETIME_SECONDS,
-  });
-  const unsignedToken = `${header}.${payload}`;
-  const signature = createHmac('sha256', getSecret()).update(unsignedToken).digest('base64url');
+  const encodedPayload = encode(payload);
+  const unsignedToken = `${header}.${encodedPayload}`;
+  const signature = createHmac('sha256', secret).update(unsignedToken).digest('base64url');
 
   return `${unsignedToken}.${signature}`;
 }
@@ -49,9 +92,10 @@ function signAccessToken(user) {
  * has an invalid signature, uses an unsupported algorithm, or has expired.
  *
  * @param {unknown} token
+ * @param secret
  * @returns {{ sub: string, role: string, iat: number, exp: number }}
  */
-function verifyAccessToken(token) {
+function verifyToken(token, secret) {
   if (typeof token !== 'string') throw new InvalidTokenError();
   const parts = token.split('.');
   if (parts.length !== 3 || parts.some((part) => !part)) throw new InvalidTokenError();
@@ -67,7 +111,7 @@ function verifyAccessToken(token) {
 
   if (header.alg !== 'HS256' || header.typ !== 'JWT') throw new InvalidTokenError();
 
-  const expected = createHmac('sha256', getSecret()).update(`${parts[0]}.${parts[1]}`).digest();
+  const expected = createHmac('sha256', secret).update(`${parts[0]}.${parts[1]}`).digest();
   const actual = Buffer.from(parts[2], 'base64url');
   if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
     throw new InvalidTokenError();
@@ -76,7 +120,7 @@ function verifyAccessToken(token) {
   const now = Math.floor(Date.now() / 1000);
   if (
     typeof payload.sub !== 'string' ||
-    !ROLES.includes(payload.role) ||
+    !Object.values(USER_ROLE).includes(payload.role) ||
     !Number.isInteger(payload.exp) ||
     payload.exp <= now
   ) {
@@ -86,25 +130,59 @@ function verifyAccessToken(token) {
   return payload;
 }
 
+async function verifyAccessToken(token) {
+  const payload = verifyToken(token, getSecret());
+  if (payload.token_use === 'refresh' || typeof payload.sid !== 'string') {
+    throw new InvalidTokenError();
+  }
+  if (await getRedis().exists(`revoked:sid:${payload.sid}`)) {
+    throw new RevokedSessionError();
+  }
+  return payload;
+}
+
+function verifyRefreshToken(token) {
+  const payload = verifyToken(token, getRefreshSecret());
+  if (
+    payload.token_use !== 'refresh' ||
+    typeof payload.sid !== 'string' ||
+    typeof payload.jti !== 'string' ||
+    typeof payload.iat !== 'number'
+  ) {
+    throw new InvalidTokenError();
+  }
+  return payload;
+}
+
+function getRefreshSecret() {
+  return createHmac('sha256', getSecret()).update('rekor-refresh-token-v1').digest();
+}
+
+function hashRefreshToken(token) {
+  return createHash('sha256').update(token).digest('hex');
+}
+
 /**
  * Express middleware. Extracts and validates the Bearer token from the `Authorization` header.
  * Sets `req.auth` to the token payload and stores the user ID in the async request context.
  * Responds with 401 if the header is missing, malformed, or the token is invalid.
  */
-function authenticate(req, res, next) {
+async function authenticate(req, res, next) {
   const [scheme, token, extra] = (req.get('authorization') || '').split(' ');
   if (scheme !== 'Bearer' || !token || extra) {
     return res.status(401).json({ message: 'Authentification requise' });
   }
 
   try {
-    req.auth = verifyAccessToken(token);
+    req.auth = await verifyAccessToken(token);
     const store = userContext.getStore();
     if (store) store.userId = req.auth.sub;
     return next();
   } catch (error) {
     if (error instanceof InvalidTokenError) {
       return res.status(401).json({ message: 'Token invalide ou expiré' });
+    } else if (error instanceof RevokedSessionError) {
+      return res.status(401).json({ message: 'Session révoquée' });
     }
     return next(error);
   }
@@ -122,11 +200,32 @@ function authorize(...allowedRoles) {
     if (!req.auth) {
       return res.status(401).json({ message: 'Authentification requise' });
     }
-    if (!allowedRoles.some((role) => ROLES.includes(role) && req.auth.role === role)) {
+    if (
+      !allowedRoles.some(
+        (role) =>
+          Object.values(USER_ROLE).includes(role) &&
+          Object.values(USER_ROLE).indexOf(req.auth.role) <= Object.values(USER_ROLE).indexOf(role),
+      )
+    ) {
       return res.status(403).json({ message: 'Accès interdit' });
     }
     return next();
   };
 }
 
-module.exports = { signAccessToken, verifyAccessToken, authenticate, authorize };
+async function revokeSession(sessionId) {
+  await getRedis().set(`revoked:sid:${sessionId}`, '1', 'EX', ACCESS_TOKEN_LIFETIME_SECONDS);
+}
+
+module.exports = {
+  InvalidTokenError,
+  RevokedSessionError,
+  signAccessToken,
+  signRefreshToken,
+  verifyAccessToken,
+  verifyRefreshToken,
+  hashRefreshToken,
+  authenticate,
+  authorize,
+  revokeSession,
+};

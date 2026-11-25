@@ -28,15 +28,20 @@ part 'auth/oauth.dart';
 part 'auth/http_basic_auth.dart';
 part 'auth/http_bearer_auth.dart';
 
+part 'api/associations_api.dart';
 part 'api/authentication_api.dart';
 part 'api/health_api.dart';
 part 'api/users_api.dart';
 
+part 'model/admin_update_profile_input.dart';
+part 'model/association.dart';
 part 'model/change_password_input.dart';
 part 'model/error_response.dart';
 part 'model/health_response.dart';
 part 'model/login_input.dart';
 part 'model/login_response.dart';
+part 'model/publication.dart';
+part 'model/refresh_token_input.dart';
 part 'model/register_input.dart';
 part 'model/update_profile_input.dart';
 part 'model/user_details.dart';

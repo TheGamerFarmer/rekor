@@ -1,55 +1,106 @@
-export interface Evenement {
-  slug: string;
-  date: string;
-  dateLabel: string;
-  title: string;
-  summary: string;
-  image: string;
-  category: string;
-  time?: string;
-  location?: string;
-  participants?: string;
-  paragraphs: string[];
+export type EvenementType =
+  'Entraînement' | 'Match amical' | 'Match compétitif' | 'Réunion' | 'Autre';
+
+export type ParticipantStatus = 'present' | 'absent' | 'pending';
+
+export interface Participant {
+  id: number;
+  name: string;
+  status: ParticipantStatus;
 }
 
-export const evenements: Evenement[] = [
+export interface Evenement {
+  id: number;
+  name: string;
+  type: EvenementType;
+  date: string;
+  place: string;
+  description: string;
+  group: string;
+  participants?: Participant[];
+}
+
+/** Extracts the venue name from the first segment of a complete address. */
+export function getNomGymnase(adresse: string): string {
+  return adresse.split(',')[0].trim();
+}
+
+/** Extracts the hour and minutes from an event date-time value. */
+export function getHeureEvenement(date: string): string {
+  return date.match(/(?:T|\s)(\d{2}:\d{2})/)?.[1] ?? '';
+}
+
+/** Returns today's date in the format used by event date-time values. */
+export function getDateDuJour(): string {
+  const today = new Date();
+  const year = today.getFullYear();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+export const defaultEvenements: readonly Evenement[] = [
   {
-    slug: 'gouter-du-club',
-    date: '2026-09-13',
-    dateLabel: '13 septembre',
-    title: 'Goûter organisé par le club',
-    summary: 'Le club vous invite à un goûter convivial pour bien commencer la saison ensemble !',
-    image: '/img/gouter.jpg',
-    category: 'Vie du club',
-    paragraphs: [
-      'Le Gières Volley-Ball vous donne rendez-vous pour partager un goûter convivial et lancer la nouvelle saison dans la bonne humeur.',
-      'Un moment chaleureux pour se retrouver et commencer l’année sportive ensemble.',
-    ],
+    id: 1,
+    name: 'Match amical - Gières vs Lyon',
+    type: 'Match amical',
+    date: '2026-10-10T18:00:00',
+    place: 'Gymnase de la Plaine des sports, 1 Rue des Sports, 38610 Gières',
+    description: "L'équipe A reçoit Lyon pour un match amical.",
+    group: 'Equipe A',
   },
   {
-    slug: 'inscriptions-ouvertes',
-    date: '2026-09-08',
-    dateLabel: '8 septembre',
-    title: 'Les inscriptions sont ouvertes !',
-    summary: 'Rejoignez le Gières Volley-Ball pour la nouvelle saison !',
-    image: '/img/volley_ball1.jpg',
-    category: 'Inscription',
-    paragraphs: [
-      'Les inscriptions pour la nouvelle saison du Gières Volley-Ball sont ouvertes.',
-      'Envie de découvrir le volley ou de rejoindre le club ? Consultez la page d’inscription pour commencer votre démarche.',
-    ],
+    id: 2,
+    name: 'Tournoi jeunes',
+    type: 'Match compétitif',
+    date: '2026-10-18T09:00:00',
+    place: 'Gymnase de la Plaine des sports, 1 Rue des Sports, 38610 Gières',
+    description: 'Une matinée de compétition et de partage pour les équipes jeunes du club.',
+    group: 'Jeunes',
   },
   {
-    slug: 'vacances-dete',
-    date: '2026-07-10',
-    dateLabel: '10 juillet',
-    title: 'Le club part en vacances !',
-    summary: 'On se retrouve à la rentrée pour une nouvelle saison pleine de projets !',
-    image: '/img/vacances.jpg',
-    category: 'Vie du club',
-    paragraphs: [
-      'La saison se termine et le club fait une pause estivale.',
-      'Toute l’équipe vous souhaite de belles vacances. Rendez-vous à la rentrée pour une nouvelle saison pleine de projets !',
-    ],
+    id: 3,
+    name: 'Entraînement',
+    type: 'Entraînement',
+    date: '2026-10-20T20:00:00',
+    place: 'Gymnase de la Plaine des sports, 1 Rue des Sports, 38610 Gières',
+    description: 'Séance collective hebdomadaire.',
+    group: 'Tous',
+  },
+  {
+    id: 4,
+    name: 'Entraînement',
+    type: 'Entraînement',
+    date: '2026-11-17T20:00:00',
+    place: 'Gymnase de la Plaine des sports, 1 Rue des Sports, 38610 Gières',
+    description: 'Séance collective hebdomadaire.',
+    group: 'Tous',
+  },
+  {
+    id: 5,
+    name: 'Entraînement jeunes',
+    type: 'Entraînement',
+    date: '2026-11-21T10:00:00',
+    place: 'Gymnase de la Plaine des sports, 1 Rue des Sports, 38610 Gières',
+    description: 'Une séance ludique pour progresser ensemble et préparer les tournois.',
+    group: 'Jeunes',
+  },
+  {
+    id: 6,
+    name: 'Match - Gières vs Grenoble',
+    type: 'Match compétitif',
+    date: '2026-11-28T20:00:00',
+    place: 'Gymnase de Grenoble, 12 Avenue des Alpes, 38000 Grenoble',
+    description: "L'équipe B rencontre Grenoble pour un match.",
+    group: 'Equipe B',
+  },
+  {
+    id: 7,
+    name: 'Goûter du club',
+    type: 'Autre',
+    date: '2026-12-05T17:00:00',
+    place: 'Salle polyvalente de Gières, 2 Place de la Mairie, 38610 Gières',
+    description: 'Un moment convivial pour les licenciés, les familles et les bénévoles du club.',
+    group: 'Tous',
   },
 ];

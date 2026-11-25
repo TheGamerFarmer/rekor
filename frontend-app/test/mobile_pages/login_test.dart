@@ -1,9 +1,22 @@
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend_app/api/api_client.dart';
 import 'package:frontend_app/mobile_pages/login.dart';
 import 'package:flutter/material.dart';
+import 'package:frontend_app/widgets/app_header.dart';
+import 'package:rekor_api/api.dart' as generated;
 
 void main() {
   group('AppLogin', () {
+    late ApiClient originalApiClient;
+
+    setUp(() {
+      originalApiClient = ApiClient.instance;
+      ApiClient.instance = FakeApiClient();
+    });
+
+    tearDown(() {
+      ApiClient.instance = originalApiClient;
+    });
     testWidgets('Affiche l\'icone et le texte Connexion', (tester) async {
       await tester.pumpWidget(
         const MaterialApp(home: Scaffold(body: MyLoginPage())),
@@ -20,6 +33,20 @@ void main() {
 
       expect(find.byIcon(Icons.email), findsOneWidget);
       expect(find.text('Adresse e-mail'), findsOneWidget);
+    });
+
+    testWidgets('Affiche le champ association', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: MyLoginPage())),
+      );
+      await tester.pumpAndSettle();
+
+      expect(find.byIcon(Icons.groups), findsOneWidget);
+      expect(find.text('Association'), findsOneWidget);
+      expect(
+        find.byType(DropdownButtonFormField<generated.Association>),
+        findsOneWidget,
+      );
     });
 
     testWidgets('Affiche le champ mot de passe', (tester) async {
@@ -71,66 +98,111 @@ void main() {
 
       expect(find.text('Veuillez saisir votre e-mail'), findsOneWidget);
       expect(find.text('Veuillez saisir votre mot de passe'), findsOneWidget);
+      expect(
+        find.text('Veuillez sélectionner votre association'),
+        findsOneWidget,
+      );
     });
 
     testWidgets(
-      'Affiche les messages de champs invalides avec pas assez de caractères sur mot de passe',
+      'Affiche les messages d\'erreur si mauvais e-mail ou mot de passe',
       (tester) async {
         await tester.pumpWidget(
           const MaterialApp(home: Scaffold(body: MyLoginPage())),
         );
 
-        await tester.enterText(find.byType(TextFormField).at(0), 'a');
-        await tester.enterText(find.byType(TextFormField).at(1), 'mdp');
+        await _fillLogin(tester, password: 'motdep@sse');
 
         await tester.tap(find.text('Se connecter'));
-        await tester.pump();
+        await tester.pumpAndSettle();
 
-        expect(find.text('Adresse e-mail invalide'), findsOneWidget);
-        expect(find.text('8 caractères minimum'), findsOneWidget);
-      },
-    );
-
-    testWidgets(
-      'Affiche les messages de champs invalides sans symbole sur le mot de passe',
-      (tester) async {
-        await tester.pumpWidget(
-          const MaterialApp(home: Scaffold(body: MyLoginPage())),
-        );
-
-        await tester.enterText(find.byType(TextFormField).at(0), 'a');
-        await tester.enterText(find.byType(TextFormField).at(1), 'motdepasse');
-
-        await tester.tap(find.text('Se connecter'));
-        await tester.pump();
-
-        expect(find.text('Adresse e-mail invalide'), findsOneWidget);
         expect(
-          find.text('Veuillez saisir au moins un symbole'),
+          find.text('Association, e-mail ou mot de passe incorrect'),
           findsOneWidget,
         );
       },
     );
 
-    testWidgets(
-      'Affiche les messages de champs invalides sans majuscule sur le mot de passe',
-      (tester) async {
-        await tester.pumpWidget(
-          const MaterialApp(home: Scaffold(body: MyLoginPage())),
-        );
+    testWidgets('Vérifie que la connexion marche', (tester) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: MyLoginPage())),
+      );
 
-        await tester.enterText(find.byType(TextFormField).at(0), 'a');
-        await tester.enterText(find.byType(TextFormField).at(1), 'motdep@sse');
+      await _fillLogin(tester);
 
-        await tester.tap(find.text('Se connecter'));
-        await tester.pump();
+      await tester.tap(find.text('Se connecter'));
+      await tester.pumpAndSettle();
 
-        expect(find.text('Adresse e-mail invalide'), findsOneWidget);
-        expect(
-          find.text('Veuillez saisir au moins une majuscule'),
-          findsOneWidget,
-        );
-      },
-    );
+      expect(find.byIcon(Icons.account_circle), findsOneWidget);
+    });
+
+    testWidgets('Vérifie que la déconnexion renvoie sur la page de connexion', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        const MaterialApp(home: Scaffold(body: MyLoginPage())),
+      );
+
+      await _fillLogin(tester);
+
+      await tester.tap(find.text('Se connecter'));
+      await tester.pumpAndSettle();
+
+      expect(find.byType(AppHeader), findsOneWidget);
+
+      await tester.tap(find.byIcon(Icons.account_circle));
+      await tester.pumpAndSettle();
+
+      await tester.tap(find.text('Déconnexion'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('Connexion'), findsOneWidget);
+    });
   });
+}
+
+class FakeApiClient extends ApiClient {
+  FakeApiClient() : super('http://localhost:3000');
+
+  @override
+  Future<List<generated.Association>> getAssociations() async => [
+    generated.Association(
+      id: 'association-1',
+      name: 'Gières Volley-Ball',
+      address: 'Gières',
+    ),
+  ];
+
+  @override
+  Future<String> login(
+    String email,
+    String password,
+    String associationName,
+  ) async {
+    if (email == 'ada@exemple.fr' &&
+        password == 'motdepasse' &&
+        associationName == 'Gières Volley-Ball') {
+      return 'fake-access-token';
+    }
+
+    throw Exception('Identifiants incorrects');
+  }
+
+  @override
+  Future<void> logout() async {
+    // Simulation d'une déconnexion réussie.
+  }
+}
+
+Future<void> _fillLogin(
+  WidgetTester tester, {
+  String password = 'motdepasse',
+}) async {
+  await tester.pumpAndSettle();
+  await tester.enterText(find.byType(TextFormField).at(0), 'ada@exemple.fr');
+  await tester.enterText(find.byType(TextFormField).at(1), password);
+  await tester.tap(find.byType(DropdownButtonFormField<generated.Association>));
+  await tester.pumpAndSettle();
+  await tester.tap(find.text('Gières Volley-Ball'));
+  await tester.pumpAndSettle();
 }

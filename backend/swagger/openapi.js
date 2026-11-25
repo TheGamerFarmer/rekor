@@ -5,6 +5,7 @@ const {
   OpenAPIRegistry,
   OpenApiGeneratorV3,
 } = require('@asteasolutions/zod-to-openapi');
+const { USER_ROLE, USER_PRONOUN } = require('../db/enums');
 const { version } = require('../package.json');
 
 extendZodWithOpenApi(z);
@@ -18,13 +19,13 @@ const HealthResponse = z
   })
   .openapi('HealthResponse');
 
-const UserId = z
+const Id = z
   .string()
   .regex(/^[0-9a-f]{24}$/)
   .openapi({ example: '6ac8c78e50318b28d457048f' });
 
-const Role = z.enum(['Entraineur', 'Capitaine', 'Adhérent', 'Visiteur']);
-const Pronoun = z.enum(['Il', 'Elle', 'Iel', 'Autre']);
+const Role = z.enum(Object.values(USER_ROLE));
+const Pronoun = z.enum(Object.values(USER_PRONOUN));
 
 const RegisterInput = z
   .object({
@@ -32,9 +33,15 @@ const RegisterInput = z
     firstName: z.string().min(1).openapi({ example: 'Ada' }),
     email: z.email().openapi({ example: 'ada@exemple.fr' }),
     password: z.string().min(1).openapi({ example: 'motdepasse' }),
+    associationName: z
+      .string()
+      .min(1)
+      .openapi({ example: 'Gières Volley-Ball', description: 'Nom de l’association' }),
     pronoun: Pronoun.openapi({ example: 'Elle' }),
     phoneNumber: z.string().optional().openapi({ example: '0612345678' }),
     birthday: z.iso.date().optional().openapi({ example: '1815-12-10' }),
+    medicalCertificate: z.boolean(),
+    rightOfPublicity: z.boolean(),
   })
   .openapi('RegisterInput');
 
@@ -45,15 +52,32 @@ const UpdateProfileInput = z
     phoneNumber: z.string().optional(),
     birthday: z.iso.date().optional(),
     pronoun: Pronoun.optional(),
+    medicalCertificate: z.boolean().optional(),
+    rightOfPublicity: z.boolean().optional(),
   })
   .openapi('UpdateProfileInput');
+
+const AdminUpdateProfileInput = UpdateProfileInput.extend({
+  email: z.email().optional(),
+  role: Role,
+}).openapi('AdminUpdateProfileInput');
 
 const LoginInput = z
   .object({
     email: z.email().openapi({ example: 'ada@exemple.fr' }),
     password: z.string().min(1).openapi({ example: 'motdepasse' }),
+    associationName: z
+      .string()
+      .min(1)
+      .openapi({ example: 'Gières Volley-Ball', description: 'Nom de l’association' }),
   })
   .openapi('LoginInput');
+
+const RefreshTokenInput = z
+  .object({
+    refresh_token: z.string().min(1),
+  })
+  .openapi('RefreshTokenInput');
 
 const ChangePasswordInput = z
   .object({
@@ -64,7 +88,7 @@ const ChangePasswordInput = z
 
 const UserListItem = z
   .object({
-    id: UserId,
+    id: Id,
     name: z.string(),
     firstName: z.string().optional(),
     email: z.email(),
@@ -76,11 +100,34 @@ const UserDetails = UserListItem.extend({
   pronoun: Pronoun,
   phoneNumber: z.string().optional(),
   birthday: z.iso.datetime().optional(),
+  medicalCertificate: z.boolean(),
+  rightOfPublicity: z.boolean(),
 }).openapi('UserDetails');
+
+const Association = z
+  .object({
+    _id: Id,
+    name: z.string(),
+    address: z.string(),
+  })
+  .openapi('Association');
+
+const Publication = z
+  .object({
+    _id: Id,
+    titre: z.string(),
+    summary: z.string(),
+    corps: z.string(),
+    date: z.iso.datetime(),
+    association: Id,
+  })
+  .openapi('Publication');
+registry.register('Publication', Publication);
 
 const LoginResponse = z
   .object({
     access_token: z.string(),
+    refresh_token: z.string(),
   })
   .openapi('LoginResponse');
 
@@ -128,6 +175,36 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'get',
+  path: '/users/roles',
+  operationId: 'listUserRoles',
+  tags: ['Users'],
+  summary: 'Liste les rôles utilisateurs disponibles',
+  security: [{ BearerAuth: [] }],
+  responses: {
+    200: { description: 'Les rôles disponibles', content: json(z.array(Role)) },
+    401: failure('Authentification requise ou token invalide'),
+    403: failure('Accès réservé aux administrateurs'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/association',
+  operationId: 'listAssociations',
+  tags: ['Associations'],
+  summary: 'Liste les associations',
+  responses: {
+    200: { description: 'Les associations', content: json(z.array(Association)) },
+    429: failure('Trop de requêtes'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
   path: '/users/me',
   operationId: 'getMyProfile',
   tags: ['Users'],
@@ -135,6 +212,7 @@ registry.registerPath({
   security: [{ BearerAuth: [] }],
   responses: {
     200: { description: 'Le profil utilisateur', content: json(UserDetails) },
+    400: failure('Identifiant invalide'),
     401: failure('Authentification requise ou token invalide'),
     404: failure('Utilisateur introuvable'),
     429: failure('Trop de requêtes'),
@@ -171,7 +249,9 @@ registry.registerPath({
   security: [{ BearerAuth: [] }],
   responses: {
     204: { description: 'Compte supprimé, sans contenu de réponse' },
+    400: failure('Identifiant invalide'),
     401: failure('Authentification requise ou token invalide'),
+    403: failure('Interdiction de supprimer le dernier administrateur'),
     404: failure('Utilisateur introuvable'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
@@ -205,10 +285,33 @@ registry.registerPath({
   operationId: 'getUser',
   tags: ['Users'],
   summary: 'Récupère un utilisateur par son identifiant',
-  request: { params: z.object({ id: UserId }) },
+  request: { params: z.object({ id: Id }) },
   responses: {
     200: { description: "L'utilisateur", content: json(UserDetails) },
     400: failure('Identifiant invalide'),
+    404: failure('Utilisateur introuvable'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'patch',
+  path: '/users/{id}',
+  operationId: 'updateUser',
+  tags: ['Users'],
+  summary: 'Modifie le profil d’un utilisateur',
+  security: [{ BearerAuth: [] }],
+  request: {
+    params: z.object({ id: Id }),
+    body: { required: true, content: json(AdminUpdateProfileInput) },
+  },
+  responses: {
+    204: { description: 'Profil modifié, sans contenu de réponse' },
+    400: failure('Identifiant ou rôle invalide'),
+    401: failure('Authentification requise ou token invalide'),
+    403: failure('Accès interdit ou modification de son propre profil'),
     404: failure('Utilisateur introuvable'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
@@ -221,14 +324,30 @@ registry.registerPath({
   path: '/auth/register',
   operationId: 'register',
   tags: ['Authentication'],
-  summary: 'Crée un compte utilisateur (rôle Visiteur attribué par le serveur)',
+  summary: 'Crée un compte Visiteur et l’inscrit dans l’association indiquée',
   request: { body: { required: true, content: json(RegisterInput) } },
   responses: {
     201: { description: 'Compte créé, sans contenu de réponse' },
     400: failure('Requête invalide'),
-    409: failure('Un utilisateur avec cet e-mail existe déjà'),
+    409: failure('E-mail déjà utilisé ou utilisateur déjà inscrit à cette association'),
+    404: failure('Association introuvable'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/auth/re-register',
+  operationId: 'reregister',
+  tags: ['Authentication'],
+  summary: 'Réinscrit le compte authentifié dans une association',
+  security: [{ BearerAuth: [] }],
+  responses: {
+    501: failure('La réinscription n’est pas encore disponible'),
+    401: failure('Authentification requise ou token invalide'),
+    429: failure('Trop de requêtes'),
     500: failure('Erreur interne du serveur'),
   },
 });
@@ -238,12 +357,47 @@ registry.registerPath({
   path: '/auth/login',
   operationId: 'login',
   tags: ['Authentication'],
-  summary: 'Vérifie les identifiants et renvoie un token JWT',
+  summary: 'Authentifie l’utilisateur dans l’association indiquée et renvoie les tokens',
   request: { body: { required: true, content: json(LoginInput) } },
   responses: {
     200: { description: 'Utilisateur authentifié', content: json(LoginResponse) },
     400: failure('Requête invalide'),
     401: failure('E-mail ou mot de passe incorrect'),
+    404: failure('Association introuvable'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne ou configuration d’authentification indisponible'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/auth/refresh',
+  operationId: 'refreshTokens',
+  tags: ['Authentication'],
+  summary: 'Renouvelle les tokens à partir d’un refresh token valide',
+  request: { body: { required: true, content: json(RefreshTokenInput) } },
+  responses: {
+    200: { description: 'Nouvelle paire de tokens', content: json(LoginResponse) },
+    400: failure('Requête invalide'),
+    401: failure('Refresh token invalide ou expiré'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne ou configuration d’authentification indisponible'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/auth/logout',
+  operationId: 'logout',
+  tags: ['Authentication'],
+  summary: 'Révoque la session liée au refresh token',
+  request: { body: { required: true, content: json(RefreshTokenInput) } },
+  responses: {
+    204: { description: 'Session révoquée, sans contenu de réponse' },
+    400: failure('Requête invalide'),
+    401: failure('Refresh token invalide ou expiré'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
     500: failure('Erreur interne ou configuration d’authentification indisponible'),

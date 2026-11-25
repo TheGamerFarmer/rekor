@@ -1,0 +1,398 @@
+:host {
+  display: block;
+  color: var(--color-dark);
+  font-family: var(--font-family-base);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.treasury-page {
+  display: grid;
+  width: min(100% - 48px, 1100px);
+  gap: 24px;
+  margin: 0 auto;
+  padding: 28px 0 40px;
+}
+
+.treasury-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.year-selector {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.year-selector svg {
+  width: 25px;
+  height: 25px;
+  fill: none;
+  stroke: var(--color-primary);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.year-selector select {
+  min-width: 100px;
+  padding: 10px 14px;
+  border: 1px solid #d5dfff;
+  border-radius: 24px;
+  background: white;
+  color: var(--color-dark);
+  font: inherit;
+}
+
+.export-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 9px;
+  padding: 10px 18px;
+  border: 1px solid var(--color-primary);
+  border-radius: 24px;
+  background: transparent;
+  color: var(--color-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.export-button:hover,
+.export-button:focus-visible {
+  background: var(--color-primary-light);
+}
+
+.export-button svg {
+  width: 19px;
+  height: 19px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.summary-grid,
+.forms-grid,
+.history-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.summary-card {
+  display: flex;
+  min-width: 0;
+  min-height: 90px;
+  align-items: center;
+  gap: 24px;
+  padding: 16px 24px;
+  border-radius: 13px;
+  background: var(--color-primary-light);
+}
+
+.expense-summary {
+  background: #fff0f0;
+}
+
+.summary-icon {
+  display: grid;
+  width: 56px;
+  height: 56px;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--color-primary);
+  color: white;
+  font-size: 32px;
+  font-weight: 700;
+}
+
+.expense-summary .summary-icon {
+  background: #e73737;
+}
+
+.balance-summary .summary-icon {
+  background: var(--color-secondary);
+  color: var(--color-dark);
+}
+
+.summary-card p {
+  margin: 0 0 3px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.summary-card strong {
+  color: var(--color-dark);
+  font-size: clamp(20px, 2.2vw, 29px);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.forms-grid,
+.history-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.entry-form,
+.history-card {
+  min-width: 0;
+  padding: 18px;
+  border: 1px solid #d6e0ff;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #f8faff, #fff);
+}
+
+.entry-form h2,
+.history-card h2 {
+  position: relative;
+  margin: 0 0 18px;
+  padding-left: 17px;
+  color: var(--color-dark);
+  font-size: 19px;
+  font-weight: 800;
+}
+
+.entry-form h2::before,
+.history-card h2::before {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 6px;
+  border-radius: 5px;
+  background: var(--color-secondary);
+  content: '';
+}
+
+.form-fields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.form-fields label {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.form-fields .required {
+  color: #e73737;
+}
+
+.form-fields input,
+.form-fields select {
+  width: 100%;
+  min-width: 0;
+  min-height: 42px;
+  padding: 9px 12px;
+  border: 1px solid #bdccff;
+  border-radius: 12px;
+  background: white;
+  color: var(--color-dark);
+  font: inherit;
+  font-size: 13px;
+}
+
+.form-fields input::placeholder {
+  color: #8792af;
+}
+
+.form-fields input:focus,
+.form-fields select:focus,
+.year-selector select:focus {
+  outline: 3px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
+  outline-offset: 1px;
+}
+
+.description-field {
+  grid-column: 1 / -1;
+}
+
+.add-button {
+  display: flex;
+  min-width: 210px;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  margin: 16px auto 0;
+  padding: 10px 22px;
+  border: 0;
+  border-radius: 24px;
+  background: var(--color-secondary);
+  color: #111;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.add-button:hover,
+.add-button:focus-visible {
+  background: var(--color-secondary-hover);
+}
+
+.add-button span {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.status-message {
+  min-height: 0;
+  margin: -12px 0;
+  color: var(--color-primary);
+  font-size: 13px;
+}
+
+.status-message:empty {
+  display: none;
+}
+
+.history-card {
+  padding: 17px;
+  background: white;
+}
+
+.history-card h2 {
+  margin-bottom: 12px;
+  font-size: 17px;
+}
+
+.table-scroll {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  text-align: left;
+}
+
+th,
+td {
+  padding: 9px 5px;
+  border-bottom: 1px solid #e0e7f5;
+  white-space: nowrap;
+}
+
+th {
+  color: var(--color-primary);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+td.amount {
+  font-weight: 700;
+  text-align: right;
+}
+
+.income-amount {
+  color: #159957;
+}
+
+.expense-amount {
+  color: #e73737;
+}
+
+.empty-row {
+  padding: 20px 5px;
+  color: var(--color-text-muted);
+  text-align: center;
+}
+
+.history-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-top: 12px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-primary);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.history-toggle:hover,
+.history-toggle:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+@media (max-width: 900px) {
+  .summary-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .summary-card {
+    min-height: 78px;
+  }
+
+  .summary-card strong {
+    font-size: 25px;
+  }
+}
+
+@media (max-width: 720px) {
+  .treasury-page {
+    width: min(100% - 36px, 600px);
+    gap: 18px;
+    padding: 24px 0 32px;
+  }
+
+  .forms-grid,
+  .history-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 460px) {
+  .treasury-page {
+    width: min(100% - 28px, 420px);
+  }
+
+  .treasury-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .export-button {
+    align-self: flex-start;
+  }
+
+  .summary-card {
+    gap: 18px;
+    padding: 14px 18px;
+  }
+
+  .form-fields {
+    grid-template-columns: 1fr;
+  }
+
+  .description-field {
+    grid-column: 1;
+  }
+
+  .entry-form,
+  .history-card {
+    padding: 15px;
+  }
+}

@@ -1,0 +1,64 @@
+import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { BehaviorSubject } from 'rxjs';
+import { ComponentEvenementDetails } from './component-evenement-details';
+import { EvenementService } from '../../services/evenement.service';
+import { defaultEvenements } from '../component-evenement/evenements.data';
+
+describe('ComponentEvenementDetails', () => {
+  let fixture: ComponentFixture<ComponentEvenementDetails>;
+  let params: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
+
+  beforeEach(async () => {
+    params = new BehaviorSubject(convertToParamMap({ id: '6' }));
+    await TestBed.configureTestingModule({
+      imports: [ComponentEvenementDetails],
+      providers: [
+        {
+          provide: ActivatedRoute,
+          useValue: { paramMap: params.asObservable() },
+        },
+        {
+          provide: EvenementService,
+          useValue: {
+            findById: (id: number) => defaultEvenements.find((event) => event.id === id),
+          },
+        },
+      ],
+    }).compileComponents();
+
+    fixture = TestBed.createComponent(ComponentEvenementDetails);
+    fixture.detectChanges();
+  });
+
+  it('renders the event details with the formatted date and metadata', () => {
+    expect(fixture.nativeElement.textContent).toContain('Match - Gières vs Grenoble');
+    expect(fixture.nativeElement.textContent).toContain('28/11/2026');
+    expect(fixture.nativeElement.textContent).toContain('20:00');
+    expect(fixture.nativeElement.textContent).toContain('Gymnase de Grenoble');
+    expect(fixture.nativeElement.querySelector('.back-button a')?.getAttribute('href')).toBe(
+      '/evenements',
+    );
+  });
+
+  it('shows a fallback for an unknown event ID', () => {
+    params.next(convertToParamMap({ id: '999' }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Événement introuvable');
+  });
+
+  it('shows a fallback when the route has no slug parameter', () => {
+    params.next(convertToParamMap({}));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Événement introuvable');
+  });
+
+  it('shows a fallback for a non-numeric event ID', () => {
+    params.next(convertToParamMap({ id: 'invalid' }));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Événement introuvable');
+  });
+});

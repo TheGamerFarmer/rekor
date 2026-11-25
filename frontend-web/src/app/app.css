@@ -1,15 +1,14 @@
 :host {
-  display: block;
-  font-family: 'DM Sans', Arial, sans-serif;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-family-base);
 }
 
 footer {
   color: var(--color-surface);
 }
 
-* {
-  box-sizing: border-box;
-}
 a {
   color: inherit;
   text-decoration: none;
@@ -62,7 +61,8 @@ a {
 }
 
 .main-nav > a,
-.footer-links a {
+.footer-links a,
+.footer-logout {
   position: relative;
   text-decoration: none;
 }
@@ -71,12 +71,87 @@ a {
   align-self: center;
 }
 
-.footer-links a {
+.admin-menu {
+  position: relative;
+  align-self: center;
+}
+
+.admin-menu summary {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  cursor: pointer;
+  list-style: none;
+}
+
+.admin-menu summary::-webkit-details-marker {
+  display: none;
+}
+
+.admin-chevron {
+  display: inline-block;
+  font-size: 19px;
+  line-height: 10px;
+  transform: rotate(90deg);
+  transition: transform 0.2s ease;
+}
+
+.admin-menu[open] .admin-chevron {
+  transform: rotate(90deg);
+}
+
+.admin-submenu {
+  position: absolute;
+  z-index: 3;
+  top: calc(100% + 15px);
+  left: -14px;
+  display: grid;
+  min-width: max-content;
+  gap: 14px;
+  padding: 16px;
+  border: 1px solid color-mix(in srgb, var(--glass-border) 35%, transparent);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-dark) 94%, transparent);
+  box-shadow: 0 8px 20px rgb(0 0 0 / 18%);
+}
+
+.admin-submenu a {
+  text-decoration: none;
+}
+
+.admin-submenu a:hover,
+.admin-submenu a:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.role-load-error {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 6vw;
+  color: #ffd6d6;
+  font-size: 11px;
+  text-transform: none;
+}
+
+.footer-links a,
+.footer-logout {
   align-self: flex-start;
 }
 
+.footer-logout {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-transform: inherit;
+  cursor: pointer;
+}
+
 .main-nav > a::after,
-.footer-links a::after {
+.footer-links a::after,
+.footer-logout::after {
   position: absolute;
   right: 0;
   bottom: -4px;
@@ -92,13 +167,16 @@ a {
 .main-nav > a:hover::after,
 .main-nav > a:focus-visible::after,
 .footer-links a:hover::after,
-.footer-links a:focus-visible::after {
+.footer-links a:focus-visible::after,
+.footer-logout:hover::after,
+.footer-logout:focus-visible::after {
   transform: scaleX(1);
 }
 
 .site-footer {
   position: relative;
   min-height: 230px;
+  margin-top: auto;
   padding: 32px max(6vw, calc((100vw - 1060px) / 2)) 22px;
   background: linear-gradient(120deg, var(--color-primary), var(--color-primary-hover));
 }
@@ -148,15 +226,6 @@ a {
   opacity: 0.85;
 }
 
-.backend-status {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-}
-
 @media (max-width: 720px) {
   .site-header-container {
     min-height: 0;
@@ -178,6 +247,11 @@ a {
     gap: 9px;
     margin: 6px 0 0;
     font-size: 9px;
+  }
+  .admin-submenu {
+    top: calc(100% + 10px);
+    left: auto;
+    right: 0;
   }
   .site-footer {
     padding: 28px 24px 22px;

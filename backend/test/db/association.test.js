@@ -9,8 +9,9 @@ const BankOperation = require('../../db/models/bank_operation');
 const BankOperationDocument = require('../../db/models/bank_operation_document');
 const Publication = require('../../db/models/publication');
 const Media = require('../../db/models/media');
+const { DOCUMENT_TYPE, MEDIA_TYPE } = require('../../db/enums');
 
-describe('collections association', () => {
+describe('collections association.js', () => {
   let mongod;
 
   before(async () => {
@@ -65,7 +66,7 @@ describe('collections association', () => {
 
     const valid = () => ({
       fileName: 'contrat.pdf',
-      type: 'Facture',
+      type: DOCUMENT_TYPE.FACTURE,
       association: new ObjectId(),
     });
 
@@ -86,6 +87,14 @@ describe('collections association', () => {
         Document.create({ ...valid(), type: 'PhotoDeVacances' }),
         /ValidationError/,
       );
+    });
+
+    it('accepte chaque type de document défini par l’enum', async () => {
+      for (const [index, type] of Object.values(DOCUMENT_TYPE).entries()) {
+        await assert.doesNotReject(
+          Document.create({ ...valid(), fileName: `document-${index}.pdf`, type }),
+        );
+      }
     });
 
     it('fileName doit être unique', async () => {
@@ -136,8 +145,11 @@ describe('collections association', () => {
     beforeEach(() => Publication.deleteMany({}));
 
     const valid = () => ({
-      title: 'Tournoi',
-      body: 'Infos...',
+      id: 1,
+      titre: 'Tournoi',
+      summary: 'Présentation du prochain tournoi',
+      corps: 'Infos...',
+      date: new Date(),
       association: new ObjectId(),
     });
 
@@ -145,7 +157,7 @@ describe('collections association', () => {
       await assert.doesNotReject(Publication.create(valid()));
     });
 
-    for (const field of ['title', 'body', 'association']) {
+    for (const field of ['titre', 'summary', 'corps', 'date', 'association']) {
       it(`refuse sans ${field}`, async () => {
         const doc = valid();
         delete doc[field];
@@ -157,7 +169,11 @@ describe('collections association', () => {
   describe('media', () => {
     beforeEach(() => Media.deleteMany({}));
 
-    const valid = () => ({ name: 'photo.jpg', type: 'Image', publication: new ObjectId() });
+    const valid = () => ({
+      name: 'photo.jpg',
+      type: MEDIA_TYPE.IMAGE,
+      publication: new ObjectId(),
+    });
 
     it('accepte un document valide', async () => {
       await assert.doesNotReject(Media.create(valid()));
@@ -173,6 +189,12 @@ describe('collections association', () => {
 
     it('refuse un type invalide', async () => {
       await assert.rejects(Media.create({ ...valid(), type: 'Audio' }), /ValidationError/);
+    });
+
+    it('accepte chaque type de média défini par l’enum', async () => {
+      for (const [index, type] of Object.values(MEDIA_TYPE).entries()) {
+        await assert.doesNotReject(Media.create({ ...valid(), name: `media-${index}`, type }));
+      }
     });
   });
 });

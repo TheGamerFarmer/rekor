@@ -13,7 +13,7 @@
   color: var(--color-surface);
   background-position: center;
   background-size: cover;
-  font-family: 'DM Sans', Arial, sans-serif;
+  font-family: var(--font-family-base);
 }
 
 .banner::before {

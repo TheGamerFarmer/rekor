@@ -1,5 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/home_page.dart';
+import 'package:rekor_api/api.dart' as generated;
+
+import '../api/api_client.dart';
 
 class MyLoginPage extends StatefulWidget {
   const MyLoginPage({super.key});
@@ -15,7 +20,18 @@ class MyLoginPageState extends State<MyLoginPage> {
 
   final TextEditingController passwordController = TextEditingController();
 
+  List<generated.Association> associations = [];
+  generated.Association? selectedAssociation;
+  bool associationsLoading = true;
+  String? associationsError;
+
   bool passwordVisible = false;
+
+  @override
+  void initState() {
+    super.initState();
+    loadAssociations();
+  }
 
   @override
   void dispose() {
@@ -24,15 +40,66 @@ class MyLoginPageState extends State<MyLoginPage> {
     super.dispose();
   }
 
-  void login() {
-    if (formKey.currentState!.validate()) {
-      // Appelle backend pour se connecter
+  Future<void> loadAssociations() async {
+    setState(() {
+      associationsLoading = true;
+      associationsError = null;
+    });
 
-      // Navigation vers la page d'accueil
-      Navigator.push(
+    try {
+      final result = await ApiClient.instance.getAssociations();
+      if (!mounted) return;
+      setState(() {
+        associations = result;
+        associationsLoading = false;
+      });
+    } catch (_) {
+      if (!mounted) return;
+      setState(() {
+        associationsLoading = false;
+        associationsError = 'Impossible de charger les associations.';
+      });
+    }
+  }
+
+  Future<void> login() async {
+    if (!formKey.currentState!.validate()) return;
+
+    try {
+      await ApiClient.instance.login(
+        emailController.text.trim(),
+        passwordController.text,
+        selectedAssociation!.name,
+      );
+      // Le token est configuré dans ApiClient.
+
+      // La connexion est réussie.
+      if (!mounted) return;
+
+      Navigator.pushReplacement(
         context,
         MaterialPageRoute(
           builder: (context) => const MyHomePage(title: 'Accueil'),
+        ),
+      );
+    } on TimeoutException {
+      // La connexion met trop de temps
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Le serveur met trop de temps à répondre.'),
+        ),
+      );
+    } catch (e) {
+      // La connexion renvoie une erreur
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Association, e-mail ou mot de passe incorrect'),
+          backgroundColor: Colors.red,
+          duration: Duration(seconds: 3),
         ),
       );
     }
@@ -72,9 +139,6 @@ class MyLoginPageState extends State<MyLoginPage> {
                     if (value == null || value.isEmpty) {
                       return 'Veuillez saisir votre e-mail';
                     }
-                    if (!value.contains('@')) {
-                      return 'Adresse e-mail invalide';
-                    }
                     return null;
                   },
                 ),
@@ -108,19 +172,76 @@ class MyLoginPageState extends State<MyLoginPage> {
                     if (value == null || value.isEmpty) {
                       return 'Veuillez saisir votre mot de passe';
                     }
-                    if (value.length < 8) {
-                      return '8 caractères minimum';
-                    }
-                    if (!RegExp(r'[^a-zA-Z0-9]').hasMatch(value)) {
-                      return 'Veuillez saisir au moins un symbole';
-                    }
-                    if (!RegExp(r'[A-Z]').hasMatch(value)) {
-                      return 'Veuillez saisir au moins une majuscule';
-                    }
                     return null;
                   },
                 ),
                 const SizedBox(height: 30),
+
+                // Association
+                DropdownButtonFormField<generated.Association>(
+                  initialValue: selectedAssociation,
+                  decoration: InputDecoration(
+                    labelText: 'Association',
+                    prefixIcon: const Icon(Icons.groups),
+                    border: const OutlineInputBorder(),
+                    suffixIcon: associationsLoading
+                        ? const Padding(
+                            padding: EdgeInsets.all(12),
+                            child: SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            ),
+                          )
+                        : null,
+                  ),
+                  items: associations
+                      .map(
+                        (association) => DropdownMenuItem(
+                          value: association,
+                          child: Text(association.name),
+                        ),
+                      )
+                      .toList(),
+                  onChanged: associationsLoading || associationsError != null
+                      ? null
+                      : (association) {
+                          setState(() {
+                            selectedAssociation = association;
+                          });
+                        },
+                  validator: (value) {
+                    if (value == null) {
+                      return 'Veuillez sélectionner votre association';
+                    }
+                    return null;
+                  },
+                ),
+                if (associationsError != null) ...[
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          associationsError!,
+                          style: const TextStyle(color: Colors.red),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: loadAssociations,
+                        child: const Text('Réessayer'),
+                      ),
+                    ],
+                  ),
+                ],
+                if (!associationsLoading &&
+                    associationsError == null &&
+                    associations.isEmpty)
+                  const Padding(
+                    padding: EdgeInsets.only(top: 8),
+                    child: Text('Aucune association disponible.'),
+                  ),
+                const SizedBox(height: 20),
 
                 // Connexion
                 SizedBox(

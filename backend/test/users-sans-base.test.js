@@ -2,7 +2,9 @@ const test = require('node:test');
 const assert = require('node:assert');
 const request = require('supertest');
 const app = require('../index');
-const { signAccessToken } = require('../controllers/services/auth-middleware');
+const { signAccessToken, signRefreshToken } = require('../controllers/services/auth-middleware');
+require('./helpers/redis');
+const association = { name: 'Gières Volley-Ball' };
 
 // Ce fichier ne connecte jamais la base : le back doit répondre 503 proprement, sans planter.
 test("GET /users renvoie 503 quand la base n'est pas connectée", async () => {
@@ -29,10 +31,13 @@ test("GET /users/me renvoie 503 quand la base n'est pas connectée", async () =>
   const previousJwtSecret = process.env.JWT_SECRET;
   process.env.JWT_SECRET = 'users-without-db-secret-over-32-bytes';
   try {
-    const token = signAccessToken({
-      _id: { toString: () => '000000000000000000000000' },
-      role: 'Visiteur',
-    });
+    const token = signAccessToken(
+      {
+        _id: { toString: () => '000000000000000000000000' },
+        role: 'Visiteur',
+      },
+      association,
+    );
     const res = await request(app).get('/users/me').set('Authorization', `Bearer ${token}`);
 
     assert.strictEqual(res.status, 503);
@@ -78,6 +83,28 @@ test("POST /auth/login renvoie 503 quand la base n'est pas connectée", async ()
   });
 
   assert.strictEqual(res.status, 503);
+});
+
+test("POST /auth/refresh renvoie 503 quand la base n'est pas connectée", async () => {
+  const previousJwtSecret = process.env.JWT_SECRET;
+  process.env.JWT_SECRET = 'users-without-db-secret-over-32-bytes';
+  try {
+    const refresh = signRefreshToken(
+      {
+        _id: { toString: () => '000000000000000000000000' },
+        role: 'Visiteur',
+      },
+      association,
+    );
+    const res = await request(app).post('/auth/refresh').send({
+      refresh_token: refresh.token,
+    });
+
+    assert.strictEqual(res.status, 503);
+  } finally {
+    if (previousJwtSecret === undefined) delete process.env.JWT_SECRET;
+    else process.env.JWT_SECRET = previousJwtSecret;
+  }
 });
 
 test('la route de santé répond toujours sans base', async () => {

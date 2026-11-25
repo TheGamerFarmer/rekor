@@ -16,7 +16,7 @@ class AuthenticationApi {
 
   final ApiClient apiClient;
 
-  /// Vérifie les identifiants et renvoie un token JWT
+  /// Authentifie l’utilisateur dans l’association indiquée et renvoie les tokens
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -49,7 +49,7 @@ class AuthenticationApi {
     );
   }
 
-  /// Vérifie les identifiants et renvoie un token JWT
+  /// Authentifie l’utilisateur dans l’association indiquée et renvoie les tokens
   ///
   /// Parameters:
   ///
@@ -69,7 +69,105 @@ class AuthenticationApi {
     return null;
   }
 
-  /// Crée un compte utilisateur (rôle Visiteur attribué par le serveur)
+  /// Révoque la session liée au refresh token
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [RefreshTokenInput] refreshTokenInput (required):
+  Future<Response> logoutWithHttpInfo(RefreshTokenInput refreshTokenInput, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/auth/logout';
+
+    // ignore: prefer_final_locals
+    Object? postBody = refreshTokenInput;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Révoque la session liée au refresh token
+  ///
+  /// Parameters:
+  ///
+  /// * [RefreshTokenInput] refreshTokenInput (required):
+  Future<void> logout(RefreshTokenInput refreshTokenInput, { Future<void>? abortTrigger, }) async {
+    final response = await logoutWithHttpInfo(refreshTokenInput, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Renouvelle les tokens à partir d’un refresh token valide
+  ///
+  /// Note: This method returns the HTTP [Response].
+  ///
+  /// Parameters:
+  ///
+  /// * [RefreshTokenInput] refreshTokenInput (required):
+  Future<Response> refreshTokensWithHttpInfo(RefreshTokenInput refreshTokenInput, { Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/auth/refresh';
+
+    // ignore: prefer_final_locals
+    Object? postBody = refreshTokenInput;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>['application/json'];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Renouvelle les tokens à partir d’un refresh token valide
+  ///
+  /// Parameters:
+  ///
+  /// * [RefreshTokenInput] refreshTokenInput (required):
+  Future<LoginResponse?> refreshTokens(RefreshTokenInput refreshTokenInput, { Future<void>? abortTrigger, }) async {
+    final response = await refreshTokensWithHttpInfo(refreshTokenInput, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+    // When a remote server returns no body with a status of 204, we shall not decode it.
+    // At the time of writing this, `dart:convert` will throw an "Unexpected end of input"
+    // FormatException when trying to decode an empty string.
+    if (response.body.isNotEmpty && response.statusCode != HttpStatus.noContent) {
+      return await apiClient.deserializeAsync(await _decodeBodyBytes(response), 'LoginResponse',) as LoginResponse;
+    
+    }
+    return null;
+  }
+
+  /// Crée un compte Visiteur et l’inscrit dans l’association indiquée
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -102,13 +200,50 @@ class AuthenticationApi {
     );
   }
 
-  /// Crée un compte utilisateur (rôle Visiteur attribué par le serveur)
+  /// Crée un compte Visiteur et l’inscrit dans l’association indiquée
   ///
   /// Parameters:
   ///
   /// * [RegisterInput] registerInput (required):
   Future<void> register(RegisterInput registerInput, { Future<void>? abortTrigger, }) async {
     final response = await registerWithHttpInfo(registerInput, abortTrigger: abortTrigger,);
+    if (response.statusCode >= HttpStatus.badRequest) {
+      throw ApiException(response.statusCode, await _decodeBodyBytes(response));
+    }
+  }
+
+  /// Réinscrit le compte authentifié dans une association
+  ///
+  /// Note: This method returns the HTTP [Response].
+  Future<Response> reregisterWithHttpInfo({ Future<void>? abortTrigger, }) async {
+    // ignore: prefer_const_declarations
+    final path = r'/auth/re-register';
+
+    // ignore: prefer_final_locals
+    Object? postBody;
+
+    final queryParams = <QueryParam>[];
+    final headerParams = <String, String>{};
+    final formParams = <String, String>{};
+
+    const contentTypes = <String>[];
+
+
+    return apiClient.invokeAPI(
+      path,
+      'POST',
+      queryParams,
+      postBody,
+      headerParams,
+      formParams,
+      contentTypes.isEmpty ? null : contentTypes.first,
+      abortTrigger: abortTrigger,
+    );
+  }
+
+  /// Réinscrit le compte authentifié dans une association
+  Future<void> reregister({ Future<void>? abortTrigger, }) async {
+    final response = await reregisterWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {
       throw ApiException(response.statusCode, await _decodeBodyBytes(response));
     }

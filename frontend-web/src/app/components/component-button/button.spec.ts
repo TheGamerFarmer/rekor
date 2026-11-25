@@ -27,13 +27,22 @@ describe('Button', () => {
     expect(button.disabled).toBe(true);
     expect(button.classList).toContain('button-danger');
 
-    fixture.componentRef.setInput('href', '/evenements');
+    fixture.componentRef.setInput('href', '/actualites');
     fixture.componentRef.setInput('disabled', false);
     fixture.componentRef.setInput('variant', 'outline');
     fixture.detectChanges();
     const link = fixture.nativeElement.querySelector('a') as HTMLAnchorElement;
 
-    expect(link.getAttribute('href')).toBe('/evenements');
+    expect(link.getAttribute('href')).toBe('/actualites');
     expect(link.classList).toContain('button-outline');
+  });
+
+  it('renders an icon inside a button element', () => {
+    fixture.componentRef.setInput('iconSrc', '/icons/arrow.png');
+    fixture.detectChanges();
+
+    const icon = fixture.nativeElement.querySelector('button .button-icon') as HTMLImageElement;
+    expect(icon).not.toBeNull();
+    expect(icon.getAttribute('src')).toBe('/icons/arrow.png');
   });
 });

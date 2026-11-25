@@ -1,0 +1,197 @@
+<app-component-banner
+  image="/images/volley2.jpg"
+  title="Gestion des adhérents"
+  subtitle="Gérez les profils et suivez les inscriptions du club."
+/>
+
+<main class="admin-page admin-members-page">
+  <section class="admin-card admin-members-card" aria-label="Gestion des adhérents">
+    <header class="admin-members-header">
+      <nav class="registration-filters" aria-label="Filtrer les inscriptions">
+        @for (status of statuses; track status.value) {
+          <app-button
+            [variant]="registrationFilter() === status.value ? 'primary' : 'secondary'"
+            [text]="status.label + ' (' + getCount(status.value) + ')'"
+            [ariaCurrent]="registrationFilter() === status.value ? 'page' : null"
+            (click)="setFilter(status.value)"
+          ></app-button>
+        }
+      </nav>
+    </header>
+
+    @if (isFormVisible() && editingId() !== null) {
+      <section class="admin-card member-form-card" aria-labelledby="member-form-title">
+        <h2 id="member-form-title">Modifier un adhérent</h2>
+        <form [formGroup]="memberForm" (ngSubmit)="save()" novalidate>
+          <div class="form-grid">
+            <label class="field" for="last-name">
+              Nom
+              <input
+                id="last-name"
+                type="text"
+                formControlName="lastName"
+                autocomplete="family-name"
+              />
+              @if (submitted() && memberForm.controls.lastName.invalid) {
+                <small>Le nom est obligatoire.</small>
+              }
+            </label>
+
+            <label class="field" for="first-name">
+              Prénom
+              <input
+                id="first-name"
+                type="text"
+                formControlName="firstName"
+                autocomplete="given-name"
+              />
+              @if (submitted() && memberForm.controls.firstName.invalid) {
+                <small>Le prénom est obligatoire.</small>
+              }
+            </label>
+
+            <label class="field" for="pronoun">
+              Pronom
+              <select id="pronoun" formControlName="pronoun">
+                @for (pronoun of pronouns; track pronoun) {
+                  <option [value]="pronoun">{{ pronoun }}</option>
+                }
+              </select>
+            </label>
+
+            <label class="field" for="birth-date">
+              Date de naissance
+              <input
+                id="birth-date"
+                type="date"
+                formControlName="birthDate"
+                min="1900-01-01"
+                [max]="currentDate"
+              />
+              @if (submitted() && memberForm.controls.birthDate.invalid) {
+                <small>Saisissez une date de naissance valide.</small>
+              }
+            </label>
+
+            <label class="field" for="phone">
+              Téléphone
+              <input id="phone" type="tel" formControlName="phone" autocomplete="tel" />
+              @if (submitted() && memberForm.controls.phone.invalid) {
+                <small>Saisissez un numéro de téléphone valide.</small>
+              }
+            </label>
+
+            <label class="field" for="email">
+              E-mail
+              <input id="email" type="email" formControlName="email" autocomplete="email" />
+              @if (submitted() && memberForm.controls.email.invalid) {
+                <small>Saisissez une adresse e-mail valide.</small>
+              }
+            </label>
+
+            <label class="field" for="role">
+              Rôle
+              <select id="role" formControlName="role">
+                <option value="">Sélectionner un rôle</option>
+                @if (
+                  memberForm.controls.role.value && !roles.includes(memberForm.controls.role.value)
+                ) {
+                  <option [value]="memberForm.controls.role.value">
+                    {{ memberForm.controls.role.value }}
+                  </option>
+                }
+                @for (role of roles; track role) {
+                  <option [value]="role">{{ role }}</option>
+                }
+              </select>
+              @if (submitted() && memberForm.controls.role.invalid) {
+                <small>Sélectionnez un rôle.</small>
+              }
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <app-button variant="secondary" text="Annuler" (click)="closeForm()"></app-button>
+            <app-button type="submit" text="Enregistrer"></app-button>
+          </div>
+        </form>
+      </section>
+    }
+
+    <div class="member-list" role="list">
+      @for (member of filteredAdherents(); track member.id) {
+        <article class="member-row" role="listitem">
+          <div class="member-information">
+            <h2>{{ member.firstName }} {{ member.lastName }}</h2>
+            <p>
+              {{ member.pronoun }} ·
+              @if (member.birthDate) {
+                Né·e le {{ member.birthDate | date: 'dd/MM/yyyy' : 'UTC' }}
+              } @else {
+                Date de naissance à compléter
+              }
+            </p>
+            <div class="member-contact">
+              <a [href]="'tel:' + member.phone">{{ member.phone }}</a>
+              <a [href]="'mailto:' + member.email">{{ member.email }}</a>
+            </div>
+          </div>
+          <ul class="member-roles" aria-label="Rôle">
+            <li>{{ member.role }}</li>
+          </ul>
+          <div class="member-actions">
+            @if (member.registrationStatus === 'to-validate') {
+              <app-button
+                size="small"
+                variant="success"
+                text="Valider"
+                [ariaLabel]="'Valider l’inscription de ' + member.firstName + ' ' + member.lastName"
+                [disabled]="true"
+              ></app-button>
+              <app-button
+                size="small"
+                variant="danger"
+                text="Refuser"
+                [ariaLabel]="'Refuser l’inscription de ' + member.firstName + ' ' + member.lastName"
+                [disabled]="true"
+              ></app-button>
+            } @else if (member.registrationStatus === 'pending-validation') {
+              <app-button
+                size="small"
+                variant="success"
+                text="Confirmer la réception du certificat"
+                [ariaLabel]="
+                  'Confirmer la réception du certificat de ' +
+                  member.firstName +
+                  ' ' +
+                  member.lastName
+                "
+                [disabled]="true"
+              ></app-button>
+            }
+            <button
+              class="icon-action edit-action"
+              type="button"
+              [attr.aria-label]="'Modifier ' + member.firstName + ' ' + member.lastName"
+              title="Modifier"
+              (click)="startEdit(member)"
+            >
+              <img src="/icons/crayon.png" alt="" aria-hidden="true" />
+            </button>
+            <button
+              class="icon-action delete-action"
+              type="button"
+              [attr.aria-label]="'Supprimer ' + member.firstName + ' ' + member.lastName"
+              title="Supprimer"
+              (click)="deleteMember(member.id)"
+            >
+              <img src="/icons/corbeille.png" alt="" aria-hidden="true" />
+            </button>
+          </div>
+        </article>
+      } @empty {
+        <p class="empty-state">Aucun adhérent dans cette catégorie d’inscription.</p>
+      }
+    </div>
+  </section>
+</main>

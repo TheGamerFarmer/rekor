@@ -1,14 +1,45 @@
 require('../db/db');
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
-const {
-  isValidObjectId,
-  Types: { ObjectId },
-} = require('mongoose');
 const User = require('../db/models/user');
-const { wrapAsync, toPublicUser, toEssentialPublicUser } = require('./services/shared');
-const { authenticate } = require('./services/auth-middleware');
+const RefreshToken = require('../db/models/refresh-token');
+const { wrapAsync, toPublicUser, toEssentialPublicUser, isValidId } = require('./services/shared');
+const { authenticate, authorize } = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
+const { USER_ROLE } = require('../db/enums');
+
+function buildProfileChanges(body, includeRole = false) {
+  const {
+    email,
+    name,
+    firstName,
+    phoneNumber,
+    birthday,
+    pronoun,
+    medicalCertificate,
+    rightOfPublicity,
+    role,
+  } = body;
+
+  const changes = {};
+  if (email !== undefined && email !== null) changes.email = email;
+  if (firstName !== undefined && firstName !== null) changes.firstName = firstName;
+  if (name !== undefined && name !== null) changes.name = name;
+  if (phoneNumber !== undefined && phoneNumber !== null) changes.phoneNumber = phoneNumber;
+  if (pronoun !== undefined && pronoun !== null) changes.pronoun = pronoun;
+  if (medicalCertificate !== undefined && medicalCertificate !== null) {
+    changes.medicalCertificate = medicalCertificate;
+  }
+  if (rightOfPublicity !== undefined && rightOfPublicity !== null) {
+    changes.rightOfPublicity = rightOfPublicity;
+  }
+  if (birthday !== undefined && birthday !== null) {
+    changes.birthday = new Date(`${birthday}T00:00:00.000Z`);
+  }
+  if (includeRole && role !== undefined && role !== null) changes.role = role;
+
+  return changes;
+}
 
 function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   const router = express.Router();
@@ -27,7 +58,11 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      const user = await User.findById(new ObjectId(req.auth.sub));
+      if (!isValidId(req.auth.sub)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
+      const user = await User.findById(req.auth.sub);
       if (!user) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -39,18 +74,12 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      const { name, firstName, phoneNumber, birthday, pronoun } = req.body;
-
-      const changes = {};
-      if (firstName !== undefined && firstName !== null) changes.firstName = firstName;
-      if (name !== undefined && name !== null) changes.name = name;
-      if (phoneNumber !== undefined && phoneNumber !== null) changes.phoneNumber = phoneNumber;
-      if (pronoun !== undefined && pronoun !== null) changes.pronoun = pronoun;
-      if (birthday !== undefined && birthday !== null) {
-        changes.birthday = new Date(`${birthday}T00:00:00.000Z`);
+      if (!isValidId(req.auth.sub)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
-      const result = await User.updateOne({ _id: new ObjectId(req.auth.sub) }, { $set: changes });
+      const changes = buildProfileChanges(req.body);
+      const result = await User.updateOne({ _id: { $eq: req.auth.sub } }, { $set: changes });
       if (result.matchedCount === 0) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -63,10 +92,27 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me',
     authenticate,
     wrapAsync(async (req, res) => {
-      const result = await User.deleteOne({ _id: new ObjectId(req.auth.sub) });
-      if (result.deletedCount === 0) {
+      if (!isValidId(req.auth.sub)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
+      const user = await User.findById(req.auth.sub);
+      if (!user) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
+
+      if (
+        user.role === USER_ROLE.ADMINISTRATEUR &&
+        (await User.countDocuments({ role: USER_ROLE.ADMINISTRATEUR })) <= 1
+      ) {
+        return res
+          .status(403)
+          .json({ message: 'Interdiction de supprimer le dernier administrateur' });
+      }
+
+      await User.deleteOne({ _id: user._id });
+      await RefreshToken.deleteMany({ userId: user._id });
+
       res.status(204).end();
     }),
   );
@@ -75,8 +121,12 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     '/me/password',
     authenticate,
     wrapAsync(async (req, res) => {
+      if (!isValidId(req.auth.sub)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
       const { old_password, new_password } = req.body;
-      const currentUser = await User.findById(new ObjectId(req.auth.sub));
+      const currentUser = await User.findById(req.auth.sub);
       if (!currentUser) {
         return res.status(404).json({ message: 'Utilisateur introuvable' });
       }
@@ -93,6 +143,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
         return res.status(409).json({ message: 'Le mot de passe a changé, réessaie' });
       }
 
+      await RefreshToken.deleteMany({ userId: currentUser._id });
       res.status(204).end();
     }),
   );
@@ -100,21 +151,60 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
   router.get(
     '/',
     wrapAsync(async (req, res) => {
-      const docs = await User.find({}).sort({ _id: 1 });
-      res.json(docs.map(toEssentialPublicUser));
+      const users = await User.find({}).sort({ _id: 1 });
+      res.json(users.map(toEssentialPublicUser));
     }),
   );
+
+  router.get('/roles', authenticate, authorize(USER_ROLE.ADMINISTRATEUR), (req, res) => {
+    return res.json(Object.values(USER_ROLE));
+  });
 
   router.get(
     '/:id',
     wrapAsync(async (req, res) => {
-      if (!isValidObjectId(req.params.id)) {
+      if (!isValidId(req.params.id)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
-      const doc = await User.findById(req.params.id);
-      if (!doc) return res.status(404).json({ message: 'Utilisateur introuvable' });
-      res.json(toPublicUser(doc));
+      const user = await User.findById(req.params.id);
+      if (!user) return res.status(404).json({ message: 'Utilisateur introuvable' });
+      res.json(toPublicUser(user));
+    }),
+  );
+
+  router.patch(
+    '/:id',
+    authenticate,
+    authorize(USER_ROLE.ADMINISTRATEUR),
+    wrapAsync(async (req, res) => {
+      if (!isValidId(req.params.id)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
+      if (!(await User.exists({ _id: { $eq: req.params.id } }))) {
+        return res.status(404).json({ message: 'Utilisateur introuvable' });
+      }
+
+      if (req.params.id === req.auth.sub) {
+        return res
+          .status(403)
+          .json({ message: 'Interdiction de changer son propre profil par cette méthode' });
+      }
+
+      const { role } = req.body;
+
+      if (!Object.values(USER_ROLE).includes(role)) {
+        return res.status(400).json({ message: 'Rôle inconnu' });
+      }
+
+      const changes = buildProfileChanges(req.body, true);
+      const result = await User.updateOne({ _id: { $eq: req.params.id } }, { $set: changes });
+      if (result.matchedCount === 0) {
+        return res.status(404).json({ message: 'Utilisateur introuvable' });
+      }
+
+      return res.status(204).end();
     }),
   );
 

@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "Rekor API",
-    "version": "1.0.0"
+    "version": "0.0.1"
   },
   "servers": [
     {
@@ -19,6 +19,42 @@
       }
     },
     "schemas": {
+      "Publication": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          },
+          "titre": {
+            "type": "string"
+          },
+          "summary": {
+            "type": "string"
+          },
+          "corps": {
+            "type": "string"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "association": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          }
+        },
+        "required": [
+          "_id",
+          "titre",
+          "summary",
+          "corps",
+          "date",
+          "association"
+        ]
+      },
       "HealthResponse": {
         "type": "object",
         "properties": {
@@ -67,6 +103,27 @@
           "message"
         ]
       },
+      "Association": {
+        "type": "object",
+        "properties": {
+          "_id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          },
+          "name": {
+            "type": "string"
+          },
+          "address": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "_id",
+          "name",
+          "address"
+        ]
+      },
       "UserDetails": {
         "allOf": [
           {
@@ -78,6 +135,7 @@
               "role": {
                 "type": "string",
                 "enum": [
+                  "Administrateur",
                   "Entraineur",
                   "Capitaine",
                   "Adhérent",
@@ -99,11 +157,19 @@
               "birthday": {
                 "type": "string",
                 "format": "date-time"
+              },
+              "medicalCertificate": {
+                "type": "boolean"
+              },
+              "rightOfPublicity": {
+                "type": "boolean"
               }
             },
             "required": [
               "role",
-              "pronoun"
+              "pronoun",
+              "medicalCertificate",
+              "rightOfPublicity"
             ]
           }
         ]
@@ -134,6 +200,12 @@
               "Iel",
               "Autre"
             ]
+          },
+          "medicalCertificate": {
+            "type": "boolean"
+          },
+          "rightOfPublicity": {
+            "type": "boolean"
           }
         }
       },
@@ -152,6 +224,35 @@
         "required": [
           "old_password",
           "new_password"
+        ]
+      },
+      "AdminUpdateProfileInput": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UpdateProfileInput"
+          },
+          {
+            "type": "object",
+            "properties": {
+              "email": {
+                "type": "string",
+                "format": "email"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "Administrateur",
+                  "Entraineur",
+                  "Capitaine",
+                  "Adhérent",
+                  "Visiteur"
+                ]
+              }
+            },
+            "required": [
+              "role"
+            ]
+          }
         ]
       },
       "RegisterInput": {
@@ -177,6 +278,12 @@
             "minLength": 1,
             "example": "motdepasse"
           },
+          "associationName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Gières Volley-Ball",
+            "description": "Nom de l’association"
+          },
           "pronoun": {
             "type": "string",
             "enum": [
@@ -195,6 +302,12 @@
             "type": "string",
             "format": "date",
             "example": "1815-12-10"
+          },
+          "medicalCertificate": {
+            "type": "boolean"
+          },
+          "rightOfPublicity": {
+            "type": "boolean"
           }
         },
         "required": [
@@ -202,7 +315,10 @@
           "firstName",
           "email",
           "password",
-          "pronoun"
+          "associationName",
+          "pronoun",
+          "medicalCertificate",
+          "rightOfPublicity"
         ]
       },
       "LoginResponse": {
@@ -210,10 +326,14 @@
         "properties": {
           "access_token": {
             "type": "string"
+          },
+          "refresh_token": {
+            "type": "string"
           }
         },
         "required": [
-          "access_token"
+          "access_token",
+          "refresh_token"
         ]
       },
       "LoginInput": {
@@ -228,11 +348,30 @@
             "type": "string",
             "minLength": 1,
             "example": "motdepasse"
+          },
+          "associationName": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Gières Volley-Ball",
+            "description": "Nom de l’association"
           }
         },
         "required": [
           "email",
-          "password"
+          "password",
+          "associationName"
+        ]
+      },
+      "RefreshTokenInput": {
+        "type": "object",
+        "properties": {
+          "refresh_token": {
+            "type": "string",
+            "minLength": 1
+          }
+        },
+        "required": [
+          "refresh_token"
         ]
       }
     },
@@ -314,6 +453,136 @@
         }
       }
     },
+    "/users/roles": {
+      "get": {
+        "operationId": "listUserRoles",
+        "tags": [
+          "Users"
+        ],
+        "summary": "Liste les rôles utilisateurs disponibles",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Les rôles disponibles",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                    "enum": [
+                      "Administrateur",
+                      "Entraineur",
+                      "Capitaine",
+                      "Adhérent",
+                      "Visiteur"
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentification requise ou token invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès réservé aux administrateurs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/association": {
+      "get": {
+        "operationId": "listAssociations",
+        "tags": [
+          "Associations"
+        ],
+        "summary": "Liste les associations",
+        "responses": {
+          "200": {
+            "description": "Les associations",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Association"
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/users/me": {
       "get": {
         "operationId": "getMyProfile",
@@ -333,6 +602,16 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/UserDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Identifiant invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -491,8 +770,28 @@
           "204": {
             "description": "Compte supprimé, sans contenu de réponse"
           },
+          "400": {
+            "description": "Identifiant invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
           "401": {
             "description": "Authentification requise ou token invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Interdiction de supprimer le dernier administrateur",
             "content": {
               "application/json": {
                 "schema": {
@@ -724,31 +1023,46 @@
             }
           }
         }
-      }
-    },
-    "/auth/register": {
-      "post": {
-        "operationId": "register",
+      },
+      "patch": {
+        "operationId": "updateUser",
         "tags": [
-          "Authentication"
+          "Users"
         ],
-        "summary": "Crée un compte utilisateur (rôle Visiteur attribué par le serveur)",
+        "summary": "Modifie le profil d’un utilisateur",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
         "requestBody": {
           "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/RegisterInput"
+                "$ref": "#/components/schemas/AdminUpdateProfileInput"
               }
             }
           }
         },
         "responses": {
-          "201": {
-            "description": "Compte créé, sans contenu de réponse"
+          "204": {
+            "description": "Profil modifié, sans contenu de réponse"
           },
           "400": {
-            "description": "Requête invalide",
+            "description": "Identifiant ou rôle invalide",
             "content": {
               "application/json": {
                 "schema": {
@@ -757,8 +1071,28 @@
               }
             }
           },
-          "409": {
-            "description": "Un utilisateur avec cet e-mail existe déjà",
+          "401": {
+            "description": "Authentification requise ou token invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès interdit ou modification de son propre profil",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur introuvable",
             "content": {
               "application/json": {
                 "schema": {
@@ -800,13 +1134,153 @@
         }
       }
     },
+    "/auth/register": {
+      "post": {
+        "operationId": "register",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Crée un compte Visiteur et l’inscrit dans l’association indiquée",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Compte créé, sans contenu de réponse"
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Association introuvable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "E-mail déjà utilisé ou utilisateur déjà inscrit à cette association",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/re-register": {
+      "post": {
+        "operationId": "reregister",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Réinscrit le compte authentifié dans une association",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "401": {
+            "description": "Authentification requise ou token invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "501": {
+            "description": "La réinscription n’est pas encore disponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/login": {
       "post": {
         "operationId": "login",
         "tags": [
           "Authentication"
         ],
-        "summary": "Vérifie les identifiants et renvoie un token JWT",
+        "summary": "Authentifie l’utilisateur dans l’association indiquée et renvoie les tokens",
         "requestBody": {
           "required": true,
           "content": {
@@ -840,6 +1314,171 @@
           },
           "401": {
             "description": "E-mail ou mot de passe incorrect",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Association introuvable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne ou configuration d’authentification indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/refresh": {
+      "post": {
+        "operationId": "refreshTokens",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Renouvelle les tokens à partir d’un refresh token valide",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Nouvelle paire de tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LoginResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refresh token invalide ou expiré",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne ou configuration d’authentification indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "operationId": "logout",
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Révoque la session liée au refresh token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RefreshTokenInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Session révoquée, sans contenu de réponse"
+          },
+          "400": {
+            "description": "Requête invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Refresh token invalide ou expiré",
             "content": {
               "application/json": {
                 "schema": {

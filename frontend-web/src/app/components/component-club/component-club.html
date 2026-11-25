@@ -1,0 +1,64 @@
+<app-component-banner
+  image="/images/volley4.jpg"
+  title="Le club"
+  subtitle="Découvrez l’histoire et la vie du Gières Volley-Ball."
+/>
+
+<main class="page-content">
+  <section id="infos-generales">
+    <h2>Informations générales</h2>
+    <div>
+      <h3>Horaires séance</h3>
+      <p>Mardi 18h - 20h</p>
+      <!-- Séance -->
+    </div>
+    <div>
+      <h3>Horaires match</h3>
+      <p>Samedi 15h - 18h</p>
+      <!-- Match -->
+    </div>
+    <div class="adresse-container">
+      <h3>Adresse</h3>
+      <div>
+        <mat-icon>room</mat-icon>
+        <div>
+          <p>1 Rue des Sports, 38610 Gières</p>
+          <!-- Adresse -->
+          <p>Gymnase de la Plaine des sports</p>
+        </div>
+      </div>
+    </div>
+    <div class="contact">
+      <h3>Contact :</h3>
+      <p>{{ 'E-mail : le-club\@mail.com' }}</p>
+      <p>Téléphone : +33 1 23 45 67 89</p>
+    </div>
+  </section>
+  <section id="presentation">
+    <div>
+      <h2>Gières Volley-Ball</h2>
+      <p>
+        Le Club de Volley de Gières est une association sportive conviviale et dynamique qui
+        rassemble des passionnés de volley-ball de tous les âges et de tous les niveaux. Notre
+        objectif est de permettre à chacun de pratiquer ce sport dans une ambiance chaleureuse, tout
+        en développant l'esprit d'équipe, le respect et le dépassement de soi. Que vous soyez
+        débutant ou joueur confirmé, notre club vous accueille pour partager des moments sportifs,
+        progresser ensemble et participer à des compétitions dans la bonne humeur. Rejoignez-nous
+        pour vivre votre passion du volley !
+      </p>
+    </div>
+    <img src="/images/volley6.jpg" alt="Photo de volley" />
+  </section>
+  <section id="historique">
+    <h2>Historique</h2>
+    <div class="timeline-wrapper">
+      <ngx-timeline
+        [events]="frise"
+        [langCode]="'fr'"
+        [enableAnimation]="false"
+        [orientation]="NgxTimelineOrientation.HORIZONTAL"
+      >
+      </ngx-timeline>
+    </div>
+  </section>
+</main>
