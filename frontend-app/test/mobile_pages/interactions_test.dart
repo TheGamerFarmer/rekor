@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend_app/mobile_pages/arbitrage.dart';
 import 'package:frontend_app/mobile_pages/cout_page.dart';
@@ -92,6 +93,21 @@ void main() {
       expect(find.text('Camille'), findsWidgets);
     });
 
+    testWidgets('modifie l’adresse mail depuis le dialogue', (tester) async {
+      await afficher(tester, const ParametresPage());
+
+      await tester.tap(find.text('Adresse mail'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextField).last,
+        'camille@example.com',
+      );
+      await tester.tap(find.text('Enregistrer'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('camille@example.com'), findsOneWidget);
+    });
+
     testWidgets('choisit un pronom depuis les options', (tester) async {
       await afficher(tester, const ParametresPage());
 
@@ -102,17 +118,17 @@ void main() {
       expect(find.text('Iel'), findsWidgets);
     });
 
-    testWidgets('annule la déconnexion', (tester) async {
+    testWidgets('déconnecte et revient à la connexion', (tester) async {
+      FlutterSecureStorage.setMockInitialValues({});
       await afficher(tester, const ParametresPage());
 
       await tester.ensureVisible(find.text('Se déconnecter'));
       await tester.pump();
       await tester.tap(find.text('Se déconnecter'));
       await tester.pumpAndSettle();
-      expect(find.text('Se déconnecter ?'), findsOneWidget);
-      await tester.tap(find.text('Annuler').first);
-      await tester.pumpAndSettle();
-      expect(find.text('Se déconnecter'), findsWidgets);
+
+      expect(find.text('Connexion'), findsOneWidget);
+      expect(find.text('Se déconnecter'), findsNothing);
     });
 
     testWidgets('annule la suppression du compte', (tester) async {

@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/login.dart';
 import 'package:image_picker/image_picker.dart';
 
+import '../api/api_client.dart';
 import '../layouts/main_layout.dart';
 import '../models/utilisateur.dart';
 
@@ -22,9 +23,9 @@ class _ParametresPageState extends State<ParametresPage> {
   // Utilisateur connecté (exemple, plus tard : celui de la connexion)
   Utilisateur _utilisateur = const Utilisateur(
     id: 1,
+    mail: 'lucie.loury@exemple.fr',
     prenom: 'Lucie',
     nom: 'Loury',
-    mail: 'lucie.loury@exemple.fr',
     role: 'Joueur',
     pronom: Pronom.elle,
   );
@@ -78,6 +79,17 @@ class _ParametresPageState extends State<ParametresPage> {
     final valeur = await _saisirTexte(titre: 'Nom', valeur: _utilisateur.nom);
     if (valeur == null || valeur.isEmpty || !mounted) return;
     setState(() => _utilisateur = _utilisateur.copyWith(nom: valeur));
+    // TODO : envoyer à l'API
+  }
+
+  Future<void> _modifierMail() async {
+    final valeur = await _saisirTexte(
+      titre: 'Adresse mail',
+      valeur: _utilisateur.mail ?? '',
+      clavier: TextInputType.emailAddress,
+    );
+    if (valeur == null || valeur.isEmpty || !mounted) return;
+    setState(() => _utilisateur = _utilisateur.copyWith(mail: valeur));
     // TODO : envoyer à l'API
   }
 
@@ -169,18 +181,8 @@ class _ParametresPageState extends State<ParametresPage> {
   }
 
   Future<void> _seDeconnecter() async {
-    final ok = await _confirmer(
-      titre: 'Se déconnecter ?',
-      message: 'Vous devrez vous reconnecter pour accéder à l\'application.',
-      bouton: 'Se déconnecter',
-    );
-
-    // Annulé (ou page fermée) : on ne fait rien
-    if (!ok || !mounted) return;
-
-    // TODO : effacer la session (token, utilisateur connecté...)
-
-    // Retour à la page de connexion, en vidant l'historique des pages
+    await ApiClient.instance.logout();
+    if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const MyLoginPage()),
@@ -253,6 +255,12 @@ class _ParametresPageState extends State<ParametresPage> {
                 onTap: _modifierNom,
               ),
               _ligne(
+                icone: Icons.mail_outline,
+                titre: 'Adresse mail',
+                valeur: u.mail ?? 'Non renseignée',
+                onTap: _modifierMail,
+              ),
+              _ligne(
                 icone: Icons.badge_outlined,
                 titre: 'Pronom',
                 valeur: u.pronom?.libelle ?? 'Non renseigné',
@@ -275,11 +283,6 @@ class _ParametresPageState extends State<ParametresPage> {
                 onTap: _modifierDateNaissance,
               ),
               // Lecture seule : pas de onTap
-              _ligne(
-                icone: Icons.mail_outline,
-                titre: 'Adresse mail',
-                valeur: u.mail ?? 'Non renseignée',
-              ),
               _ligne(
                 icone: Icons.shield_outlined,
                 titre: 'Rôle',
@@ -310,6 +313,14 @@ class _ParametresPageState extends State<ParametresPage> {
                 leading: const Icon(Icons.logout, color: Colors.white),
                 title: const Text(
                   'Se déconnecter',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              ListTile(
+                //onTap: _seDeconnecter,
+                leading: const Icon(Icons.lock_reset, color: Colors.white),
+                title: const Text(
+                  'Changer mon mot de passe',
                   style: TextStyle(color: Colors.white),
                 ),
               ),
