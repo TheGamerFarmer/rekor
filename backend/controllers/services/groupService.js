@@ -18,7 +18,7 @@ async function getAllGroups() {
  * @returns {Promise<Document|null>} The Mongoose group document, or null if not found.
  */
 async function getGroupById(id) {
-  return await Group.findById(id);
+  return await Group.findOne({ _id: { $eq: id } });
 }
 
 /**
@@ -133,7 +133,7 @@ async function deleteGroup(id, senderId) {
  *   Possible error: GROUP_NOT_FOUND.
  */
 async function getGroupMembers(id) {
-  const doc = await Group.findById(id);
+  const doc = await Group.findOne({ _id: { $eq: id } });
   if (!doc) return { error: 'GROUP_NOT_FOUND' };
 
   const memberships = await GroupMembre.find({ group: doc._id });
@@ -152,8 +152,8 @@ async function getGroupMembers(id) {
  *   Possible errors: GROUP_NOT_FOUND, USER_NOT_FOUND, USER_NOT_OWNER, DUPLICATE.
  */
 async function addMemberToGroup(groupId, userId, senderId) {
-  const groupResult = await Group.findById(groupId);
-  const userResult = await User.findById(userId);
+  const groupResult = await Group.findOne({ _id: { $eq: groupId } });
+  const userResult = await User.findOne({ _id: { $eq: userId } });
 
   if (!groupResult) return { error: 'GROUP_NOT_FOUND' };
   if (!userResult) return { error: 'USER_NOT_FOUND' };
@@ -182,8 +182,8 @@ async function addMemberToGroup(groupId, userId, senderId) {
  *   Possible errors: GROUP_NOT_FOUND, USER_NOT_FOUND, USER_NOT_OWNER, MEMBERSHIP_NOT_FOUND.
  */
 async function removeMemberFromGroup(groupId, userId, senderId) {
-  const groupResult = await Group.findById(groupId);
-  const userResult = await User.findById(userId);
+  const groupResult = await Group.findOne({ _id: { $eq: groupId } });
+  const userResult = await User.findOne({ _id: { $eq: userId } });
 
   if (!groupResult) return { error: 'GROUP_NOT_FOUND' };
   if (!userResult) return { error: 'USER_NOT_FOUND' };

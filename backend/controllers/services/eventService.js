@@ -20,7 +20,7 @@ async function getAllEvents() {
  * @returns {Promise<Document|null>} The Mongoose event document, or null if not found.
  */
 async function getEventById(id) {
-  return await Event.findById(id);
+  return await Event.findOne({ _id: { $eq: id } });
 }
 
 /**
@@ -119,10 +119,10 @@ async function deleteEvent(id, senderId) {
  *   Possible errors: EVENT_NOT_FOUND, PERMISSION_NOT_ALLOWED, DUPLICATE.
  */
 async function registerParticipation(eventId, participate, senderId) {
-  const event = await Event.findById(eventId);
+  const event = await Event.findOne({ _id: { $eq: eventId } });
   if (!event) return { error: 'EVENT_NOT_FOUND' };
 
-  const sender = await User.findById(senderId);
+  const sender = await User.findOne({ _id: { $eq: senderId } });
   if (sender.role === USER_ROLE.VISITEUR && event.type === EVENT_TYPE.MATCH_COMPETITIF)
     return { error: 'PERMISSION_NOT_ALLOWED' };
 
@@ -155,7 +155,7 @@ async function registerParticipation(eventId, participate, senderId) {
  *   Possible errors: EVENT_NOT_FOUND, NON_PARTICIPATE.
  */
 async function updateParticipation(eventId, participate, senderId) {
-  const event = await Event.findById(eventId);
+  const event = await Event.findOne({ _id: { $eq: eventId } });
   if (!event) return { error: 'EVENT_NOT_FOUND' };
 
   const result = await Participant.updateOne(
@@ -175,7 +175,7 @@ async function updateParticipation(eventId, participate, senderId) {
  *   Possible error: EVENT_NOT_FOUND.
  */
 async function getEventParticipants(eventId) {
-  const event = await Event.findById(eventId);
+  const event = await Event.findOne({ _id: { $eq: eventId } });
   if (!event) return { error: 'EVENT_NOT_FOUND' };
 
   const participants = await Participant.find({ event: event._id });
