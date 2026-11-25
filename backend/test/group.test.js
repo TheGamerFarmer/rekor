@@ -40,6 +40,7 @@ describe('/group (avec un vrai mongod)', () => {
   let groupId;
   let ownerId;
   let memberId;
+  let visiteurToken;
   let adherentToken;
   let entraineurToken;
   let directApp;
@@ -101,8 +102,27 @@ describe('/group (avec un vrai mongod)', () => {
     // memberId is a member of groupId; ownerId is not explicitly added as member.
     await groupMemberCollection.insertOne({ group: groupId, user: memberId });
 
+    visiteurToken = signAccessToken({ _id: ownerId, role: 'Visiteur' }, association);
     adherentToken = signAccessToken({ _id: ownerId, role: 'Adhérent' }, association);
     entraineurToken = signAccessToken({ _id: ownerId, role: 'Entraineur' }, association);
+  });
+
+  // ── GET /group ───────────────────────────────────────────────────────────────
+
+  it('GET /group lists all groups', async () => {
+    const res = await request(app).get('/group').set('Authorization', `Bearer ${adherentToken}`);
+
+    assert.strictEqual(res.status, 200);
+    assert.ok(Array.isArray(res.body));
+    assert.strictEqual(res.body.length, 1);
+    assert.strictEqual(res.body[0].id, groupId.toString());
+    assert.strictEqual(res.body[0].name, 'Équipe A');
+  });
+
+  it('GET /group returns 401 without authentication', async () => {
+    const res = await request(app).get('/group');
+
+    assert.strictEqual(res.status, 401);
   });
 
   // ── GET /group/:id ──────────────────────────────────────────────────────────
@@ -214,10 +234,10 @@ describe('/group (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 401);
   });
 
-  it('POST /group returns 403 for an Adhérent role', async () => {
+  it('POST /group returns 403 for a Visiteur role', async () => {
     const res = await request(app)
       .post('/group')
-      .set('Authorization', `Bearer ${adherentToken}`)
+      .set('Authorization', `Bearer ${visiteurToken}`)
       .send({ name: 'Équipe E', owner: ownerId.toString() });
 
     assert.strictEqual(res.status, 403);
@@ -338,6 +358,18 @@ describe('/group (avec un vrai mongod)', () => {
     assert.strictEqual(res.body.message, 'Propriétaire invalide');
   });
 
+  it('PATCH /group/:id returns 403 when user is not the owner', async () => {
+    const memberToken = signAccessToken({ _id: memberId, role: 'Adhérent' }, association);
+
+    const res = await request(directApp)
+      .patch(`/group/${groupId}`)
+      .set('Authorization', `Bearer ${memberToken}`)
+      .send({ name: 'Piraté' });
+
+    assert.strictEqual(res.status, 403);
+    assert.strictEqual(res.body.message, "Vous n'êtes pas propriétaire de ce groupe");
+  });
+
   it('PATCH /group/:id returns 400 for a malformed identifier', async () => {
     const res = await request(app)
       .patch('/group/pas-un-id')
@@ -345,6 +377,23 @@ describe('/group (avec un vrai mongod)', () => {
       .send({ name: 'Nouveau nom' });
 
     assert.strictEqual(res.status, 400);
+  });
+
+  it('PATCH /group/:id returns 404 when group disappears during update (race condition)', async () => {
+    const original = Group.updateOne.bind(Group);
+    Group.updateOne = async () => ({ matchedCount: 0 });
+
+    try {
+      const res = await request(directApp)
+        .patch(`/group/${groupId}`)
+        .set('Authorization', `Bearer ${entraineurToken}`)
+        .send({ name: 'Fantôme' });
+
+      assert.strictEqual(res.status, 404);
+      assert.strictEqual(res.body.message, 'Groupe introuvable');
+    } finally {
+      Group.updateOne = original;
+    }
   });
 
   // ── DELETE /group/:id ───────────────────────────────────────────────────────
@@ -402,12 +451,39 @@ describe('/group (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 401);
   });
 
-  it('DELETE /group/:id returns 403 for an Adhérent role', async () => {
-    const res = await request(app)
+  it('DELETE /group/:id returns 403 when user is not the owner', async () => {
+    const memberToken = signAccessToken({ _id: memberId, role: 'Adhérent' }, association);
+
+    const res = await request(directApp)
       .delete(`/group/${groupId}`)
-      .set('Authorization', `Bearer ${adherentToken}`);
+      .set('Authorization', `Bearer ${memberToken}`);
 
     assert.strictEqual(res.status, 403);
+    assert.strictEqual(res.body.message, "Vous n'êtes pas propriétaire de ce groupe");
+  });
+
+  it('DELETE /group/:id returns 403 for a Visiteur role', async () => {
+    const res = await request(app)
+      .delete(`/group/${groupId}`)
+      .set('Authorization', `Bearer ${visiteurToken}`);
+
+    assert.strictEqual(res.status, 403);
+  });
+
+  it('DELETE /group/:id returns 404 when group disappears during deletion (race condition)', async () => {
+    const original = Group.deleteOne.bind(Group);
+    Group.deleteOne = async () => ({ deletedCount: 0 });
+
+    try {
+      const res = await request(directApp)
+        .delete(`/group/${groupId}`)
+        .set('Authorization', `Bearer ${entraineurToken}`);
+
+      assert.strictEqual(res.status, 404);
+      assert.strictEqual(res.body.message, 'Groupe introuvable');
+    } finally {
+      Group.deleteOne = original;
+    }
   });
 
   // ── GET /group/:id/members ──────────────────────────────────────────────────
@@ -508,10 +584,21 @@ describe('/group (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 401);
   });
 
-  it('POST /group/:id/members/:userId returns 403 for an Adhérent role', async () => {
+  it('POST /group/:id/members/:userId returns 403 when user is not the owner', async () => {
+    const memberToken = signAccessToken({ _id: memberId, role: 'Adhérent' }, association);
+
+    const res = await request(directApp)
+      .post(`/group/${groupId}/members/${ownerId}`)
+      .set('Authorization', `Bearer ${memberToken}`);
+
+    assert.strictEqual(res.status, 403);
+    assert.strictEqual(res.body.message, "Vous n'êtes pas propriétaire de ce groupe");
+  });
+
+  it('POST /group/:id/members/:userId returns 403 for a Visiteur role', async () => {
     const res = await request(app)
       .post(`/group/${groupId}/members/${ownerId}`)
-      .set('Authorization', `Bearer ${adherentToken}`);
+      .set('Authorization', `Bearer ${visiteurToken}`);
 
     assert.strictEqual(res.status, 403);
   });
@@ -600,12 +687,54 @@ describe('/group (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 401);
   });
 
-  it('DELETE /group/:id/members/:userId returns 403 for an Adhérent role', async () => {
-    const res = await request(app)
-      .delete(`/group/${groupId}/members/${memberId}`)
-      .set('Authorization', `Bearer ${adherentToken}`);
+  it('DELETE /group/:id/members/:userId returns 403 when not owner and not self', async () => {
+    const otherToken = signAccessToken({ _id: memberId, role: 'Adhérent' }, association);
+    const thirdUserId = new ObjectId('000000000000000000000099');
+    await db.getDb().collection('users').insertOne({
+      _id: thirdUserId,
+      name: 'Third',
+      firstName: 'User',
+      email: 'third@exemple.fr',
+      password: 'hashed',
+      role: 'Adhérent',
+      pronoun: 'Il',
+    });
+    await db.getDb().collection('group_member').insertOne({ group: groupId, user: thirdUserId });
+
+    const res = await request(directApp)
+      .delete(`/group/${groupId}/members/${thirdUserId}`)
+      .set('Authorization', `Bearer ${otherToken}`);
 
     assert.strictEqual(res.status, 403);
+  });
+
+  it('DELETE /group/:id/members/:userId transfers ownership when the owner removes themselves', async () => {
+    // Add owner as member so they can be removed
+    await db.getDb().collection('group_member').insertOne({ group: groupId, user: ownerId });
+
+    const res = await request(directApp)
+      .delete(`/group/${groupId}/members/${ownerId}`)
+      .set('Authorization', `Bearer ${entraineurToken}`);
+
+    assert.strictEqual(res.status, 204);
+    // memberId (Adhérent) should now be the owner
+    const updated = await db.getDb().collection('group').findOne({ _id: groupId });
+    assert.ok(updated);
+    assert.deepStrictEqual(updated.owner, memberId);
+  });
+
+  it('DELETE /group/:id/members/:userId deletes group when last owner leaves and no members remain', async () => {
+    // Remove existing member, add owner as the only member
+    await db.getDb().collection('group_member').deleteMany({});
+    await db.getDb().collection('group_member').insertOne({ group: groupId, user: ownerId });
+
+    const res = await request(directApp)
+      .delete(`/group/${groupId}/members/${ownerId}`)
+      .set('Authorization', `Bearer ${entraineurToken}`);
+
+    assert.strictEqual(res.status, 204);
+    const deleted = await db.getDb().collection('group').findOne({ _id: groupId });
+    assert.strictEqual(deleted, null);
   });
 
   it('DELETE /group/pas-un-id/members/:userId returns 400 for a malformed group id (direct router)', async () => {

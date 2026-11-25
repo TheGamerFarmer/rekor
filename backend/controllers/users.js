@@ -9,6 +9,7 @@ const { wrapAsync, toPublicUser, toEssentialPublicUser, isValidId } = require('.
 const { authenticate, authorize } = require('./services/auth-middleware');
 const { hashPassword, verifyPassword } = require('./services/password');
 const { USER_ROLE } = require('../db/enums');
+const groupService = require('./services/groupService');
 
 function buildProfileChanges(body, includeRole = false) {
   const {
@@ -127,20 +128,7 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
       const groups = await Group.find({ owner: user });
 
       for (const group of groups) {
-        const members = await GroupMember.find({ group: group._id }).populate('user', 'role');
-
-        let replacer;
-        let replacerRole = USER_ROLE.VISITEUR;
-
-        for (const member of members) {
-          if (USER_ROLE.compareTo(member.user.role, replacerRole) > 0) {
-            replacer = member;
-            replacerRole = member.user.role;
-          }
-        }
-
-        if (replacer) await Group.updateOne({ _id: group._id }, { owner: replacer.user._id });
-        else await Group.deleteOne({ _id: group._id });
+        await groupService.changeOwnerFromGroup(group._id);
       }
 
       res.status(204).end();

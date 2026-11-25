@@ -2,27 +2,25 @@ require('../db/db');
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
 const { isValidObjectId } = require('mongoose');
-const Event = require('../db/models/event');
-const Group = require('../db/models/group');
-const GroupMembre = require('../db/models/group_member');
-const Participant = require('../db/models/participant');
 const { wrapAsync, toPublicEvent, toPublicParticipant } = require('./services/shared');
 const { authenticate, authorize } = require('./services/auth-middleware');
 const { EVENT_TYPE, USER_ROLE } = require('../db/enums');
+const eventService = require('./services/eventService');
 
 /**
  * Creates and returns an Express router that handles event-related endpoints.
- * All routes are rate-limited.
+ * All routes are rate-limited. The controller validates inputs and delegates
+ * business logic to eventService. Ownership and permission checks are enforced by the service.
  *
  * Routes:
- * - `GET  /`     — List all events (requires Visiteur role or above)
- * - `GET  /:id`  — Get a single event by its MongoDB ObjectId (requires Visiteur role or above)
- * - `POST /`     — Create a new event from the request body (requires Entraineur role or above)
- * - `PATCH /:id` — Partially update an existing event (requires Entraineur role or above)
- * - `DELETE /:id`— Delete an event by its MongoDB ObjectId (requires Entraineur role or above)
- * - `POST /:id/register` — Register participation for an event (requires Entraineur role or above)
- * - `PUT  /:id/register` — Update participation for an event (requires Entraineur role or above)
- * - `GET  /:id/participants` — List participants of an event (requires Visiteur role or above)
+ * - `GET  /`                — List all events (requires authentication)
+ * - `GET  /:id`             — Get a single event by its ObjectId (requires authentication)
+ * - `POST /`                — Create a new event with auto-created group (requires Entraineur or above)
+ * - `PATCH /:id`            — Partially update an event (requires Entraineur or above)
+ * - `DELETE /:id`           — Delete an event and its group (requires Entraineur or above, must be group owner)
+ * - `POST /:id/register`   — Register participation (requires authentication, Visiteurs excluded from match compétitif)
+ * - `PUT  /:id/register`   — Update participation (requires authentication)
+ * - `GET  /:id/participants`— List participants of an event (requires authentication)
  *
  * @param {{ limit?: number, windowMs?: number }} [options]
  * @param {number} [options.limit=100]   Max requests per window per IP.
@@ -42,37 +40,32 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
     }),
   );
 
-  // Returns events whose group the authenticated user belongs to, sorted by insertion order.
-  // Uses a $lookup aggregation so the membership filter runs entirely in MongoDB.
-  // Response: array of { id, name }.
+  // Returns all events.
+  // Response: array of { id, date, place, type, name, description, group }.
   router.get(
     '/',
     authenticate,
-    authorize(USER_ROLE.VISITEUR),
     wrapAsync(async (req, res) => {
-      const events = await Event.find();
-
+      const events = await eventService.getAllEvents();
       res.json(events.map(toPublicEvent));
     }),
   );
 
   // Returns the full details of a single event identified by its MongoDB ObjectId.
-  // Checks that the authenticated user is a member of the event's group.
-  // Returns 400 for a malformed id, 404 if not found, 401 if not a group member.
-  // Response: { id, name }.
+  // Returns 400 for a malformed id, 404 if not found.
+  // Response: { id, date, place, type, name, description, group }.
   router.get(
     '/:id',
     authenticate,
-    authorize(USER_ROLE.VISITEUR),
     wrapAsync(async (req, res) => {
       if (!isValidObjectId(req.params.id)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
-      const doc = await Event.findById(req.params.id);
-      if (!doc) return res.status(404).json({ message: 'Utilisateur introuvable' });
+      const result = await eventService.getEventById(req.params.id);
+      if (!result) return res.status(404).json({ message: 'Utilisateur introuvable' });
 
-      res.json(toPublicEvent(doc));
+      res.json(toPublicEvent(result));
     }),
   );
 
@@ -105,20 +98,13 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       const userId = req.auth.sub;
 
-      const group = await Group.create({ name, owner: userId });
+      const result = await eventService.createEvent(
+        { date, place, type, name, description },
+        userId,
+      );
 
-      await GroupMembre.create({ group: group._id, user: userId });
-
-      try {
-        await Event.create({ date, place, type, name, description, group: group._id });
-      } catch (error) {
-        if (error.code === 11000) {
-          await GroupMembre.deleteMany({ group: group._id });
-          await Group.deleteOne({ _id: group._id });
-          return res.status(409).json({ message: 'Cet évenement existe déjà' });
-        }
-        throw error;
-      }
+      if (result.error === 'DUPLICATE')
+        return res.status(409).json({ message: 'Cet évenement existe déjà' });
 
       res.status(201).end();
     }),
@@ -142,29 +128,26 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
         return res.status(400).json({ message: 'Groupe invalide' });
       }
 
-      const changes = {};
-      if (date) changes.date = new Date(`${date}T00:00:00.000Z`);
-      if (place) changes.place = place;
-      if (type && Object.values(EVENT_TYPE).includes(type)) changes.type = type;
-      if (name) changes.name = name;
-      if (description) changes.description = description;
-      changes.group = group;
+      const result = await eventService.updateEvent(req.params.id, {
+        date,
+        place,
+        type,
+        name,
+        description,
+        group,
+      });
 
-      const groupResult = await Group.findOne({ _id: { $eq: group } });
-
-      if (!groupResult) return res.status(404).json({ message: 'Groupe introuvable' });
-
-      const result = await Event.updateOne({ _id: req.params.id }, { $set: changes });
-      if (result.matchedCount === 0) {
+      if (result.error === 'GROUP_NOT_FOUND')
+        return res.status(404).json({ message: 'Groupe introuvable' });
+      if (result.error === 'EVENT_NOT_FOUND')
         return res.status(404).json({ message: 'Évènement introuvable' });
-      }
 
       res.status(204).end();
     }),
   );
 
-  // Deletes the event with the given MongoDB ObjectId.
-  // Returns 204 on success, 400 for a malformed id, 404 if not found.
+  // Deletes the event and its associated group. Only the group owner can delete.
+  // Returns 204 on success, 400 for a malformed id, 403 if not owner, 404 if not found.
   router.delete(
     '/:id',
     authenticate,
@@ -174,12 +157,14 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
-      await Participant.deleteMany({ event: req.params.id });
+      const result = await eventService.deleteEvent(req.params.id, req.auth.sub);
 
-      const result = await Event.deleteOne({ _id: req.params.id });
-      if (result.deletedCount === 0) {
+      if (result.error === 'USER_NOT_OWNER')
+        return res.status(403).json({ message: "Vous n'êtes pas propriétaire de ce groupe" });
+      if (result.error === 'GROUP_NOT_FOUND')
+        return res.status(404).json({ message: 'Groupe introuvable' });
+      if (result.error === 'EVENT_NOT_FOUND')
         return res.status(404).json({ message: 'Évenement introuvable' });
-      }
 
       res.status(204).end();
     }),
@@ -187,13 +172,12 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
   // Registers participation for an event. The body must contain participate ('true' or 'false').
   // When participate is 'true', the authenticated user is also added to the event's group
-  // if not already a member.
-  // Returns 201 on success, 400 for invalid input, 404 if the event is not found,
-  // 409 if the user has already registered.
+  // if not already a member. Visiteurs cannot register for Match-compétitif events.
+  // Returns 201 on success, 400 for invalid input, 403 if not allowed,
+  // 404 if the event is not found, 409 if the user has already registered.
   router.post(
     '/:id/register',
     authenticate,
-    authorize(USER_ROLE.ENTRAINEUR),
     wrapAsync(async (req, res) => {
       if (!isValidObjectId(req.params.id)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
@@ -206,30 +190,22 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       participate = participate === 'true';
 
-      const event = await Event.findById(req.params.id);
-      if (!event) return res.status(404).json({ message: 'Évènement introuvable' });
+      const result = await eventService.registerParticipation(
+        req.params.id,
+        participate,
+        req.auth.sub,
+      );
 
-      try {
-        await Participant.create({ event: req.params.id, participe: participate });
-      } catch (error) {
-        if (error.code === 11000) {
-          return res
-            .status(409)
-            .json({ message: "L'utilisateur à déjà déclaré sa participation à cet évent" });
-        }
-        throw error;
-      }
-
-      if (participate) {
-        const userId = req.auth.sub;
-        const existing = await GroupMembre.findOne({
-          group: { $eq: event.group },
-          user: { $eq: userId },
-        });
-        if (!existing) {
-          await GroupMembre.create({ group: event.group, user: userId });
-        }
-      }
+      if (result.error === 'PERMISSION_NOT_ALLOWED')
+        return res
+          .status(403)
+          .json({ message: "Vous n'avez pas la permission de participer à cet évènement" });
+      if (result.error === 'EVENT_NOT_FOUND')
+        return res.status(404).json({ message: 'Évènement introuvable' });
+      if (result.error === 'DUPLICATE')
+        return res
+          .status(409)
+          .json({ message: "L'utilisateur à déjà déclaré sa participation à cet évent" });
 
       res.status(201).end();
     }),
@@ -237,15 +213,13 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
   // Updates an existing participation for an event. The body must contain participate
   // ('true' or 'false'). Only the participation of the authenticated user is updated.
-  // Returns 201 on success, 400 for invalid input, 404 if the event is not found.
+  // Returns 204 on success, 400 for invalid input, 404 if the event or participation is not found.
   router.put(
     '/:id/register',
     authenticate,
-    authorize(USER_ROLE.ENTRAINEUR),
     wrapAsync(async (req, res) => {
-      if (!isValidObjectId(req.params.id)) {
+      if (!isValidObjectId(req.params.id))
         return res.status(400).json({ message: 'Identifiant invalide' });
-      }
 
       let { participate } = req.body;
 
@@ -254,15 +228,20 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       participate = participate === 'true';
 
-      const event = await Event.findById(req.params.id);
-      if (!event) return res.status(404).json({ message: 'Évènement introuvable' });
-
-      await Participant.updateOne(
-        { event: { $eq: req.params.id }, created_by: { $eq: req.auth.sub } },
-        { participe: participate },
+      const result = await eventService.updateParticipation(
+        req.params.id,
+        participate,
+        req.auth.sub,
       );
 
-      res.status(201).end();
+      if (result.error === 'EVENT_NOT_FOUND')
+        return res.status(404).json({ message: 'Évènement introuvable' });
+      if (result.error === 'NON_PARTICIPATE')
+        return res
+          .status(404)
+          .json({ message: 'Aucune participation trouvée pour cet utilisateur' });
+
+      res.status(204).end();
     }),
   );
 
@@ -272,18 +251,17 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
   router.get(
     '/:id/participants',
     authenticate,
-    authorize(USER_ROLE.VISITEUR),
     wrapAsync(async (req, res) => {
       if (!isValidObjectId(req.params.id)) {
         return res.status(400).json({ message: 'Identifiant invalide' });
       }
 
-      const event = await Event.findById(req.params.id);
-      if (!event) return res.status(404).json({ message: 'Évènement introuvable' });
+      const result = await eventService.getEventParticipants(req.params.id);
 
-      const participants = await Participant.find({ event: event._id });
+      if (result.error === 'EVENT_NOT_FOUND')
+        return res.status(404).json({ message: 'Évènement introuvable' });
 
-      res.json(participants.map(toPublicParticipant));
+      res.json(result.data.map(toPublicParticipant));
     }),
   );
 

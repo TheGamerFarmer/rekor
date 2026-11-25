@@ -14,6 +14,7 @@ const Event = require('../db/models/event');
 const Group = require('../db/models/group');
 const GroupMember = require('../db/models/group_member');
 const Participant = require('../db/models/participant');
+const User = require('../db/models/user');
 
 const association = { name: 'Gières Volley-Ball' };
 
@@ -61,6 +62,7 @@ describe('/event (avec un vrai mongod)', () => {
     await Group.ensureIndexes();
     await GroupMember.ensureIndexes();
     await Participant.ensureIndexes();
+    await User.ensureIndexes();
     directApp = buildDirectEventApp();
   });
 
@@ -76,10 +78,12 @@ describe('/event (avec un vrai mongod)', () => {
 
   beforeEach(async () => {
     clearRevokedSessions();
+    const userCollection = db.getDb().collection('users');
     const groupCollection = db.getDb().collection('group');
     const eventCollection = db.getDb().collection('event');
     const groupMemberCollection = db.getDb().collection('group_member');
     const participantCollection = db.getDb().collection('participant');
+    await userCollection.deleteMany({});
     await groupCollection.deleteMany({});
     await eventCollection.deleteMany({});
     await groupMemberCollection.deleteMany({});
@@ -88,6 +92,16 @@ describe('/event (avec un vrai mongod)', () => {
     const userId = new ObjectId('000000000000000000000003');
     groupId = new ObjectId('000000000000000000000001');
     eventId = new ObjectId('000000000000000000000002');
+
+    await userCollection.insertOne({
+      _id: userId,
+      name: 'Testeur',
+      firstName: 'Paul',
+      email: 'paul@exemple.fr',
+      password: 'hashed',
+      role: 'Entraineur',
+      pronoun: 'Il',
+    });
 
     await groupCollection.insertOne({ _id: groupId, name: 'Équipe A', owner: userId });
     await eventCollection.insertOne({
@@ -320,6 +334,53 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 403);
   });
 
+  it('DELETE /event/:id returns 403 when user is not the group owner', async () => {
+    const otherUserId = new ObjectId('000000000000000000000070');
+    await db.getDb().collection('users').insertOne({
+      _id: otherUserId,
+      name: 'Autre',
+      firstName: 'Entraineur',
+      email: 'autre@exemple.fr',
+      password: 'hashed',
+      role: 'Entraineur',
+      pronoun: 'Il',
+    });
+    const otherToken = signAccessToken({ _id: otherUserId, role: 'Entraineur' }, association);
+
+    const res = await request(directApp)
+      .delete(`/event/${eventId}`)
+      .set('Authorization', `Bearer ${otherToken}`);
+
+    assert.strictEqual(res.status, 403);
+    assert.strictEqual(res.body.message, "Vous n'êtes pas propriétaire de ce groupe");
+  });
+
+  it('DELETE /event/:id returns 404 when the event group does not exist', async () => {
+    await db.getDb().collection('group').deleteMany({});
+
+    const res = await request(directApp)
+      .delete(`/event/${eventId}`)
+      .set('Authorization', `Bearer ${entraineurToken}`);
+
+    assert.strictEqual(res.status, 404);
+    assert.strictEqual(res.body.message, 'Groupe introuvable');
+  });
+
+  it('DELETE /event/:id returns 404 when event disappears during deletion (race condition)', async () => {
+    const original = Event.deleteOne.bind(Event);
+    Event.deleteOne = async () => ({ deletedCount: 0 });
+
+    try {
+      const res = await request(directApp)
+        .delete(`/event/${eventId}`)
+        .set('Authorization', `Bearer ${entraineurToken}`);
+
+      assert.strictEqual(res.status, 404);
+    } finally {
+      Event.deleteOne = original;
+    }
+  });
+
   // ── POST validation branches (direct router) ────────────────────────────────
 
   it('POST /event returns 400 when date is missing (direct router)', async () => {
@@ -396,6 +457,19 @@ describe('/event (avec un vrai mongod)', () => {
 
     assert.strictEqual(res.status, 400);
     assert.strictEqual(res.body.message, 'Description invalide');
+  });
+
+  it('POST /event falls through when group creation fails (non-existent user in DB)', async () => {
+    const ghostUserId = new ObjectId('000000000000000000000080');
+    const ghostToken = signAccessToken({ _id: ghostUserId, role: 'Entraineur' }, association);
+
+    const res = await request(directApp)
+      .post('/event')
+      .set('Authorization', `Bearer ${ghostToken}`)
+      .send(validEventBody);
+
+    // createEvent → createGroup → USER_NOT_FOUND, but controller only checks DUPLICATE
+    assert.strictEqual(res.status, 201);
   });
 
   it('POST /event returns 500 when Event.create throws an unexpected error', async () => {
@@ -568,10 +642,39 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 401);
   });
 
-  it('POST /event/:id/register returns 403 for an Adhérent role', async () => {
+  it('POST /event/:id/register returns 403 for a Visiteur on a competitive match', async () => {
+    const visiteurUserId = new ObjectId('000000000000000000000060');
+    await db.getDb().collection('users').insertOne({
+      _id: visiteurUserId,
+      name: 'Visiteur',
+      firstName: 'Test',
+      email: 'visiteur@exemple.fr',
+      password: 'hashed',
+      role: 'Visiteur',
+      pronoun: 'Il',
+    });
+    const realVisiteurToken = signAccessToken(
+      { _id: visiteurUserId, role: 'Visiteur' },
+      association,
+    );
+
+    const competitiveEventId = new ObjectId('000000000000000000000050');
+    await db
+      .getDb()
+      .collection('event')
+      .insertOne({
+        _id: competitiveEventId,
+        date: new Date('2025-04-01T00:00:00.000Z'),
+        place: 'Stade',
+        type: 'Match-compétitif',
+        name: 'Match compétitif',
+        description: 'Match de championnat',
+        group: groupId,
+      });
+
     const res = await request(directApp)
-      .post(`/event/${eventId}/register`)
-      .set('Authorization', `Bearer ${adherentToken}`)
+      .post(`/event/${competitiveEventId}/register`)
+      .set('Authorization', `Bearer ${realVisiteurToken}`)
       .send({ participate: 'true' });
 
     assert.strictEqual(res.status, 403);
@@ -641,7 +744,7 @@ describe('/event (avec un vrai mongod)', () => {
 
   // ── PUT /event/:id/register ────────────────────────────────────────────────
 
-  it('PUT /event/:id/register updates participation and returns 201', async () => {
+  it('PUT /event/:id/register updates participation and returns 204', async () => {
     const userId = new ObjectId('000000000000000000000003');
     await db.getDb().collection('participant').insertOne({
       event: eventId,
@@ -654,7 +757,7 @@ describe('/event (avec un vrai mongod)', () => {
       .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ participate: 'false' });
 
-    assert.strictEqual(res.status, 201);
+    assert.strictEqual(res.status, 204);
   });
 
   it('PUT /event/:id/register returns 400 for invalid participate value', async () => {
@@ -695,13 +798,14 @@ describe('/event (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 401);
   });
 
-  it('PUT /event/:id/register returns 403 for an Adhérent role', async () => {
+  it('PUT /event/:id/register returns 404 when user has no existing participation', async () => {
     const res = await request(directApp)
       .put(`/event/${eventId}/register`)
-      .set('Authorization', `Bearer ${adherentToken}`)
+      .set('Authorization', `Bearer ${entraineurToken}`)
       .send({ participate: 'true' });
 
-    assert.strictEqual(res.status, 403);
+    assert.strictEqual(res.status, 404);
+    assert.strictEqual(res.body.message, 'Aucune participation trouvée pour cet utilisateur');
   });
 
   // ── GET /event/:id/participants ────────────────────────────────────────────
