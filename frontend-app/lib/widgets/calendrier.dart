@@ -60,7 +60,7 @@ class _CalendrierState extends State<Calendrier> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white10,
+        color: const Color(0xFF1C1C1E),
         borderRadius: BorderRadius.circular(25),
       ),
       child: Column(
@@ -97,6 +97,7 @@ class _CalendrierState extends State<Calendrier> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         IconButton(
+          tooltip: 'Mois précédent',
           icon: const Icon(Icons.chevron_left, color: Colors.white),
           onPressed: () => _changerMois(-1),
         ),
@@ -118,6 +119,7 @@ class _CalendrierState extends State<Calendrier> {
         ),
         IconButton(
           mouseCursor: SystemMouseCursors.click,
+          tooltip: 'Mois suivant',
           icon: const Icon(Icons.chevron_right, color: Colors.white),
           onPressed: () => _changerMois(1),
         ),
@@ -179,7 +181,7 @@ class _CalendrierState extends State<Calendrier> {
           style: TextStyle(
             color: estMatch
                 ? Colors.black
-                : (dansMois ? Colors.white : Colors.white38),
+                : (dansMois ? Colors.white : Colors.white70),
           ),
         ),
       ),
