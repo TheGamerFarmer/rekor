@@ -20,6 +20,8 @@ describe('ComponentAdherentsAdmin', () => {
     email: 'alex@example.fr',
     role: 'Capitaine',
     registrationStatus: 'validated',
+    medicalCertificate: true,
+    rightOfPublicity: false,
   };
   const toValidateMember: Adherent = {
     ...validatedMember,
@@ -68,6 +70,35 @@ describe('ComponentAdherentsAdmin', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Sam Durand');
   });
 
+  it('displays each member’s consent without treating unknown values as refusals', () => {
+    members.set([
+      toValidateMember,
+      {
+        ...toValidateMember,
+        id: 3,
+        firstName: 'Noa',
+        medicalCertificate: false,
+        rightOfPublicity: true,
+      },
+      {
+        ...toValidateMember,
+        id: 4,
+        firstName: 'Camille',
+        medicalCertificate: null,
+        rightOfPublicity: null,
+      },
+    ]);
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll('.member-row') as NodeListOf<HTMLElement>;
+    expect(rows[0].textContent).toContain('Collecte du certificat médical : Acceptée');
+    expect(rows[0].textContent).toContain('Droit à l’image : Refusé');
+    expect(rows[1].textContent).toContain('Collecte du certificat médical : Refusée');
+    expect(rows[1].textContent).toContain('Droit à l’image : Accepté');
+    expect(rows[2].textContent).toContain('Collecte du certificat médical : Inconnu');
+    expect(rows[2].textContent).toContain('Droit à l’image : Inconnu');
+  });
+
   it('presents disabled registration decisions without an explanatory notice', () => {
     const accept = fixture.nativeElement.querySelector(
       '[aria-label="Valider l’inscription de Sam Durand"]',
@@ -106,7 +137,49 @@ describe('ComponentAdherentsAdmin', () => {
     ) as HTMLButtonElement;
     expect(confirmation.disabled).toBe(true);
     expect(confirmation.classList.contains('button-success')).toBe(true);
+    expect(fixture.nativeElement.querySelector('.certificate-notice').textContent).toContain(
+      'La confirmation de réception n’est pas encore disponible.',
+    );
     expect(fixture.nativeElement.querySelector('[aria-label^="Valider l’inscription"]')).toBeNull();
+  });
+
+  it('blocks certificate confirmation when consent is refused or unknown', () => {
+    members.set([
+      {
+        ...toValidateMember,
+        registrationStatus: 'pending-validation',
+        medicalCertificate: false,
+      },
+      {
+        ...toValidateMember,
+        id: 3,
+        firstName: 'Camille',
+        registrationStatus: 'pending-validation',
+        medicalCertificate: null,
+      },
+    ]);
+    const pendingFilter = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.registration-filters button',
+      ) as NodeListOf<HTMLButtonElement>,
+    ).find((button) => button.textContent?.includes('En cours de validation'));
+    pendingFilter?.click();
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll('.member-row') as NodeListOf<HTMLElement>;
+    expect(
+      rows[0].querySelector<HTMLButtonElement>('[aria-label^="Confirmer la réception"]')?.disabled,
+    ).toBe(true);
+    expect(rows[0].querySelector('.certificate-notice')?.textContent).toContain(
+      'l’adhérent n’a pas accepté la collecte du certificat médical',
+    );
+    expect(
+      rows[1].querySelector<HTMLButtonElement>('[aria-label^="Confirmer la réception"]')?.disabled,
+    ).toBe(true);
+    expect(rows[1].querySelector('.certificate-notice')?.textContent).toContain(
+      'le consentement à la collecte du certificat médical est inconnu',
+    );
+    expect(update).not.toHaveBeenCalled();
   });
 
   it('provides a refused registrations filter', () => {
@@ -147,6 +220,10 @@ describe('ComponentAdherentsAdmin', () => {
       'Modifier',
     );
     expect(fixture.nativeElement.querySelector('#registration-status')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[formControlName="medicalCertificate"]'),
+    ).toBeNull();
+    expect(fixture.nativeElement.querySelector('[formControlName="rightOfPublicity"]')).toBeNull();
   });
 
   it('shows the empty state when a registration category has no members', () => {

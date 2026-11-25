@@ -12,6 +12,8 @@ const member: Adherent = {
   email: 'alex@example.fr',
   role: 'Adhérent',
   registrationStatus: 'validated',
+  medicalCertificate: true,
+  rightOfPublicity: false,
 };
 
 const memberInput: AdherentInput = {
@@ -50,6 +52,20 @@ describe('AdherentService', () => {
     expect(new AdherentService().adherents()).toEqual([{ ...member, birthDate: null }]);
   });
 
+  it('marks missing legacy consents as unknown without changing known values', () => {
+    const { medicalCertificate, rightOfPublicity, ...legacyMember } = member;
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([legacyMember, { ...legacyMember, id: 5, medicalCertificate }]),
+    );
+
+    expect(new AdherentService().adherents()).toEqual([
+      { ...legacyMember, medicalCertificate: null, rightOfPublicity: null },
+      { ...legacyMember, id: 5, medicalCertificate, rightOfPublicity: null },
+    ]);
+    expect(rightOfPublicity).toBe(false);
+  });
+
   it('ignores malformed or invalid stored members', () => {
     for (const stored of [
       '{invalid',
@@ -61,6 +77,8 @@ describe('AdherentService', () => {
       JSON.stringify([{ ...member, phone: null }]),
       JSON.stringify([{ ...member, role: '' }]),
       JSON.stringify([{ ...member, registrationStatus: 'unknown' }]),
+      JSON.stringify([{ ...member, medicalCertificate: 'true' }]),
+      JSON.stringify([{ ...member, rightOfPublicity: 'false' }]),
       JSON.stringify([{ ...member, id: '4' }]),
     ]) {
       localStorage.setItem(STORAGE_KEY, stored);
@@ -74,7 +92,12 @@ describe('AdherentService', () => {
     service.add(memberInput);
 
     expect(service.adherents()).toHaveLength(2);
-    expect(service.adherents()[1]).toEqual({ ...memberInput, id: 5 });
+    expect(service.adherents()[1]).toEqual({
+      ...memberInput,
+      id: 5,
+      medicalCertificate: null,
+      rightOfPublicity: null,
+    });
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toEqual(service.adherents());
   });
 
@@ -86,8 +109,24 @@ describe('AdherentService', () => {
     service.update(99, memberInput);
 
     expect(service.adherents()).toEqual([
-      { ...memberInput, id: 1, firstName: 'Alexandre', role: 'Capitaine' },
+      {
+        ...memberInput,
+        id: 1,
+        firstName: 'Alexandre',
+        role: 'Capitaine',
+        medicalCertificate: null,
+        rightOfPublicity: null,
+      },
     ]);
+  });
+
+  it('preserves stored consents when updating a member', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([member]));
+    const service = new AdherentService();
+    service.update(member.id, { ...memberInput, firstName: 'Alexandre' });
+
+    expect(service.adherents()[0]).toEqual({ ...member, firstName: 'Alexandre' });
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toEqual(service.adherents());
   });
 
   it('migrates multiple legacy roles to the highest role and normalizes coach spelling', () => {
@@ -121,7 +160,9 @@ describe('AdherentService', () => {
     expect(service.adherents()).toHaveLength(1);
     service.remove(99);
 
-    expect(service.adherents()).toEqual([{ ...memberInput, id: 2 }]);
+    expect(service.adherents()).toEqual([
+      { ...memberInput, id: 2, medicalCertificate: null, rightOfPublicity: null },
+    ]);
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toEqual(service.adherents());
   });
 

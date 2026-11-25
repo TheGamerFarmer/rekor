@@ -1,8 +1,50 @@
-<main>
-  @for (titreCour of titres; track titres) {
-    <!-- Affiche un composant pour chaque catégorie. -->
-    <app-component-faq-categorie-question
-      [titre]="titreCour"
-    ></app-component-faq-categorie-question>
-  }
+<app-component-banner
+  image="/images/volley2.jpg"
+  title="Questions fréquentes"
+  subtitle="Retrouvez les réponses à vos questions sur la vie du club."
+/>
+
+<main class="faq-page">
+  <div class="faq-content">
+    <header class="faq-intro">
+      <h2>Comment pouvons-nous vous aider ?</h2>
+      <p>Choisissez une catégorie pour découvrir les questions et leurs réponses.</p>
+    </header>
+
+    <div class="faq-categories">
+      @for (categorie of categories; track categorie.titre) {
+        <section class="faq-category">
+          <h2 class="titre-categorie">
+            <button
+              type="button"
+              class="banniere-categorie"
+              [attr.aria-expanded]="categorie.ouverte"
+              (click)="categorie.ouverte = !categorie.ouverte"
+            >
+              <span class="category-label">{{ categorie.titre | uppercase }}</span>
+              <span class="plus-icon" aria-hidden="true">{{ categorie.ouverte ? '−' : '+' }}</span>
+            </button>
+          </h2>
+
+          @if (categorie.ouverte) {
+            <div class="q-r-container">
+              @for (question of categorie.questions; track $index) {
+                <div class="faq-question">
+                  <h3>{{ question.question | uppercase }}</h3>
+                  <p>
+                    @if (question.lien; as lien) {
+                      {{ question.reponse }}<a [href]="lien.href">{{ lien.texte }}</a
+                      >{{ lien.apres }}
+                    } @else {
+                      {{ question.reponse }}
+                    }
+                  </p>
+                </div>
+              }
+            </div>
+          }
+        </section>
+      }
+    </div>
+  </div>
 </main>

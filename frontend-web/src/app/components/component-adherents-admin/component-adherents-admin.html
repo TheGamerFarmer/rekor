@@ -135,6 +135,28 @@
               <a [href]="'tel:' + member.phone">{{ member.phone }}</a>
               <a [href]="'mailto:' + member.email">{{ member.email }}</a>
             </div>
+            <div class="member-consents">
+              <p>
+                Collecte du certificat médical :
+                {{
+                  member.medicalCertificate === null
+                    ? 'Inconnu'
+                    : member.medicalCertificate
+                      ? 'Acceptée'
+                      : 'Refusée'
+                }}
+              </p>
+              <p>
+                Droit à l’image :
+                {{
+                  member.rightOfPublicity === null
+                    ? 'Inconnu'
+                    : member.rightOfPublicity
+                      ? 'Accepté'
+                      : 'Refusé'
+                }}
+              </p>
+            </div>
           </div>
           <ul class="member-roles" aria-label="Rôle">
             <li>{{ member.role }}</li>
@@ -168,6 +190,17 @@
                 "
                 [disabled]="true"
               ></app-button>
+              <p class="certificate-notice">
+                @if (member.medicalCertificate === false) {
+                  Confirmation impossible : l’adhérent n’a pas accepté la collecte du certificat
+                  médical.
+                } @else if (member.medicalCertificate === null) {
+                  Confirmation impossible : le consentement à la collecte du certificat médical est
+                  inconnu.
+                } @else {
+                  La confirmation de réception n’est pas encore disponible.
+                }
+              </p>
             }
             <button
               class="icon-action edit-action"

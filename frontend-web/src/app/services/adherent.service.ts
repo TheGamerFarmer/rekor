@@ -30,9 +30,11 @@ export interface Adherent {
   email: string;
   role: MemberRole;
   registrationStatus: RegistrationStatus;
+  medicalCertificate: boolean | null;
+  rightOfPublicity: boolean | null;
 }
 
-export type AdherentInput = Omit<Adherent, 'id'>;
+export type AdherentInput = Omit<Adherent, 'id' | 'medicalCertificate' | 'rightOfPublicity'>;
 
 const MEMBERS_STORAGE_KEY = 'rekor-adherents';
 
@@ -47,6 +49,8 @@ const MOCK_ADHERENTS: Adherent[] = [
     email: 'alex.martin@example.fr',
     role: 'Capitaine',
     registrationStatus: 'validated',
+    medicalCertificate: true,
+    rightOfPublicity: true,
   },
   {
     id: 2,
@@ -58,6 +62,8 @@ const MOCK_ADHERENTS: Adherent[] = [
     email: 'sam.durand@example.fr',
     role: 'Visiteur',
     registrationStatus: 'to-validate',
+    medicalCertificate: true,
+    rightOfPublicity: false,
   },
   {
     id: 3,
@@ -69,6 +75,8 @@ const MOCK_ADHERENTS: Adherent[] = [
     email: 'camille.bernard@example.fr',
     role: 'Entraineur',
     registrationStatus: 'pending-validation',
+    medicalCertificate: false,
+    rightOfPublicity: true,
   },
   {
     id: 4,
@@ -80,6 +88,8 @@ const MOCK_ADHERENTS: Adherent[] = [
     email: 'noa.petit@example.fr',
     role: 'Visiteur',
     registrationStatus: 'to-validate',
+    medicalCertificate: null,
+    rightOfPublicity: null,
   },
   {
     id: 5,
@@ -91,6 +101,8 @@ const MOCK_ADHERENTS: Adherent[] = [
     email: 'lina.robert@example.fr',
     role: 'Adhérent',
     registrationStatus: 'validated',
+    medicalCertificate: true,
+    rightOfPublicity: false,
   },
 ];
 
@@ -102,13 +114,16 @@ export class AdherentService {
   /** Adds a member and persists the updated collection. */
   add(values: AdherentInput): void {
     const id = Math.max(0, ...this.members().map((member) => member.id)) + 1;
-    this.updateMembers([...this.members(), { ...values, id }]);
+    this.updateMembers([
+      ...this.members(),
+      { ...values, id, medicalCertificate: null, rightOfPublicity: null },
+    ]);
   }
 
   /** Updates a member while preserving their identifier. */
   update(id: number, values: AdherentInput): void {
     this.updateMembers(
-      this.members().map((member) => (member.id === id ? { ...values, id } : member)),
+      this.members().map((member) => (member.id === id ? { ...member, ...values } : member)),
     );
   }
 
@@ -158,6 +173,8 @@ function migrateLegacyAdherent(value: unknown): unknown {
 
   const member = value as Record<string, unknown>;
   const legacyMember = { ...member };
+  if (!('medicalCertificate' in legacyMember)) legacyMember['medicalCertificate'] = null;
+  if (!('rightOfPublicity' in legacyMember)) legacyMember['rightOfPublicity'] = null;
   if ('birthYear' in legacyMember && !('birthDate' in legacyMember)) {
     legacyMember['birthDate'] = null;
     delete legacyMember['birthYear'];
@@ -190,6 +207,8 @@ function isAdherent(value: unknown): value is Adherent {
     typeof member['email'] === 'string' &&
     typeof member['role'] === 'string' &&
     member['role'].trim().length > 0 &&
+    (typeof member['medicalCertificate'] === 'boolean' || member['medicalCertificate'] === null) &&
+    (typeof member['rightOfPublicity'] === 'boolean' || member['rightOfPublicity'] === null) &&
     REGISTRATION_STATUSES.includes(member['registrationStatus'] as RegistrationStatus)
   );
 }

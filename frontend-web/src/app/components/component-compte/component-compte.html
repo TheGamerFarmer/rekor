@@ -116,7 +116,11 @@
             </div>
 
             <label class="checkbox-field">
-              <input type="checkbox" formControlName="healthData" />
+              <input
+                type="checkbox"
+                formControlName="healthData"
+                (change)="certificateConsentError.set(false)"
+              />
               <span
                 >J’accepte que mon certificat médical soit collecté dans le cadre de mon inscription
                 à l’association.</span
@@ -186,7 +190,16 @@
               <label for="certificate-date">Date du certificat médical</label>
               <input id="certificate-date" type="date" />
             </div>
-            <app-button text="Transmettre le certificat" [disabled]="true"></app-button>
+            <app-button
+              text="Transmettre le certificat"
+              (click)="transmitCertificate()"
+            ></app-button>
+            @if (certificateConsentError()) {
+              <p class="error" role="alert">
+                Cochez la case autorisant la collecte de votre certificat médical dans vos
+                informations personnelles avant de le transmettre.
+              </p>
+            }
           </section>
         }
         <section class="surface-card account-card" aria-labelledby="password-title">

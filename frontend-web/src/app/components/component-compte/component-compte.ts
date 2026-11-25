@@ -37,6 +37,7 @@ export class ComponentCompte {
   protected readonly accountDeleted = signal(false);
   protected readonly profileError = signal<string | null>(null);
   protected readonly profileRole = signal<UserDetails.RoleEnum | null>(null);
+  protected readonly certificateConsentError = signal(false);
 
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
@@ -49,7 +50,12 @@ export class ComponentCompte {
         .getMyProfile()
         .pipe(takeUntilDestroyed())
         .subscribe({
-          next: ({ role }) => this.profileRole.set(role),
+          next: ({ role, medicalCertificate }) => {
+            this.profileRole.set(role);
+            if (this.accountForm.controls.healthData.pristine) {
+              this.accountForm.controls.healthData.setValue(medicalCertificate);
+            }
+          },
           error: () =>
             this.profileError.set('Impossible de charger votre profil. Veuillez réessayer.'),
         });
@@ -94,6 +100,10 @@ export class ComponentCompte {
     if (this.passwordForm.invalid) {
       this.passwordForm.markAllAsTouched();
     }
+  }
+
+  protected transmitCertificate(): void {
+    this.certificateConsentError.set(!this.accountForm.controls.healthData.value);
   }
 
   /** Deletes the account only after the user confirms the action. */
