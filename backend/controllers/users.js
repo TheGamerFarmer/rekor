@@ -218,6 +218,31 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
     }),
   );
 
+  router.post(
+    '/:id/validate',
+    authenticate,
+    authorize(USER_ROLE.ADMINISTRATEUR),
+    wrapAsync(async (req, res) => {
+      if (!isValidId(req.params.id)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
+      const user = await User.findById(req.params.id);
+      if (!user) {
+        return res.status(404).json({ message: 'Utilisateur introuvable' });
+      }
+
+      if (user.role !== USER_ROLE.VISITEUR) {
+        return res.status(400).json({ message: 'Utilisateur déjà validé' });
+      }
+
+      const change = { role: USER_ROLE.ADHERENT };
+      await User.updateOne({ _id: user._id }, { $set: change });
+
+      return res.status(204).end();
+    }),
+  );
+
   return router;
 }
 

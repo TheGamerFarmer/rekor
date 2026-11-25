@@ -18,7 +18,7 @@ describe('ComponentAdherentsAdmin', () => {
     birthDate: '2000-05-12',
     phone: '0600000000',
     email: 'alex@example.fr',
-    roles: ['Adhérent', 'Capitaine'],
+    role: 'Capitaine',
     registrationStatus: 'validated',
   };
   const toValidateMember: Adherent = {
@@ -27,7 +27,7 @@ describe('ComponentAdherentsAdmin', () => {
     lastName: 'Durand',
     firstName: 'Sam',
     email: 'sam@example.fr',
-    roles: ['Adhérent'],
+    role: 'Adhérent',
     registrationStatus: 'to-validate',
   };
 
@@ -68,6 +68,63 @@ describe('ComponentAdherentsAdmin', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Sam Durand');
   });
 
+  it('presents disabled registration decisions without an explanatory notice', () => {
+    const accept = fixture.nativeElement.querySelector(
+      '[aria-label="Valider l’inscription de Sam Durand"]',
+    ) as HTMLButtonElement;
+    const refuse = fixture.nativeElement.querySelector(
+      '[aria-label="Refuser l’inscription de Sam Durand"]',
+    ) as HTMLButtonElement;
+
+    expect(accept.disabled).toBe(true);
+    expect(refuse.disabled).toBe(true);
+    expect(accept.classList.contains('button-success')).toBe(true);
+    expect(fixture.nativeElement.querySelector('.registration-notice')).toBeNull();
+    expect(update).not.toHaveBeenCalled();
+  });
+
+  it('shows the disabled certificate confirmation only for pending registrations', () => {
+    members.set([
+      ...members(),
+      {
+        ...toValidateMember,
+        id: 3,
+        firstName: 'Camille',
+        registrationStatus: 'pending-validation',
+      },
+    ]);
+    const pendingFilter = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.registration-filters button',
+      ) as NodeListOf<HTMLButtonElement>,
+    ).find((button) => button.textContent?.includes('En cours de validation'));
+    pendingFilter?.click();
+    fixture.detectChanges();
+
+    const confirmation = fixture.nativeElement.querySelector(
+      '[aria-label="Confirmer la réception du certificat de Camille Durand"]',
+    ) as HTMLButtonElement;
+    expect(confirmation.disabled).toBe(true);
+    expect(confirmation.classList.contains('button-success')).toBe(true);
+    expect(fixture.nativeElement.querySelector('[aria-label^="Valider l’inscription"]')).toBeNull();
+  });
+
+  it('provides a refused registrations filter', () => {
+    members.set([...members(), { ...toValidateMember, id: 3, registrationStatus: 'refused' }]);
+    fixture.detectChanges();
+    const refusedFilter = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.registration-filters button',
+      ) as NodeListOf<HTMLButtonElement>,
+    ).find((button) => button.textContent?.includes('Refusées'));
+    expect(refusedFilter?.textContent).toContain('(1)');
+    refusedFilter?.click();
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain('Sam Durand');
+    expect(fixture.nativeElement.querySelector('[aria-label^="Refuser l’inscription"]')).toBeNull();
+  });
+
   it('does not offer member creation or navigation to event administration', () => {
     fixture.detectChanges();
 
@@ -89,6 +146,7 @@ describe('ComponentAdherentsAdmin', () => {
     expect(fixture.nativeElement.querySelector('#member-form-title').textContent).toContain(
       'Modifier',
     );
+    expect(fixture.nativeElement.querySelector('#registration-status')).toBeNull();
   });
 
   it('shows the empty state when a registration category has no members', () => {
@@ -139,25 +197,44 @@ describe('ComponentAdherentsAdmin', () => {
     );
   });
 
-  it('updates role selections through the checkbox controls', () => {
+  it('selects one role in hierarchy order', () => {
     const editButton = fixture.nativeElement.querySelector(
       '[aria-label="Modifier Sam Durand"]',
     ) as HTMLButtonElement;
     editButton.click();
     fixture.detectChanges();
 
-    const roleCheckboxes = fixture.nativeElement.querySelectorAll(
-      '.role-options input[type="checkbox"]',
-    ) as NodeListOf<HTMLInputElement>;
-    const coachRole = roleCheckboxes[1];
-    const memberRole = roleCheckboxes[3];
+    const role = fixture.nativeElement.querySelector('#role') as HTMLSelectElement;
+    expect(Array.from(role.options, (option) => option.value)).toEqual([
+      '',
+      'Administrateur',
+      'Entraineur',
+      'Capitaine',
+      'Adhérent',
+      'Visiteur',
+    ]);
+    role.value = 'Entraineur';
+    role.dispatchEvent(new Event('change', { bubbles: true }));
+    fixture.nativeElement
+      .querySelector('form')
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect(update).toHaveBeenCalledWith(2, expect.objectContaining({ role: 'Entraineur' }));
+  });
 
-    coachRole.click();
-    memberRole.click();
+  it('preserves an existing role that is not in the temporary list', () => {
+    members.set([{ ...toValidateMember, role: 'Arbitre' }]);
+    fixture.detectChanges();
+    (
+      fixture.nativeElement.querySelector('[aria-label="Modifier Sam Durand"]') as HTMLButtonElement
+    ).click();
     fixture.detectChanges();
 
-    expect(coachRole.checked).toBe(true);
-    expect(memberRole.checked).toBe(false);
+    const role = fixture.nativeElement.querySelector('#role') as HTMLSelectElement;
+    expect(role.value).toBe('Arbitre');
+    fixture.nativeElement
+      .querySelector('form')
+      .dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    expect(update).toHaveBeenCalledWith(2, expect.objectContaining({ role: 'Arbitre' }));
   });
 
   it('shows validation errors and does not save an invalid form', () => {
@@ -179,11 +256,9 @@ describe('ComponentAdherentsAdmin', () => {
     const email = fixture.nativeElement.querySelector('#email') as HTMLInputElement;
     email.value = 'invalid';
     email.dispatchEvent(new Event('input', { bubbles: true }));
-    const roleCheckboxes = fixture.nativeElement.querySelectorAll(
-      '.role-options input[type="checkbox"]',
-    ) as NodeListOf<HTMLInputElement>;
-    const memberRole = roleCheckboxes[3];
-    memberRole.click();
+    const role = fixture.nativeElement.querySelector('#role') as HTMLSelectElement;
+    role.value = '';
+    role.dispatchEvent(new Event('change', { bubbles: true }));
 
     fixture.nativeElement
       .querySelector('form')
@@ -195,7 +270,7 @@ describe('ComponentAdherentsAdmin', () => {
     expect(fixture.nativeElement.textContent).toContain('Saisissez une date de naissance valide.');
     expect(fixture.nativeElement.textContent).toContain('Saisissez un numéro de téléphone valide.');
     expect(fixture.nativeElement.textContent).toContain('Saisissez une adresse e-mail valide.');
-    expect(fixture.nativeElement.textContent).toContain('Sélectionnez au moins un rôle.');
+    expect(fixture.nativeElement.textContent).toContain('Sélectionnez un rôle.');
   });
 
   it('saves changes to the selected member', () => {

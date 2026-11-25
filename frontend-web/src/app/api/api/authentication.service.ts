@@ -242,7 +242,7 @@ export class AuthenticationService extends BaseService {
     }
 
     /**
-     * Crée un compte Visiteur et l’inscrit dans l’association indiquée
+     * Crée un compte et l’inscrit dans l’association indiquée
      * @endpoint post /auth/register
      * @param registerInput 
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.

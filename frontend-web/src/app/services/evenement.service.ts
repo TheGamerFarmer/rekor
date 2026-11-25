@@ -124,6 +124,7 @@ function isEvenement(value: unknown): value is Evenement {
   );
 }
 
+/** Checks that a stored participant has a valid identity and attendance status. */
 function isParticipant(value: unknown): boolean {
   if (!value || typeof value !== 'object') {
     return false;

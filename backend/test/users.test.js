@@ -16,13 +16,14 @@ const {
 } = require('../controllers/services/auth-middleware');
 const { hashPassword, verifyPassword } = require('../controllers/services/password');
 const { clearRevokedSessions } = require('./helpers/redis');
+const { USER_ROLE } = require('../db/enums');
 
 const ada = {
   name: 'Lovelace',
   firstName: 'Ada',
   email: 'ada@exemple.fr',
   password: 'hash-secret',
-  role: 'Adhérent',
+  role: USER_ROLE.ADHERENT,
   pronoun: 'Elle',
   phoneNumber: '0612345678',
   birthday: new Date('1815-12-10T00:00:00.000Z'),
@@ -73,7 +74,7 @@ describe('/users (avec un vrai mongod)', () => {
       firstName: 'Alan',
       email: 'alan@exemple.fr',
       password: await hashPassword('autre-mot-de-passe'),
-      role: 'Adhérent',
+      role: USER_ROLE.ADHERENT,
       pronoun: 'Il',
     });
     adaToken = signAccessToken({ _id: adaId, role: ada.role }, association);
@@ -118,7 +119,7 @@ describe('/users (avec un vrai mongod)', () => {
       name: 'Lovelace',
       firstName: 'Ada',
       email: 'ada@exemple.fr',
-      role: 'Adhérent',
+      role: USER_ROLE.ADHERENT,
       pronoun: 'Elle',
       phoneNumber: '0612345678',
       birthday: '1815-12-10T00:00:00.000Z',
@@ -161,20 +162,20 @@ describe('/users (avec un vrai mongod)', () => {
         firstName: 'Charles',
         email: 'charles@exemple.fr',
         password: await hashPassword('mot-de-passe'),
-        role: 'Administrateur',
+        role: USER_ROLE.ADMINISTRATEUR,
         pronoun: 'Il',
       });
-    const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+    const token = signAccessToken({ _id: adminId, role: USER_ROLE.ADMINISTRATEUR }, association);
 
     const res = await request(app).get('/users/roles').set('Authorization', `Bearer ${token}`);
 
     assert.strictEqual(res.status, 200);
     assert.deepStrictEqual(res.body, [
-      'Visiteur',
-      'Adhérent',
-      'Capitaine',
-      'Entraineur',
-      'Administrateur',
+      USER_ROLE.VISITEUR,
+      USER_ROLE.ADHERENT,
+      USER_ROLE.CAPITAINE,
+      USER_ROLE.ENTRAINEUR,
+      USER_ROLE.ADMINISTRATEUR,
     ]);
   });
 
@@ -189,27 +190,27 @@ describe('/users (avec un vrai mongod)', () => {
         firstName: 'Charles',
         email: 'charles@exemple.fr',
         password: await hashPassword('mot-de-passe'),
-        role: 'Administrateur',
+        role: USER_ROLE.ADMINISTRATEUR,
         pronoun: 'Il',
       });
-    const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+    const token = signAccessToken({ _id: adminId, role: USER_ROLE.ADMINISTRATEUR }, association);
 
     const res = await request(app)
       .patch(`/users/${adaId}`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ role: 'Capitaine' });
+      .send({ role: USER_ROLE.CAPITAINE });
 
     assert.strictEqual(res.status, 204);
     const updated = await db.getDb().collection('users').findOne({ _id: adaId });
-    assert.strictEqual(updated.role, 'Capitaine');
+    assert.strictEqual(updated.role, USER_ROLE.CAPITAINE);
   });
 
   it('PATCH /users/:id refuse un identifiant invalide', async () => {
-    const token = signAccessToken({ _id: adaId, role: 'Administrateur' }, association);
+    const token = signAccessToken({ _id: adaId, role: USER_ROLE.ADMINISTRATEUR }, association);
     const res = await request(app)
       .patch('/users/pas-un-id')
       .set('Authorization', `Bearer ${token}`)
-      .send({ role: 'Capitaine' });
+      .send({ role: USER_ROLE.CAPITAINE });
 
     assert.strictEqual(res.status, 400);
   });
@@ -225,15 +226,15 @@ describe('/users (avec un vrai mongod)', () => {
         firstName: 'Charles',
         email: 'charles@exemple.fr',
         password: await hashPassword('mot-de-passe'),
-        role: 'Administrateur',
+        role: USER_ROLE.ADMINISTRATEUR,
         pronoun: 'Il',
       });
-    const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+    const token = signAccessToken({ _id: adminId, role: USER_ROLE.ADMINISTRATEUR }, association);
 
     const res = await request(app)
       .patch(`/users/${UNKNOWN_ID}`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ role: 'Capitaine' });
+      .send({ role: USER_ROLE.CAPITAINE });
 
     assert.strictEqual(res.status, 404);
   });
@@ -249,15 +250,15 @@ describe('/users (avec un vrai mongod)', () => {
         firstName: 'Charles',
         email: 'charles@exemple.fr',
         password: await hashPassword('mot-de-passe'),
-        role: 'Administrateur',
+        role: USER_ROLE.ADMINISTRATEUR,
         pronoun: 'Il',
       });
-    const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+    const token = signAccessToken({ _id: adminId, role: USER_ROLE.ADMINISTRATEUR }, association);
 
     const res = await request(app)
       .patch(`/users/${adminId}`)
       .set('Authorization', `Bearer ${token}`)
-      .send({ role: 'Capitaine' });
+      .send({ role: USER_ROLE.CAPITAINE });
 
     assert.strictEqual(res.status, 403);
   });
@@ -266,7 +267,7 @@ describe('/users (avec un vrai mongod)', () => {
     const res = await request(app)
       .patch(`/users/${alanId}`)
       .set('Authorization', `Bearer ${adaToken}`)
-      .send({ role: 'Capitaine' });
+      .send({ role: USER_ROLE.CAPITAINE });
     assert.strictEqual(res.status, 403);
   });
 
@@ -281,10 +282,10 @@ describe('/users (avec un vrai mongod)', () => {
         firstName: 'Charles',
         email: 'charles@exemple.fr',
         password: await hashPassword('mot-de-passe'),
-        role: 'Administrateur',
+        role: USER_ROLE.ADMINISTRATEUR,
         pronoun: 'Il',
       });
-    const token = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+    const token = signAccessToken({ _id: adminId, role: USER_ROLE.ADMINISTRATEUR }, association);
 
     const res = await request(app)
       .patch(`/users/${alanId}`)
@@ -292,6 +293,117 @@ describe('/users (avec un vrai mongod)', () => {
       .send({ role: 'Rôle-inconnu' });
 
     assert.strictEqual(res.status, 400);
+  });
+
+  it('POST /users/:id/validate exige une authentification', async () => {
+    const response = await request(app).post(`/users/${alanId}/validate`);
+    assert.strictEqual(response.status, 401);
+  });
+
+  it('POST /users/:id/validate refuse un utilisateur non administrateur', async () => {
+    const response = await request(app)
+      .post(`/users/${alanId}/validate`)
+      .set('Authorization', `Bearer ${adaToken}`);
+    assert.strictEqual(response.status, 403);
+  });
+
+  it('POST /users/:id/validate renvoie 400 si l’identifiant est invalide', async () => {
+    const adminId = new ObjectId('000000000000000000000003');
+    await db
+      .getDb()
+      .collection('users')
+      .insertOne({
+        _id: adminId,
+        name: 'Babbage',
+        firstName: 'Charles',
+        email: 'charles@exemple.fr',
+        password: await hashPassword('mot-de-passe'),
+        role: USER_ROLE.ADMINISTRATEUR,
+        pronoun: 'Il',
+      });
+    const token = signAccessToken({ _id: adminId, role: USER_ROLE.ADMINISTRATEUR }, association);
+
+    const response = await request(app)
+      .post('/users/pas-un-id/validate')
+      .set('Authorization', `Bearer ${token}`);
+
+    assert.strictEqual(response.status, 400);
+  });
+
+  it("POST /users/:id/validate renvoie 404 si l'utilisateur n'existe pas", async () => {
+    const adminId = new ObjectId('000000000000000000000003');
+    await db
+      .getDb()
+      .collection('users')
+      .insertOne({
+        _id: adminId,
+        name: 'Babbage',
+        firstName: 'Charles',
+        email: 'charles@exemple.fr',
+        password: await hashPassword('mot-de-passe'),
+        role: USER_ROLE.ADMINISTRATEUR,
+        pronoun: 'Il',
+      });
+    const token = signAccessToken({ _id: adminId, role: USER_ROLE.ADMINISTRATEUR }, association);
+
+    const response = await request(app)
+      .post(`/users/${UNKNOWN_ID}/validate`)
+      .set('Authorization', `Bearer ${token}`);
+
+    assert.strictEqual(response.status, 404);
+  });
+
+  it('POST /users/:id/validate passe un visiteur au rôle Adhérent', async () => {
+    await db
+      .getDb()
+      .collection('users')
+      .updateOne({ _id: alanId }, { $set: { role: USER_ROLE.VISITEUR } });
+    const adminId = new ObjectId('000000000000000000000003');
+    await db
+      .getDb()
+      .collection('users')
+      .insertOne({
+        _id: adminId,
+        name: 'Babbage',
+        firstName: 'Charles',
+        email: 'charles@exemple.fr',
+        password: await hashPassword('mot-de-passe'),
+        role: USER_ROLE.ADMINISTRATEUR,
+        pronoun: 'Il',
+      });
+    const token = signAccessToken({ _id: adminId, role: USER_ROLE.ADMINISTRATEUR }, association);
+
+    const response = await request(app)
+      .post(`/users/${alanId}/validate`)
+      .set('Authorization', `Bearer ${token}`);
+
+    assert.strictEqual(response.status, 204);
+    const updatedUser = await db.getDb().collection('users').findOne({ _id: alanId });
+    assert.strictEqual(updatedUser.role, USER_ROLE.ADHERENT);
+  });
+
+  it('POST /users/:id/validate renvoie 400 si le compte est déjà validé', async () => {
+    const adminId = new ObjectId('000000000000000000000003');
+    await db
+      .getDb()
+      .collection('users')
+      .insertOne({
+        _id: adminId,
+        name: 'Babbage',
+        firstName: 'Charles',
+        email: 'charles@exemple.fr',
+        password: await hashPassword('mot-de-passe'),
+        role: USER_ROLE.ADMINISTRATEUR,
+        pronoun: 'Il',
+      });
+    const token = signAccessToken({ _id: adminId, role: USER_ROLE.ADMINISTRATEUR }, association);
+
+    const response = await request(app)
+      .post(`/users/${adaId}/validate`)
+      .set('Authorization', `Bearer ${token}`);
+
+    assert.strictEqual(response.status, 400);
+    assert.strictEqual(response.body.message, 'Utilisateur déjà validé');
   });
 
   it('GET /users/me renvoie le profil public du compte authentifié', async () => {
@@ -303,7 +415,7 @@ describe('/users (avec un vrai mongod)', () => {
       name: 'Lovelace',
       firstName: 'Ada',
       email: 'ada@exemple.fr',
-      role: 'Adhérent',
+      role: USER_ROLE.ADHERENT,
       pronoun: 'Elle',
       phoneNumber: '0612345678',
       birthday: '1815-12-10T00:00:00.000Z',
@@ -317,7 +429,7 @@ describe('/users (avec un vrai mongod)', () => {
     const token = signAccessToken(
       {
         _id: new ObjectId(UNKNOWN_ID),
-        role: 'Visiteur',
+        role: USER_ROLE.VISITEUR,
       },
       association,
     );
@@ -330,7 +442,7 @@ describe('/users (avec un vrai mongod)', () => {
     const token = signAccessToken(
       {
         _id: { toString: () => 'pas-un-identifiant-mongo' },
-        role: 'Visiteur',
+        role: USER_ROLE.VISITEUR,
       },
       association,
     );
@@ -415,10 +527,13 @@ describe('/users (avec un vrai mongod)', () => {
         firstName: 'Charles',
         email: 'charles@exemple.fr',
         password: await hashPassword('mot-de-passe'),
-        role: 'Administrateur',
+        role: USER_ROLE.ADMINISTRATEUR,
         pronoun: 'Il',
       });
-    const adminToken = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+    const adminToken = signAccessToken(
+      { _id: adminId, role: USER_ROLE.ADMINISTRATEUR },
+      association,
+    );
     const usersApp = express();
     usersApp.use(express.json());
     usersApp.use('/users', createUsersRouter({ limit: 100 }));
@@ -434,7 +549,7 @@ describe('/users (avec un vrai mongod)', () => {
         pronoun: 'Elle',
         medicalCertificate: true,
         rightOfPublicity: false,
-        role: 'Entraineur',
+        role: USER_ROLE.ENTRAINEUR,
       });
 
     assert.strictEqual(res.status, 204);
@@ -446,11 +561,11 @@ describe('/users (avec un vrai mongod)', () => {
     assert.strictEqual(updatedUser.pronoun, 'Elle');
     assert.strictEqual(updatedUser.medicalCertificate, true);
     assert.strictEqual(updatedUser.rightOfPublicity, false);
-    assert.strictEqual(updatedUser.role, 'Entraineur');
+    assert.strictEqual(updatedUser.role, USER_ROLE.ENTRAINEUR);
 
     const unchangedAdmin = await db.getDb().collection('users').findOne({ _id: adminId });
     assert.strictEqual(unchangedAdmin.email, 'charles@exemple.fr');
-    assert.strictEqual(unchangedAdmin.role, 'Administrateur');
+    assert.strictEqual(unchangedAdmin.role, USER_ROLE.ADMINISTRATEUR);
   });
 
   it('PATCH /users/:id renvoie 404 si le compte disparaît avant sa mise à jour', async () => {
@@ -464,10 +579,13 @@ describe('/users (avec un vrai mongod)', () => {
         firstName: 'Charles',
         email: 'charles@exemple.fr',
         password: await hashPassword('mot-de-passe'),
-        role: 'Administrateur',
+        role: USER_ROLE.ADMINISTRATEUR,
         pronoun: 'Il',
       });
-    const adminToken = signAccessToken({ _id: adminId, role: 'Administrateur' }, association);
+    const adminToken = signAccessToken(
+      { _id: adminId, role: USER_ROLE.ADMINISTRATEUR },
+      association,
+    );
     const originalUpdateOne = User.updateOne;
     User.updateOne = async () => ({ matchedCount: 0 });
 
@@ -475,7 +593,7 @@ describe('/users (avec un vrai mongod)', () => {
       const response = await request(app)
         .patch(`/users/${alanId}`)
         .set('Authorization', `Bearer ${adminToken}`)
-        .send({ role: 'Entraineur' });
+        .send({ role: USER_ROLE.ENTRAINEUR });
       assert.strictEqual(response.status, 404);
       assert.strictEqual(response.body.message, 'Utilisateur introuvable');
     } finally {
@@ -487,7 +605,7 @@ describe('/users (avec un vrai mongod)', () => {
     const token = signAccessToken(
       {
         _id: new ObjectId(UNKNOWN_ID),
-        role: 'Visiteur',
+        role: USER_ROLE.VISITEUR,
       },
       association,
     );
@@ -555,7 +673,7 @@ describe('/users (avec un vrai mongod)', () => {
     const token = signAccessToken(
       {
         _id: new ObjectId(UNKNOWN_ID),
-        role: 'Visiteur',
+        role: USER_ROLE.VISITEUR,
       },
       association,
     );
@@ -568,8 +686,8 @@ describe('/users (avec un vrai mongod)', () => {
     await db
       .getDb()
       .collection('users')
-      .updateOne({ _id: adaId }, { $set: { role: 'Administrateur' } });
-    const adminToken = signAccessToken({ _id: adaId, role: 'Administrateur' }, association);
+      .updateOne({ _id: adaId }, { $set: { role: USER_ROLE.ADMINISTRATEUR } });
+    const adminToken = signAccessToken({ _id: adaId, role: USER_ROLE.ADMINISTRATEUR }, association);
 
     const res = await request(app).delete('/users/me').set('Authorization', `Bearer ${adminToken}`);
 
@@ -582,12 +700,12 @@ describe('/users (avec un vrai mongod)', () => {
     await db
       .getDb()
       .collection('users')
-      .updateOne({ _id: adaId }, { $set: { role: 'Administrateur' } });
+      .updateOne({ _id: adaId }, { $set: { role: USER_ROLE.ADMINISTRATEUR } });
     await db
       .getDb()
       .collection('users')
-      .updateOne({ _id: alanId }, { $set: { role: 'Administrateur' } });
-    const adminToken = signAccessToken({ _id: adaId, role: 'Administrateur' }, association);
+      .updateOne({ _id: alanId }, { $set: { role: USER_ROLE.ADMINISTRATEUR } });
+    const adminToken = signAccessToken({ _id: adaId, role: USER_ROLE.ADMINISTRATEUR }, association);
 
     const res = await request(app).delete('/users/me').set('Authorization', `Bearer ${adminToken}`);
 
@@ -622,7 +740,7 @@ describe('/users (avec un vrai mongod)', () => {
     const token = signAccessToken(
       {
         _id: new ObjectId(UNKNOWN_ID),
-        role: 'Visiteur',
+        role: USER_ROLE.VISITEUR,
       },
       association,
     );

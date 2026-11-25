@@ -22,6 +22,7 @@ class _MyMainLayout extends State<MainLayout> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Stack(
         fit: StackFit.expand,
         children: [
@@ -68,7 +69,7 @@ class _MyMainLayout extends State<MainLayout> {
           Positioned(top: 50, left: 20, right: 20, child: AppHeader()),
 
           Positioned(
-            bottom: 80,
+            bottom: 50,
             left: 20,
             right: 20,
             child: AppFooter(

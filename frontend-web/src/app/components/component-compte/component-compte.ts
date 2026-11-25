@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Router } from '@angular/router';
 import {
   AbstractControl,
@@ -9,6 +10,8 @@ import {
   Validators,
 } from '@angular/forms';
 import { RegisterInput } from '../../api/model/registerInput';
+import { UserDetails } from '../../api/model/userDetails';
+import { UsersService } from '../../api/api/users.service';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
 import { AuthService } from '../../services/auth.service';
@@ -32,10 +35,26 @@ export class ComponentCompte {
   protected readonly passwordSubmitted = signal(false);
   protected readonly deleteConfirmed = signal(false);
   protected readonly accountDeleted = signal(false);
+  protected readonly profileError = signal<string | null>(null);
+  protected readonly profileRole = signal<UserDetails.RoleEnum | null>(null);
 
   private readonly router = inject(Router);
   private readonly authService = inject(AuthService);
   protected readonly pronouns = Object.values(RegisterInput.PronounEnum);
+
+  /** Loads the signed-in user's profile role for account-specific controls. */
+  constructor() {
+    if (this.authService.isAuthenticated()) {
+      inject(UsersService)
+        .getMyProfile()
+        .pipe(takeUntilDestroyed())
+        .subscribe({
+          next: ({ role }) => this.profileRole.set(role),
+          error: () =>
+            this.profileError.set('Impossible de charger votre profil. Veuillez réessayer.'),
+        });
+    }
+  }
 
   protected readonly accountForm = new FormBuilder().nonNullable.group({
     firstName: ['Alex', [Validators.required]],
@@ -84,11 +103,13 @@ export class ComponentCompte {
     }
 
     this.accountDeleted.set(true);
+    this.profileRole.set(null);
     this.deleteConfirmed.set(false);
   }
 
   /** Returns the user to the home page. */
   protected logout(): void {
+    this.profileRole.set(null);
     this.authService.logout();
     void this.router.navigate(['/accueil']);
   }

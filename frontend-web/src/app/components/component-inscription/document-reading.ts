@@ -10,6 +10,7 @@ import {
 
 export type AgreementDocument = 'privacyPolicy' | 'internalRules';
 
+/** Builds the BroadcastChannel name shared by the reader and registration page. */
 export function readingChannelName(id: string): string {
   return `rekor-document-reading-${id}`;
 }
@@ -25,10 +26,12 @@ export class DocumentReading {
   readonly unavailable = !!this.readingId && typeof BroadcastChannel === 'undefined';
   private readonly element = inject(ElementRef<HTMLElement>);
 
+  /** Checks whether the document is already at its final scroll position. */
   constructor() {
     afterNextRender(() => this.checkBottom());
   }
 
+  /** Notifies the registration page once the reader reaches the document's end. */
   @HostListener('window:scroll')
   @HostListener('window:resize')
   checkBottom(): void {

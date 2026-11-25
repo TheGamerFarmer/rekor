@@ -10,6 +10,7 @@
 
 
 export interface AdminUpdateProfileInput { 
+    email?: string;
     name?: string;
     firstName?: string;
     phoneNumber?: string;
@@ -17,7 +18,6 @@ export interface AdminUpdateProfileInput {
     pronoun?: AdminUpdateProfileInput.PronounEnum;
     medicalCertificate?: boolean;
     rightOfPublicity?: boolean;
-    email?: string;
     role: AdminUpdateProfileInput.RoleEnum;
 }
 export namespace AdminUpdateProfileInput {

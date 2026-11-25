@@ -38,7 +38,7 @@
       </div>
     </article>
     <article class="summary-card balance-summary">
-      <span class="summary-icon chart-icon" aria-hidden="true"> <i></i><i></i><i></i> </span>
+      <span class="summary-icon" aria-hidden="true">€</span>
       <div>
         <p>Solde de l'année</p>
         <strong>{{ balance() | currency: 'EUR' : 'symbol' : '1.0-2' : 'fr-FR' }}</strong>
@@ -51,7 +51,11 @@
       <h2>Ajouter une recette</h2>
       <div class="form-fields">
         <label>
-          Catégorie <span class="required">*</span>
+          <span>Date <span class="required">*</span></span>
+          <input type="date" formControlName="date" />
+        </label>
+        <label>
+          <span>Catégorie <span class="required">*</span></span>
           <select formControlName="category">
             @for (category of incomeCategories; track category) {
               <option [value]="category">{{ category }}</option>
@@ -59,7 +63,7 @@
           </select>
         </label>
         <label>
-          Montant <span class="required">*</span>
+          <span>Montant <span class="required">*</span></span>
           <input
             type="number"
             formControlName="amount"
@@ -87,7 +91,11 @@
       <h2>Ajouter une dépense</h2>
       <div class="form-fields">
         <label>
-          Catégorie <span class="required">*</span>
+          <span>Date <span class="required">*</span></span>
+          <input type="date" formControlName="date" />
+        </label>
+        <label>
+          <span>Catégorie <span class="required">*</span></span>
           <select formControlName="category">
             @for (category of expenseCategories; track category) {
               <option [value]="category">{{ category }}</option>
@@ -95,7 +103,7 @@
           </select>
         </label>
         <label>
-          Montant <span class="required">*</span>
+          <span>Montant <span class="required">*</span></span>
           <input
             type="number"
             formControlName="amount"

@@ -13,6 +13,7 @@ part of rekor_api;
 class AdminUpdateProfileInput {
   /// Returns a new [AdminUpdateProfileInput] instance.
   AdminUpdateProfileInput({
+    this.email,
     this.name,
     this.firstName,
     this.phoneNumber,
@@ -20,9 +21,16 @@ class AdminUpdateProfileInput {
     this.pronoun,
     this.medicalCertificate,
     this.rightOfPublicity,
-    this.email,
     required this.role,
   });
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? email;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -74,18 +82,11 @@ class AdminUpdateProfileInput {
   ///
   bool? rightOfPublicity;
 
-  ///
-  /// Please note: This property should have been non-nullable! Since the specification file
-  /// does not include a default value (using the "default:" property), however, the generated
-  /// source code must fall back to having a nullable type.
-  /// Consider adding a "default:" property in the specification file to hide this note.
-  ///
-  String? email;
-
   AdminUpdateProfileInputRoleEnum role;
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is AdminUpdateProfileInput &&
+    other.email == email &&
     other.name == name &&
     other.firstName == firstName &&
     other.phoneNumber == phoneNumber &&
@@ -93,12 +94,12 @@ class AdminUpdateProfileInput {
     other.pronoun == pronoun &&
     other.medicalCertificate == medicalCertificate &&
     other.rightOfPublicity == rightOfPublicity &&
-    other.email == email &&
     other.role == role;
 
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (email == null ? 0 : email!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (firstName == null ? 0 : firstName!.hashCode) +
     (phoneNumber == null ? 0 : phoneNumber!.hashCode) +
@@ -106,14 +107,18 @@ class AdminUpdateProfileInput {
     (pronoun == null ? 0 : pronoun!.hashCode) +
     (medicalCertificate == null ? 0 : medicalCertificate!.hashCode) +
     (rightOfPublicity == null ? 0 : rightOfPublicity!.hashCode) +
-    (email == null ? 0 : email!.hashCode) +
     (role.hashCode);
 
   @override
-  String toString() => 'AdminUpdateProfileInput[name=$name, firstName=$firstName, phoneNumber=$phoneNumber, birthday=$birthday, pronoun=$pronoun, medicalCertificate=$medicalCertificate, rightOfPublicity=$rightOfPublicity, email=$email, role=$role]';
+  String toString() => 'AdminUpdateProfileInput[email=$email, name=$name, firstName=$firstName, phoneNumber=$phoneNumber, birthday=$birthday, pronoun=$pronoun, medicalCertificate=$medicalCertificate, rightOfPublicity=$rightOfPublicity, role=$role]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.email != null) {
+      json[r'email'] = this.email;
+    } else {
+      json[r'email'] = null;
+    }
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
@@ -149,11 +154,6 @@ class AdminUpdateProfileInput {
     } else {
       json[r'rightOfPublicity'] = null;
     }
-    if (this.email != null) {
-      json[r'email'] = this.email;
-    } else {
-      json[r'email'] = null;
-    }
       json[r'role'] = this.role;
     return json;
   }
@@ -175,6 +175,7 @@ class AdminUpdateProfileInput {
       }());
 
       return AdminUpdateProfileInput(
+        email: mapValueOfType<String>(json, r'email'),
         name: mapValueOfType<String>(json, r'name'),
         firstName: mapValueOfType<String>(json, r'firstName'),
         phoneNumber: mapValueOfType<String>(json, r'phoneNumber'),
@@ -182,7 +183,6 @@ class AdminUpdateProfileInput {
         pronoun: AdminUpdateProfileInputPronounEnum.fromJson(json[r'pronoun']),
         medicalCertificate: mapValueOfType<bool>(json, r'medicalCertificate'),
         rightOfPublicity: mapValueOfType<bool>(json, r'rightOfPublicity'),
-        email: mapValueOfType<String>(json, r'email'),
         role: AdminUpdateProfileInputRoleEnum.fromJson(json[r'role'])!,
       );
     }

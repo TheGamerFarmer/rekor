@@ -35,17 +35,19 @@ export class ComponentAdherentsAdmin {
   protected readonly submitted = signal(false);
   protected readonly currentDate = this.formatDate(new Date());
   protected readonly pronouns = MEMBER_PRONOUNS;
-  protected readonly roles = MEMBER_ROLES;
+  protected readonly roles: readonly MemberRole[] = MEMBER_ROLES;
   protected readonly statuses = [
     { value: 'validated', label: 'Validées' },
     { value: 'pending-validation', label: 'En cours de validation' },
     { value: 'to-validate', label: 'À valider' },
+    { value: 'refused', label: 'Refusées' },
   ] as const satisfies readonly { value: RegistrationStatus; label: string }[];
 
   protected readonly filteredAdherents = computed(() =>
     this.adherents().filter((member) => member.registrationStatus === this.registrationFilter()),
   );
 
+  /** Validates an optional birth date and rejects dates outside the supported range. */
   private readonly validateBirthDate = (
     control: AbstractControl<string>,
   ): ValidationErrors | null => {
@@ -73,7 +75,7 @@ export class ComponentAdherentsAdmin {
     birthDate: ['', [this.validateBirthDate]],
     phone: ['', [Validators.required, Validators.pattern(/^[0-9+().\s-]{6,20}$/)]],
     email: ['', [Validators.required, Validators.email]],
-    roles: new FormControl<MemberRole[]>([], {
+    role: new FormControl<MemberRole>('', {
       nonNullable: true,
       validators: [Validators.required],
     }),
@@ -83,15 +85,18 @@ export class ComponentAdherentsAdmin {
     }),
   });
 
+  /** Counts members with the requested registration status. */
   protected getCount(status: RegistrationStatus): number {
     return this.adherents().filter((member) => member.registrationStatus === status).length;
   }
 
+  /** Changes the registration filter and closes any open edit form. */
   protected setFilter(status: RegistrationStatus): void {
     this.registrationFilter.set(status);
     this.closeForm();
   }
 
+  /** Populates the form with the selected member and opens it for editing. */
   protected startEdit(member: Adherent): void {
     this.editingId.set(member.id);
     this.submitted.set(false);
@@ -102,31 +107,13 @@ export class ComponentAdherentsAdmin {
       birthDate: member.birthDate ?? '',
       phone: member.phone,
       email: member.email,
-      roles: [...member.roles],
+      role: member.role,
       registrationStatus: member.registrationStatus,
     });
     this.isFormVisible.set(true);
   }
 
-  protected toggleRole(role: MemberRole, checked: boolean): void {
-    const selected = this.memberForm.controls.roles.value;
-    this.memberForm.controls.roles.setValue(
-      checked ? [...selected, role] : selected.filter((item) => item !== role),
-    );
-    this.memberForm.controls.roles.markAsTouched();
-  }
-
-  protected onRoleChange(role: MemberRole, event: Event): void {
-    const checkbox = event.currentTarget;
-    if (checkbox instanceof HTMLInputElement) {
-      this.toggleRole(role, checkbox.checked);
-    }
-  }
-
-  protected hasRole(role: MemberRole): boolean {
-    return this.memberForm.controls.roles.value.includes(role);
-  }
-
+  /** Validates and saves the current member changes. */
   protected save(): void {
     this.submitted.set(true);
     if (this.memberForm.invalid) {
@@ -145,10 +132,12 @@ export class ComponentAdherentsAdmin {
     this.closeForm();
   }
 
+  /** Removes the selected member from the shared collection. */
   protected deleteMember(id: number): void {
     this.adherentService.remove(id);
   }
 
+  /** Resets and hides the member form. */
   protected closeForm(): void {
     this.isFormVisible.set(false);
     this.editingId.set(null);
@@ -156,6 +145,7 @@ export class ComponentAdherentsAdmin {
     this.memberForm.reset();
   }
 
+  /** Formats a date as the local YYYY-MM-DD value used by date inputs. */
   private formatDate(date: Date): string {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');

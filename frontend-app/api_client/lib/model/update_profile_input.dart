@@ -13,6 +13,7 @@ part of rekor_api;
 class UpdateProfileInput {
   /// Returns a new [UpdateProfileInput] instance.
   UpdateProfileInput({
+    this.email,
     this.name,
     this.firstName,
     this.phoneNumber,
@@ -21,6 +22,14 @@ class UpdateProfileInput {
     this.medicalCertificate,
     this.rightOfPublicity,
   });
+
+  ///
+  /// Please note: This property should have been non-nullable! Since the specification file
+  /// does not include a default value (using the "default:" property), however, the generated
+  /// source code must fall back to having a nullable type.
+  /// Consider adding a "default:" property in the specification file to hide this note.
+  ///
+  String? email;
 
   ///
   /// Please note: This property should have been non-nullable! Since the specification file
@@ -74,6 +83,7 @@ class UpdateProfileInput {
 
   @override
   bool operator ==(Object other) => identical(this, other) || other is UpdateProfileInput &&
+    other.email == email &&
     other.name == name &&
     other.firstName == firstName &&
     other.phoneNumber == phoneNumber &&
@@ -85,6 +95,7 @@ class UpdateProfileInput {
   @override
   int get hashCode =>
     // ignore: unnecessary_parenthesis
+    (email == null ? 0 : email!.hashCode) +
     (name == null ? 0 : name!.hashCode) +
     (firstName == null ? 0 : firstName!.hashCode) +
     (phoneNumber == null ? 0 : phoneNumber!.hashCode) +
@@ -94,10 +105,15 @@ class UpdateProfileInput {
     (rightOfPublicity == null ? 0 : rightOfPublicity!.hashCode);
 
   @override
-  String toString() => 'UpdateProfileInput[name=$name, firstName=$firstName, phoneNumber=$phoneNumber, birthday=$birthday, pronoun=$pronoun, medicalCertificate=$medicalCertificate, rightOfPublicity=$rightOfPublicity]';
+  String toString() => 'UpdateProfileInput[email=$email, name=$name, firstName=$firstName, phoneNumber=$phoneNumber, birthday=$birthday, pronoun=$pronoun, medicalCertificate=$medicalCertificate, rightOfPublicity=$rightOfPublicity]';
 
   Map<String, dynamic> toJson() {
     final json = <String, dynamic>{};
+    if (this.email != null) {
+      json[r'email'] = this.email;
+    } else {
+      json[r'email'] = null;
+    }
     if (this.name != null) {
       json[r'name'] = this.name;
     } else {
@@ -151,6 +167,7 @@ class UpdateProfileInput {
       }());
 
       return UpdateProfileInput(
+        email: mapValueOfType<String>(json, r'email'),
         name: mapValueOfType<String>(json, r'name'),
         firstName: mapValueOfType<String>(json, r'firstName'),
         phoneNumber: mapValueOfType<String>(json, r'phoneNumber'),
