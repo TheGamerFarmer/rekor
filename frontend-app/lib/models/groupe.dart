@@ -44,8 +44,9 @@ class Groupe {
   bool get nonLu {
     final dernier = dernierMessage;
     if (dernier == null) return false;
-    if (dernier.auteur == 'Moi')
+    if (dernier.auteur == 'Moi') {
       return false; // TODO : comparer avec l'id de l'utilisateur connecté
+    }
     final lecture = derniereLecture;
     return lecture == null || dernier.date.isAfter(lecture);
   }

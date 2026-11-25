@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../mobile_pages/arbitrage.dart';
+//import '../mobile_pages/arbitrage.dart';
 
 class EvenementCard extends StatefulWidget {
   const EvenementCard({

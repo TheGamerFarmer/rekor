@@ -452,7 +452,7 @@ class _ParametresPageState extends State<ParametresPage> {
     return SwitchListTile(
       value: valeur,
       onChanged: onChanged,
-      activeColor: _jaune,
+      activeThumbColor: _jaune,
       title: Text(titre, style: const TextStyle(color: Colors.white)),
     );
   }

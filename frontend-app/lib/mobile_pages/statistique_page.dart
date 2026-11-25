@@ -154,7 +154,7 @@ class _StatistiquePageState extends State<StatistiquePage> {
               width: double.infinity,
               padding: const EdgeInsets.all(14),
               decoration: BoxDecoration(
-                color: const Color(0xFF303030).withOpacity(0.85),
+                color: const Color(0xFF303030).withValues(alpha: 0.85),
                 borderRadius: BorderRadius.circular(20),
                 border: Border.all(color: Colors.white10),
               ),
@@ -219,7 +219,7 @@ class _StatistiquePageState extends State<StatistiquePage> {
 
     // 1) Quels matchs ?  2) Quelles actions ?
     final matchs = _vue == VueStats.match
-        ? [if (matchChoisi != null) matchChoisi]
+        ? [?matchChoisi]
         : tousLesMatchs;
 
     final actions = switch (_vue) {
@@ -510,7 +510,7 @@ class _StatistiquePageState extends State<StatistiquePage> {
       width: double.infinity,
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: const Color(0xFF303030).withOpacity(0.85),
+        color: const Color(0xFF303030).withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: Colors.white10),
       ),

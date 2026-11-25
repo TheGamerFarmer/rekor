@@ -73,9 +73,9 @@ class _ActualitesPageState extends State<ActualitesPage> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 3),
       decoration: BoxDecoration(
-        color: couleur.withOpacity(0.15),
+        color: couleur.withValues(alpha: 0.15),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: couleur.withOpacity(0.6)),
+        border: Border.all(color: couleur.withValues(alpha: 0.6)),
       ),
       child: Text(
         c.label,
@@ -177,7 +177,7 @@ class _ActualitesPageState extends State<ActualitesPage> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: const Color(0xFF303030).withOpacity(0.85),
+                      color: const Color(0xFF303030).withValues(alpha: 0.85),
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(color: Colors.white10),
                     ),
