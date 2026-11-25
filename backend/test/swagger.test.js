@@ -78,6 +78,13 @@ test('GET /api-docs.json documente les routes d’administration des utilisateur
   assert.ok(updateUser.responses['403']);
   assert.ok(updateUser.responses['404']);
   assert.ok(!res.body.paths['/users/{id}/grant/{role}']);
+
+  const validateUser = res.body.paths['/users/{id}/validate'].post;
+  assert.strictEqual(validateUser.operationId, 'validateUser');
+  assert.deepStrictEqual(validateUser.security, [{ BearerAuth: [] }]);
+  assert.ok(validateUser.responses['400']);
+  assert.ok(validateUser.responses['403']);
+  assert.ok(validateUser.responses['404']);
 });
 
 test("GET /api-docs/ sert l'interface swagger UI", async () => {
