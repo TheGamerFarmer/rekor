@@ -97,7 +97,8 @@ function createMessagesRouter({ limit = 100, windowMs = 60_000 } = {}) {
     wrapAsync(async (req, res) => {
       const { body } = req.body;
 
-      if (!body) return res.status(400).json({ message: 'Body invalide' });
+      if (typeof body !== 'string' || !body)
+        return res.status(400).json({ message: 'Body invalide' });
 
       const result = await messageService.createMessage(req.group._id, body);
 
@@ -120,7 +121,8 @@ function createMessagesRouter({ limit = 100, windowMs = 60_000 } = {}) {
 
       const { body } = req.body;
 
-      if (!body) return res.status(400).json({ message: 'Body invalide' });
+      if (typeof body !== 'string' || !body)
+        return res.status(400).json({ message: 'Body invalide' });
 
       const result = await messageService.updateMessage(
         req.group._id,

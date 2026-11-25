@@ -191,7 +191,10 @@ async function removeMemberFromGroup(groupId, userId, senderId) {
   )
     return { error: 'USER_NOT_OWNER' };
 
-  const result = await GroupMember.deleteOne({ group: groupId, user: userId });
+  const result = await GroupMember.deleteOne({
+    group: { $eq: groupId },
+    user: { $eq: userId },
+  });
   if (result.deletedCount === 0) return { error: 'MEMBERSHIP_NOT_FOUND' };
 
   if (groupResult.owner.toString() === userId.toString()) await changeOwnerFromGroup(groupId);

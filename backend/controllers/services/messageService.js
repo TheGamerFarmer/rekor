@@ -71,7 +71,7 @@ async function updateMessage(groupId, id, userId, body) {
 
   if (!isOwnerResult.isOwner) return { error: 'USER_NOT_OWNER' };
 
-  await Message.updateOne({ _id: id, group: groupId }, { body: body });
+  await Message.updateOne({ _id: { $eq: id }, group: { $eq: groupId } }, { body: body });
 
   return { success: true };
 }
@@ -88,7 +88,7 @@ async function deleteMessage(groupId, id, senderId) {
   const isOwnerResult = await isOwner(groupId, id, senderId);
   if (isOwnerResult.error) return { error: isOwnerResult.error };
 
-  const user = await User.findById(senderId);
+  const user = await User.findOne({ _id: { $eq: senderId } });
 
   if (!isOwnerResult.isOwner && user.role.toString() !== USER_ROLE.ADMINISTRATEUR.toString())
     return { error: 'USER_NOT_OWNER' };
