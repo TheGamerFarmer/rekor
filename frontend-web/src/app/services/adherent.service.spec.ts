@@ -68,17 +68,33 @@ describe('AdherentService', () => {
   });
 
   it('marks missing legacy consents as unknown without changing known values', () => {
-    const { medicalCertificate, rightOfPublicity, ...legacyMember } = member;
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify([legacyMember, { ...legacyMember, id: 5, medicalCertificate }]),
-    );
+    const legacyMember = {
+      ...memberInput,
+      id: 4,
+      registrationStatus: 'finalized' as const,
+      medicalCertificateReceivedDate: null,
+      membershipPaymentDate: null,
+    };
+    const getItem = vi
+      .spyOn(Storage.prototype, 'getItem')
+      .mockReturnValueOnce(
+        JSON.stringify([
+          legacyMember,
+          { ...legacyMember, id: 5, medicalCertificate: true },
+          { ...legacyMember, id: 6, medicalCertificate: false, rightOfPublicity: false },
+        ]),
+      );
 
-    expect(new AdherentService().adherents()).toEqual([
-      { ...legacyMember, medicalCertificate: null, rightOfPublicity: null },
-      { ...legacyMember, id: 5, medicalCertificate, rightOfPublicity: null },
-    ]);
-    expect(rightOfPublicity).toBe(false);
+    try {
+      expect(new AdherentService().adherents()).toEqual([
+        { ...legacyMember, medicalCertificate: null, rightOfPublicity: null },
+        { ...legacyMember, id: 5, medicalCertificate: true, rightOfPublicity: null },
+        { ...legacyMember, id: 6, medicalCertificate: false, rightOfPublicity: false },
+      ]);
+      expect(getItem).toHaveBeenCalledWith(STORAGE_KEY);
+    } finally {
+      getItem.mockRestore();
+    }
   });
 
   it('ignores malformed or invalid stored members', () => {
