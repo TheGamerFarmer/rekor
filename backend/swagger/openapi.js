@@ -47,19 +47,19 @@ const RegisterInput = z
 
 const UpdateProfileInput = z
   .object({
-    name: z.string().min(1).optional(),
-    firstName: z.string().min(1).optional(),
-    phoneNumber: z.string().optional(),
-    birthday: z.iso.date().optional(),
-    pronoun: Pronoun.optional(),
-    medicalCertificate: z.boolean().optional(),
-    rightOfPublicity: z.boolean().optional(),
+    email: z.email().optional().openapi({ example: 'ada@exemple.fr' }),
+    name: z.string().min(1).optional().openapi({ example: 'Lovelace' }),
+    firstName: z.string().min(1).optional().openapi({ example: 'Ada' }),
+    phoneNumber: z.string().optional().openapi({ example: '0612345678' }),
+    birthday: z.iso.date().optional().openapi({ example: '1815-12-10' }),
+    pronoun: Pronoun.optional().openapi({ example: 'Elle' }),
+    medicalCertificate: z.boolean().optional().openapi({ example: false }),
+    rightOfPublicity: z.boolean().optional().openapi({ example: false }),
   })
   .openapi('UpdateProfileInput');
 
 const AdminUpdateProfileInput = UpdateProfileInput.extend({
-  email: z.email().optional(),
-  role: Role,
+  role: Role.openapi({ example: USER_ROLE.ADHERENT }),
 }).openapi('AdminUpdateProfileInput');
 
 const LoginInput = z
@@ -81,8 +81,8 @@ const RefreshTokenInput = z
 
 const ChangePasswordInput = z
   .object({
-    old_password: z.string().min(1),
-    new_password: z.string().min(1),
+    old_password: z.string().min(1).openapi({ example: 'ancien-mot-de-passe' }),
+    new_password: z.string().min(1).openapi({ example: 'nouveau-mot-de-passe' }),
   })
   .openapi('ChangePasswordInput');
 
@@ -344,7 +344,7 @@ registry.registerPath({
   path: '/auth/register',
   operationId: 'register',
   tags: ['Authentication'],
-  summary: 'Crée un compte Visiteur et l’inscrit dans l’association indiquée',
+  summary: 'Crée un compte et l’inscrit dans l’association indiquée',
   request: { body: { required: true, content: json(RegisterInput) } },
   responses: {
     201: { description: 'Compte créé, sans contenu de réponse' },

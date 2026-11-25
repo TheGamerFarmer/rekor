@@ -9,6 +9,15 @@ test('GET /api-docs.json expose la spec OpenAPI avec la route /', async () => {
   assert.strictEqual(res.status, 200);
   assert.ok(res.body.openapi);
   assert.ok(res.body.paths['/']);
+  const updateProfile = res.body.paths['/users/me'].patch;
+  assert.strictEqual(
+    updateProfile.requestBody.content['application/json'].schema.$ref,
+    '#/components/schemas/UpdateProfileInput',
+  );
+  const updateProfileProperties = res.body.components.schemas.UpdateProfileInput.properties;
+  assert.strictEqual(updateProfileProperties.email.example, 'ada@exemple.fr');
+  assert.strictEqual(updateProfileProperties.medicalCertificate.example, false);
+  assert.strictEqual(updateProfileProperties.rightOfPublicity.example, false);
   assert.deepStrictEqual(res.body.components.schemas.UserDetails.allOf[1].properties.role.enum, [
     ...Object.values(USER_ROLE),
   ]);
@@ -77,6 +86,10 @@ test('GET /api-docs.json documente les routes d’administration des utilisateur
   assert.ok(updateUser.responses['400']);
   assert.ok(updateUser.responses['403']);
   assert.ok(updateUser.responses['404']);
+  assert.strictEqual(
+    res.body.components.schemas.AdminUpdateProfileInput.allOf[1].properties.role.example,
+    USER_ROLE.ADHERENT,
+  );
   assert.ok(!res.body.paths['/users/{id}/grant/{role}']);
 
   const validateUser = res.body.paths['/users/{id}/validate'].post;

@@ -177,20 +177,29 @@
       "UpdateProfileInput": {
         "type": "object",
         "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ada@exemple.fr"
+          },
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "example": "Lovelace"
           },
           "firstName": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "example": "Ada"
           },
           "phoneNumber": {
-            "type": "string"
+            "type": "string",
+            "example": "0612345678"
           },
           "birthday": {
             "type": "string",
-            "format": "date"
+            "format": "date",
+            "example": "1815-12-10"
           },
           "pronoun": {
             "type": "string",
@@ -199,13 +208,16 @@
               "Elle",
               "Iel",
               "Autre"
-            ]
+            ],
+            "example": "Elle"
           },
           "medicalCertificate": {
-            "type": "boolean"
+            "type": "boolean",
+            "example": false
           },
           "rightOfPublicity": {
-            "type": "boolean"
+            "type": "boolean",
+            "example": false
           }
         }
       },
@@ -214,11 +226,13 @@
         "properties": {
           "old_password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "example": "ancien-mot-de-passe"
           },
           "new_password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "example": "nouveau-mot-de-passe"
           }
         },
         "required": [
@@ -234,10 +248,6 @@
           {
             "type": "object",
             "properties": {
-              "email": {
-                "type": "string",
-                "format": "email"
-              },
               "role": {
                 "type": "string",
                 "enum": [
@@ -246,7 +256,8 @@
                   "Capitaine",
                   "Adhérent",
                   "Visiteur"
-                ]
+                ],
+                "example": "Adhérent"
               }
             },
             "required": [
@@ -1241,7 +1252,7 @@
         "tags": [
           "Authentication"
         ],
-        "summary": "Crée un compte Visiteur et l’inscrit dans l’association indiquée",
+        "summary": "Crée un compte et l’inscrit dans l’association indiquée",
         "requestBody": {
           "required": true,
           "content": {
