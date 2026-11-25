@@ -44,54 +44,8 @@ class _EvenementpageState extends State<Evenementpage> {
   String _tri = 'Date croissante';
   bool _afficherTermines = false; // false = À venir, true = Terminés
 
-  final List<Evenement> _evenements = [
-    Evenement(
-      nom: 'Match amical',
-      type: 'Match amical',
-      dateTime: DateTime(2026, 10, 20, 20, 0), // passé → Terminés
-      date: '20 oct.',
-      heureDebut: '18:00',
-      heureFin: '20:00',
-      lieu: 'Gymnase Jean Moulin',
-      ville: 'Grenoble',
-      equipe1: 'Les Aigles',
-      equipe2: 'Les Lions',
-      arbitre: 'Paul Martin',
-      presents: ['Alice', 'Bob', 'Chloé'],
-      absents: ['David'],
-    ),
-    Evenement(
-      nom: 'Match amical',
-      type: 'Match amical',
-      dateTime: DateTime(2026, 12, 15, 20, 0), // futur → À venir
-      date: '15 déc.',
-      heureDebut: '18:00',
-      heureFin: '20:00',
-      lieu: 'Gymnase Jean Moulin',
-      ville: 'Grenoble',
-      equipe1: 'Les Aigles',
-      equipe2: 'Les Tigres',
-      arbitre: 'Sophie Durand',
-      presents: ['Alice', 'Bob'],
-      absents: ['Chloé', 'David'],
-    ),
-    Evenement(
-      nom: 'Réunion',
-      type: 'Réunion',
-      description: 'Bilan de la saison et préparation du prochain tournoi.',
-      dateTime: DateTime(2026, 11, 5, 19, 0), // passé → Terminés
-      date: '5 nov.',
-      heureDebut: '18:00',
-      heureFin: '19:00',
-      lieu: 'Salle des fêtes',
-      ville: 'Grenoble',
-      equipe1: '',
-      equipe2: '',
-      arbitre: '',
-      presents: ['Alice', 'Bob', 'Chloé'],
-      absents: ['David'],
-    ),
-  ];
+  // Liste partagée avec l'accueil et les covoiturages
+  final List<Evenement> _evenements = evenements;
 
   // ---------- TRI ----------
 

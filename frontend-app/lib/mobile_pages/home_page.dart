@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../layouts/main_layout.dart';
-import '../models/evenement.dart';
+import '../../convoiturage.dart'; // pour utilisateurActuel
+import '../../listevenement.dart'; // liste globale des évènements
 import '../widgets/calendrier.dart';
 import '../widgets/evenement_card.dart';
 
@@ -22,27 +23,17 @@ class _MyHomePageState extends State<MyHomePage> {
   // Jours de match (à adapter)
   final Set<DateTime> _matchs = {DateTime(2026, 12, 5), DateTime(2026, 12, 12)};
 
-  // Liste des évènements (plus tard : chargée depuis la BDD)
-  final List<Evenement> _evenements = const [
-    Evenement(
-      titre: 'Cours du Mardi',
-      date: '2 Décembre',
-      horaire: '19h - 20h',
-      lieu: 'Gymnase court sur foin',
-      type: TypeEvenement.cours,
-      present: true,
-    ),
-    Evenement(
-      titre: 'Match amical',
-      date: '6 Décembre',
-      horaire: '18h - 20h',
-      lieu: 'Gymnase court sur foin',
-      type: TypeEvenement.match,
-    ),
-  ];
+  bool _estMatch(Evenement e) =>
+      e.type == 'Match amical' || e.type == 'Match compétition';
 
   @override
   Widget build(BuildContext context) {
+    // Prochains évènements (non terminés), du plus proche au plus lointain.
+    // La liste vient de listevenement.dart : c'est la même que sur la page
+    // évènements, donc les présents / absents sont partagés.
+    final prochains = evenements.where((e) => !e.estTermine).toList()
+      ..sort((a, b) => a.dateTime.compareTo(b.dateTime));
+
     return MainLayout(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
@@ -70,21 +61,31 @@ class _MyHomePageState extends State<MyHomePage> {
             ),
             const SizedBox(height: 16),
 
-            // On affiche les évènements de la liste
-            for (final e in _evenements.take(_maxEvenements))
+            if (prochains.isEmpty)
+              const Text(
+                'Aucun évènement à venir.',
+                style: TextStyle(color: Colors.white70),
+              ),
+
+            // On affiche les prochains évènements
+            for (final e in prochains.take(_maxEvenements))
               Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: EvenementCard(
-                  titre: e.titre,
+                  key: ObjectKey(e),
+                  titre: e.nom,
                   date: e.date,
-                  horaire: e.horaire,
+                  horaire: '${e.heureDebut} - ${e.heureFin}',
                   lieu: e.lieu,
-                  couleurFond: e.type == TypeEvenement.match ? _jaune : _bleu,
-                  couleurTexte: e.type == TypeEvenement.match
-                      ? Colors.black
-                      : Colors.white,
-                  couleurAccent: e.type == TypeEvenement.match ? _bleu : _jaune,
-                  present: e.present,
+                  couleurFond: _estMatch(e) ? _jaune : _bleu,
+                  couleurTexte: _estMatch(e) ? Colors.black : Colors.white,
+                  couleurAccent: _estMatch(e) ? _bleu : _jaune,
+                  present: e.estPresent(utilisateurActuel),
+                  // Quand on bascule l'interrupteur : on met à jour les
+                  // listes présents / absents de l'évènement
+                  onChanged: (present) => setState(
+                    () => e.definirPresence(utilisateurActuel, present),
+                  ),
                 ),
               ),
 

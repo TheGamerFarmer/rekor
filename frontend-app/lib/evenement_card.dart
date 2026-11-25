@@ -172,6 +172,7 @@ class EvenementCard extends StatelessWidget {
                 ),
                 minimumSize: Size.zero,
               ),
+
               child: const Text('Arbitre', style: TextStyle(fontSize: 11)),
             ),
           ],

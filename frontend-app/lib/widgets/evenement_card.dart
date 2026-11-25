@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../mobile_pages/arbitrage.dart';
+
 class EvenementCard extends StatefulWidget {
   const EvenementCard({
     super.key,
@@ -11,6 +13,7 @@ class EvenementCard extends StatefulWidget {
     required this.couleurTexte,
     required this.couleurAccent,
     this.present = false,
+    this.onChanged,
   });
 
   final String titre;
@@ -26,12 +29,25 @@ class EvenementCard extends StatefulWidget {
   // État de départ de l'interrupteur
   final bool present;
 
+  // Appelé quand on change l'interrupteur (true = présent, false = absent)
+  final ValueChanged<bool>? onChanged;
+
   @override
   State<EvenementCard> createState() => _EvenementCardState();
 }
 
 class _EvenementCardState extends State<EvenementCard> {
   late bool _present = widget.present;
+
+  // Si la présence change ailleurs (autre page, backend...),
+  // l'interrupteur se remet à jour
+  @override
+  void didUpdateWidget(covariant EvenementCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.present != widget.present) {
+      _present = widget.present;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -88,7 +104,7 @@ class _EvenementCardState extends State<EvenementCard> {
               Column(
                 children: [
                   Text(
-                    _present ? 'PRÉSENT' : 'À CONFIRMER',
+                    _present ? 'PRÉSENT' : 'ABSENT',
                     style: gras.copyWith(fontSize: 12),
                   ),
                   const SizedBox(height: 8),
@@ -104,7 +120,11 @@ class _EvenementCardState extends State<EvenementCard> {
 
   Widget _interrupteur() {
     return GestureDetector(
-      onTap: () => setState(() => _present = !_present),
+      onTap: () {
+        setState(() => _present = !_present);
+        // On prévient la page pour qu'elle mette à jour l'évènement
+        widget.onChanged?.call(_present);
+      },
       child: Container(
         width: 100,
         height: 46,
