@@ -8,4 +8,8 @@ import { DocumentReading } from './document-reading';
   styleUrl: './politique.css',
   templateUrl: './politique.html',
 })
-export class ComponentPolitique {}
+export class ComponentPolitique {
+  closePage(): void {
+    window.close();
+  }
+}

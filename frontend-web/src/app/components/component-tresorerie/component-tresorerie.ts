@@ -3,21 +3,16 @@ import localeFr from '@angular/common/locales/fr';
 import { Component, computed, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Banner } from '../component-banner/banner';
+import {
+  toBankOperation,
+  toTreasuryTransaction,
+  type TransactionType,
+  type TreasuryTransaction,
+} from './treasury-transaction';
 
 registerLocaleData(localeFr);
 
 const CURRENT_YEAR = new Date().getFullYear();
-
-type TransactionType = 'income' | 'expense';
-
-interface TreasuryTransaction {
-  id: number;
-  type: TransactionType;
-  date: string;
-  category: string;
-  description: string;
-  amount: number;
-}
 
 const INITIAL_TRANSACTIONS: TreasuryTransaction[] = [
   {
@@ -94,7 +89,8 @@ const INITIAL_TRANSACTIONS: TreasuryTransaction[] = [
 })
 export class ComponentTresorerie {
   protected readonly year = signal(CURRENT_YEAR);
-  protected readonly transactions = signal(INITIAL_TRANSACTIONS);
+  private readonly operations = signal(INITIAL_TRANSACTIONS.map(toBankOperation));
+  protected readonly transactions = computed(() => this.operations().map(toTreasuryTransaction));
   protected readonly showAllIncome = signal(false);
   protected readonly showAllExpenses = signal(false);
   protected readonly statusMessage = signal('');
@@ -178,7 +174,7 @@ export class ComponentTresorerie {
       amount: Number(values.amount),
     };
 
-    this.transactions.update((transactions) => [transaction, ...transactions]);
+    this.operations.update((operations) => [toBankOperation(transaction), ...operations]);
     form.reset({
       date: this.dateForYear(this.year()),
       category: type === 'income' ? 'Adhésion' : 'Matériel',
@@ -192,9 +188,9 @@ export class ComponentTresorerie {
 
   /** Downloads the selected year's income and expense summary as a CSV file. */
   protected exportBalance(): void {
-    const rows = [
-      ['Date', 'Type', 'Catégorie', 'Description', 'Montant (€)'],
-      ...[...this.incomes(), ...this.expenses()]
+    const header = ['Date', 'Type', 'Catégorie', 'Description', 'Montant (€)'];
+    const transactionRows = (transactions: TreasuryTransaction[]) =>
+      [...transactions]
         .sort((a, b) => a.date.localeCompare(b.date))
         .map((transaction) => [
           transaction.date,
@@ -202,10 +198,18 @@ export class ComponentTresorerie {
           transaction.category,
           transaction.description,
           transaction.amount.toFixed(2),
-        ]),
-      [],
+        ]);
+    const rows = [
+      ['Recettes'],
+      header,
+      ...transactionRows(this.incomes()),
       ['Total des recettes', '', '', '', this.totalIncome().toFixed(2)],
+      [],
+      ['Dépenses'],
+      header,
+      ...transactionRows(this.expenses()),
       ['Total des dépenses', '', '', '', this.totalExpenses().toFixed(2)],
+      [],
       ["Solde de l'année", '', '', '', this.balance().toFixed(2)],
     ];
     const csv = rows.map((row) => row.map((cell) => this.escapeCsv(cell)).join(';')).join('\r\n');

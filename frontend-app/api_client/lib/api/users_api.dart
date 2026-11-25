@@ -63,6 +63,8 @@ class UsersApi {
 
   /// Supprime le compte authentifié
   ///
+  /// Supprime le compte, les refresh tokens, les appartenances aux groupes, les participations aux événements et transfère la propriété des groupes.
+  ///
   /// Note: This method returns the HTTP [Response].
   Future<Response> deleteMyProfileWithHttpInfo({ Future<void>? abortTrigger, }) async {
     // ignore: prefer_const_declarations
@@ -91,6 +93,8 @@ class UsersApi {
   }
 
   /// Supprime le compte authentifié
+  ///
+  /// Supprime le compte, les refresh tokens, les appartenances aux groupes, les participations aux événements et transfère la propriété des groupes.
   Future<void> deleteMyProfile({ Future<void>? abortTrigger, }) async {
     final response = await deleteMyProfileWithHttpInfo(abortTrigger: abortTrigger,);
     if (response.statusCode >= HttpStatus.badRequest) {

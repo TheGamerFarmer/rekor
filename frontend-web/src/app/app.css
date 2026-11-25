@@ -79,7 +79,7 @@ a {
 .admin-menu summary {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 10px;
   cursor: pointer;
   list-style: none;
 }

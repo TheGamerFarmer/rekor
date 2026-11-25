@@ -319,11 +319,11 @@ class AdminUpdateProfileInputPronounEnumTypeTransformer {
 
 
 enum AdminUpdateProfileInputRoleEnum {
-  administrateur._(r'Administrateur'),
-  entraineur._(r'Entraineur'),
-  capitaine._(r'Capitaine'),
-  adhrent._(r'Adhérent'),
   visiteur._(r'Visiteur'),
+  adhrent._(r'Adhérent'),
+  capitaine._(r'Capitaine'),
+  entraineur._(r'Entraineur'),
+  administrateur._(r'Administrateur'),
   ;
 
   /// Instantiate a new enum with the provided value.
@@ -382,11 +382,11 @@ class AdminUpdateProfileInputRoleEnumTypeTransformer {
     }
     if (data != null) {
       switch (data) {
-        case r'Administrateur': return AdminUpdateProfileInputRoleEnum.administrateur;
-        case r'Entraineur': return AdminUpdateProfileInputRoleEnum.entraineur;
-        case r'Capitaine': return AdminUpdateProfileInputRoleEnum.capitaine;
-        case r'Adhérent': return AdminUpdateProfileInputRoleEnum.adhrent;
         case r'Visiteur': return AdminUpdateProfileInputRoleEnum.visiteur;
+        case r'Adhérent': return AdminUpdateProfileInputRoleEnum.adhrent;
+        case r'Capitaine': return AdminUpdateProfileInputRoleEnum.capitaine;
+        case r'Entraineur': return AdminUpdateProfileInputRoleEnum.entraineur;
+        case r'Administrateur': return AdminUpdateProfileInputRoleEnum.administrateur;
         default:
           if (!allowNull) {
             throw ArgumentError('Unknown enum value to decode: $data');

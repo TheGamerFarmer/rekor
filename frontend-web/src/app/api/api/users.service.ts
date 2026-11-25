@@ -116,6 +116,7 @@ export class UsersService extends BaseService {
 
     /**
      * Supprime le compte authentifié
+     * Supprime le compte, les refresh tokens, les appartenances aux groupes, les participations aux événements et transfère la propriété des groupes.
      * @endpoint delete /users/me
      * @param observe set whether or not to return the data Observable as the body, response or events. defaults to returning the body.
      * @param reportProgress flag to report request and response progress.
