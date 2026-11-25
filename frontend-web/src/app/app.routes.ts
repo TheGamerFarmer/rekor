@@ -18,6 +18,7 @@ import { ComponentReglement } from './components/component-inscription/reglement
 import { ComponentCredits } from './components/component-credits/component-credits';
 import { ComponentTresorerie } from './components/component-tresorerie/component-tresorerie';
 import { administratorGuard, eventManagementGuard } from './services/role.guard';
+import { ComponentFaq } from './components/component-faq/component-faq';
 
 export const routes: Routes = [
   { path: '', component: ComponentAccueil },
@@ -63,5 +64,6 @@ export const routes: Routes = [
     component: ComponentTresorerie,
     canActivate: [administratorGuard],
   },
+  { path: 'faq', component: ComponentFaq },
   { path: '**', redirectTo: '' },
 ];
