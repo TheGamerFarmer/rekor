@@ -75,4 +75,59 @@ const toEssentialPublicUser = (user) => {
   );
 };
 
-module.exports = { wrapAsync, isValidId, toPublicUser, toEssentialPublicUser };
+/**
+ * Serialises a Mongoose event document to a public-facing object.
+ *
+ * @param {import('../../db/models/event')} event
+ */
+const toPublicEvent = (event) => ({
+  id: event._id.toString(),
+  date: event.date,
+  place: event.place,
+  type: event.type,
+  name: event.name,
+  description: event.description,
+  group: event.group.toString(),
+});
+
+/**
+ * Serialises a Mongoose participant document to a public-facing object.
+ *
+ * @param {import('../../db/models/participant')} participant
+ */
+const toPublicParticipant = (participant) => ({
+  id: participant._id.toString(),
+  event: participant.event.toString(),
+  participe: participant.participe,
+  user: participant.created_by.toString(),
+});
+
+/**
+ * Serialises a Mongoose group document to a public-facing object.
+ *
+ * @param {import('../../db/models/group')} group
+ */
+const toPublicGroup = (group) => ({
+  id: group._id.toString(),
+  name: group.name,
+  owner: group.owner.toString(),
+});
+
+/**
+ * Serialises a Mongoose user document to a public-facing object for group member responses.
+ * Equivalent to {@link toPublicUser} but semantically scoped to the group membership context.
+ *
+ * @param {import('../../db/models/user')} user
+ */
+const toPublicGroupMember = toPublicUser;
+
+module.exports = {
+  wrapAsync,
+  isValidId,
+  toPublicUser,
+  toEssentialPublicUser,
+  toPublicEvent,
+  toPublicParticipant,
+  toPublicGroup,
+  toPublicGroupMember,
+};

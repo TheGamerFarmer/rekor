@@ -167,7 +167,7 @@ class AuthenticationApi {
     return null;
   }
 
-  /// Crée un compte Visiteur et l’inscrit dans l’association indiquée
+  /// Crée un compte et l’inscrit dans l’association indiquée
   ///
   /// Note: This method returns the HTTP [Response].
   ///
@@ -200,7 +200,7 @@ class AuthenticationApi {
     );
   }
 
-  /// Crée un compte Visiteur et l’inscrit dans l’association indiquée
+  /// Crée un compte et l’inscrit dans l’association indiquée
   ///
   /// Parameters:
   ///

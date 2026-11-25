@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend_app/api/api_client.dart';
 import 'package:frontend_app/mobile_pages/arbitrage.dart';
 import 'package:frontend_app/mobile_pages/cout_page.dart';
 import 'package:frontend_app/mobile_pages/evenement_page.dart';
@@ -13,8 +15,11 @@ import 'package:frontend_app/models/groupe.dart';
 import 'package:frontend_app/models/equipe.dart';
 import 'package:frontend_app/models/fiche_presence.dart';
 import 'package:frontend_app/models/utilisateur.dart';
+import 'package:rekor_api/api.dart' as generated;
 
 void main() {
+  final apiClientOriginal = ApiClient.instance;
+
   Future<void> afficher(WidgetTester tester, Widget page) async {
     await tester.binding.setSurfaceSize(const Size(1200, 1100));
     await tester.pumpWidget(MaterialApp(home: page));
@@ -67,6 +72,29 @@ void main() {
   });
 
   group('ParametresPage', () {
+    late _ApiClientProfilFictif apiClientProfil;
+
+    setUp(() {
+      apiClientProfil = _ApiClientProfilFictif();
+      ApiClient.instance = apiClientProfil;
+    });
+
+    tearDown(() {
+      ApiClient.instance = apiClientOriginal;
+    });
+
+    testWidgets('affiche les informations reçues du profil API', (
+      tester,
+    ) async {
+      await afficher(tester, const ParametresPage());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ada'), findsOneWidget);
+      expect(find.text('Lovelace'), findsWidgets);
+      expect(find.text('ada@exemple.fr'), findsOneWidget);
+      expect(find.text('Adhérent'), findsOneWidget);
+    });
+
     testWidgets('modifie les interrupteurs de notification', (tester) async {
       await afficher(tester, const ParametresPage());
 
@@ -90,6 +118,23 @@ void main() {
       await tester.tap(find.text('Enregistrer'));
       await tester.pumpAndSettle();
       expect(find.text('Camille'), findsWidgets);
+      expect(apiClientProfil.updates.single.firstName, 'Camille');
+    });
+
+    testWidgets('modifie l’adresse mail depuis le dialogue', (tester) async {
+      await afficher(tester, const ParametresPage());
+
+      await tester.tap(find.text('Adresse mail'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+        find.byType(TextField).last,
+        'camille@example.com',
+      );
+      await tester.tap(find.text('Enregistrer'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('camille@example.com'), findsOneWidget);
+      expect(apiClientProfil.updates.single.email, 'camille@example.com');
     });
 
     testWidgets('choisit un pronom depuis les options', (tester) async {
@@ -100,19 +145,81 @@ void main() {
       await tester.tap(find.text('Iel'));
       await tester.pumpAndSettle();
       expect(find.text('Iel'), findsWidgets);
+      expect(
+        apiClientProfil.updates.single.pronoun,
+        generated.UpdateProfileInputPronounEnum.iel,
+      );
     });
 
-    testWidgets('annule la déconnexion', (tester) async {
+    testWidgets('change le mot de passe avec les informations saisies', (
+      tester,
+    ) async {
+      await afficher(tester, const ParametresPage());
+      await tester.ensureVisible(find.text('Changer mon mot de passe'));
+      await tester.tap(find.text('Changer mon mot de passe'));
+      await tester.pumpAndSettle();
+
+      final champs = find.byType(TextFormField);
+      await tester.enterText(champs.at(0), 'ancien-secret');
+      await tester.enterText(champs.at(1), 'nouveau-secret');
+      await tester.enterText(champs.at(2), 'incorrect');
+      await tester.tap(find.text('Enregistrer').last);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Les mots de passe ne correspondent pas.'),
+        findsOneWidget,
+      );
+      expect(apiClientProfil.changementsMotDePasse, isEmpty);
+
+      await tester.enterText(champs.at(2), 'nouveau-secret');
+      await tester.tap(find.text('Enregistrer').last);
+      await tester.pumpAndSettle();
+
+      expect(apiClientProfil.changementsMotDePasse, [
+        (ancien: 'ancien-secret', nouveau: 'nouveau-secret'),
+      ]);
+      expect(find.text('Mot de passe modifié avec succès.'), findsOneWidget);
+      await tester.tap(find.text('Fermer'));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('affiche clairement une erreur de changement de mot de passe', (
+      tester,
+    ) async {
+      apiClientProfil.echecChangementMotDePasse = true;
+      await afficher(tester, const ParametresPage());
+      await tester.ensureVisible(find.text('Changer mon mot de passe'));
+      await tester.tap(find.text('Changer mon mot de passe'));
+      await tester.pumpAndSettle();
+
+      final champs = find.byType(TextFormField);
+      await tester.enterText(champs.at(0), 'ancien-secret');
+      await tester.enterText(champs.at(1), 'nouveau-secret');
+      await tester.enterText(champs.at(2), 'nouveau-secret');
+      await tester.tap(find.text('Enregistrer').last);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Impossible de modifier le mot de passe.'),
+        findsOneWidget,
+      );
+      expect(find.byIcon(Icons.error_outline), findsOneWidget);
+      await tester.tap(find.text('Fermer'));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('déconnecte et revient à la connexion', (tester) async {
+      FlutterSecureStorage.setMockInitialValues({});
       await afficher(tester, const ParametresPage());
 
       await tester.ensureVisible(find.text('Se déconnecter'));
       await tester.pump();
       await tester.tap(find.text('Se déconnecter'));
       await tester.pumpAndSettle();
-      expect(find.text('Se déconnecter ?'), findsOneWidget);
-      await tester.tap(find.text('Annuler').first);
-      await tester.pumpAndSettle();
-      expect(find.text('Se déconnecter'), findsWidgets);
+
+      expect(find.text('Connexion'), findsOneWidget);
+      expect(find.text('Se déconnecter'), findsNothing);
     });
 
     testWidgets('annule la suppression du compte', (tester) async {
@@ -126,6 +233,43 @@ void main() {
       await tester.tap(find.text('Annuler').first);
       await tester.pumpAndSettle();
       expect(find.text('Supprimer mon compte'), findsWidgets);
+      expect(apiClientProfil.suppressionsCompte, 0);
+    });
+
+    testWidgets('supprime le compte et revient à la connexion', (tester) async {
+      await afficher(tester, const ParametresPage());
+
+      await tester.ensureVisible(find.text('Supprimer mon compte'));
+      await tester.tap(find.text('Supprimer mon compte'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Supprimer').last);
+      await tester.pumpAndSettle();
+
+      expect(apiClientProfil.suppressionsCompte, 1);
+      expect(find.text('Connexion'), findsOneWidget);
+      expect(find.text('Supprimer mon compte'), findsNothing);
+    });
+
+    testWidgets('affiche une erreur si la suppression du compte échoue', (
+      tester,
+    ) async {
+      apiClientProfil.echecSuppressionCompte = true;
+      await afficher(tester, const ParametresPage());
+
+      await tester.ensureVisible(find.text('Supprimer mon compte'));
+      await tester.tap(find.text('Supprimer mon compte'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Supprimer').last);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Impossible de supprimer le compte. Veuillez réessayer.'),
+        findsOneWidget,
+      );
+      expect(find.byIcon(Icons.error_outline), findsOneWidget);
+      expect(find.text('Supprimer mon compte'), findsWidgets);
+      await tester.tap(find.text('Fermer'));
+      await tester.pumpAndSettle();
     });
   });
 
@@ -436,4 +580,58 @@ void main() {
       await tester.pumpAndSettle();
     });
   });
+}
+
+class _ApiClientProfilFictif extends ApiClient {
+  _ApiClientProfilFictif() : super('http://localhost:3000');
+
+  final updates = <generated.UpdateProfileInput>[];
+  final changementsMotDePasse = <({String ancien, String nouveau})>[];
+  bool echecChangementMotDePasse = false;
+  bool echecSuppressionCompte = false;
+  int suppressionsCompte = 0;
+
+  @override
+  Future<List<generated.Association>> getAssociations() async => [];
+
+  @override
+  Future<generated.UserDetails?> getMyProfile() async {
+    return generated.UserDetails(
+      id: '1',
+      name: 'Lovelace',
+      firstName: 'Ada',
+      email: 'ada@exemple.fr',
+      role: generated.UserDetailsRoleEnum.adhrent,
+      pronoun: generated.UserDetailsPronounEnum.elle,
+      medicalCertificate: false,
+      rightOfPublicity: false,
+    );
+  }
+
+  @override
+  Future<void> updateMyProfile(generated.UpdateProfileInput profile) async {
+    updates.add(profile);
+  }
+
+  @override
+  Future<void> changeMyPassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    if (echecChangementMotDePasse) {
+      throw StateError('Échec simulé du changement de mot de passe.');
+    }
+    changementsMotDePasse.add((ancien: oldPassword, nouveau: newPassword));
+  }
+
+  @override
+  Future<void> deleteMyProfile() async {
+    if (echecSuppressionCompte) {
+      throw StateError('Échec simulé de la suppression du compte.');
+    }
+    suppressionsCompte++;
+  }
+
+  @override
+  Future<void> logout() async {}
 }

@@ -131,6 +131,12 @@ small {
   text-decoration: underline;
 }
 
+.member-consents {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+}
+
 .member-roles {
   display: flex;
   flex-wrap: wrap;
@@ -154,6 +160,19 @@ small {
   flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+}
+
+.confirmation-form {
+  display: grid;
+  flex-basis: 100%;
+  gap: 8px;
+}
+
+.certificate-notice {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: 13px;
 }
 
 @media (max-width: 760px) {

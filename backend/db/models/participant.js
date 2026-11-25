@@ -3,6 +3,7 @@ const { Schema, model } = require('mongoose');
 const participantSchema = new Schema(
   {
     event: { type: Schema.Types.ObjectId, ref: 'Event', required: true },
+    participe: { type: Boolean, required: true },
   },
   { collection: 'participant', versionKey: false },
 );

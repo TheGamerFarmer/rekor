@@ -38,6 +38,7 @@ class Utilisateur {
   Utilisateur copyWith({
     String? nom,
     String? prenom,
+    String? mail,
     String? tel,
     DateTime? dateNaissance,
     Pronom? pronom,
@@ -46,7 +47,7 @@ class Utilisateur {
       id: id,
       nom: nom ?? this.nom,
       prenom: prenom ?? this.prenom,
-      mail: mail,
+      mail: mail ?? this.mail,
       tel: tel ?? this.tel,
       role: role,
       dateNaissance: dateNaissance ?? this.dateNaissance,

@@ -12,6 +12,7 @@ import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
 import {
   AdherentService,
+  isValidConfirmationDate,
   MEMBER_PRONOUNS,
   MEMBER_ROLES,
   type Adherent,
@@ -29,7 +30,7 @@ import {
 export class ComponentAdherentsAdmin {
   private readonly adherentService = inject(AdherentService);
   protected readonly adherents = this.adherentService.adherents;
-  protected readonly registrationFilter = signal<RegistrationStatus>('to-validate');
+  protected readonly registrationFilter = signal<RegistrationStatus>('pending');
   protected readonly editingId = signal<number | null>(null);
   protected readonly isFormVisible = signal(false);
   protected readonly submitted = signal(false);
@@ -37,9 +38,9 @@ export class ComponentAdherentsAdmin {
   protected readonly pronouns = MEMBER_PRONOUNS;
   protected readonly roles: readonly MemberRole[] = MEMBER_ROLES;
   protected readonly statuses = [
+    { value: 'finalized', label: 'Finalisées' },
     { value: 'validated', label: 'Validées' },
-    { value: 'pending-validation', label: 'En cours de validation' },
-    { value: 'to-validate', label: 'À valider' },
+    { value: 'pending', label: 'En attente' },
     { value: 'refused', label: 'Refusées' },
   ] as const satisfies readonly { value: RegistrationStatus; label: string }[];
 
@@ -79,7 +80,7 @@ export class ComponentAdherentsAdmin {
       nonNullable: true,
       validators: [Validators.required],
     }),
-    registrationStatus: new FormControl<RegistrationStatus>('to-validate', {
+    registrationStatus: new FormControl<RegistrationStatus>('pending', {
       nonNullable: true,
       validators: [Validators.required],
     }),
@@ -135,6 +136,20 @@ export class ComponentAdherentsAdmin {
   /** Removes the selected member from the shared collection. */
   protected deleteMember(id: number): void {
     this.adherentService.remove(id);
+  }
+
+  protected confirmRequirement(
+    member: Adherent,
+    requirement: 'certificate' | 'payment',
+    dateInput: HTMLInputElement,
+  ): void {
+    if (!isValidConfirmationDate(dateInput.value)) {
+      dateInput.setCustomValidity('Saisissez une date valide qui ne soit pas dans le futur.');
+      dateInput.reportValidity();
+      dateInput.setCustomValidity('');
+      return;
+    }
+    this.adherentService.confirmRequirement(member.id, requirement, dateInput.value);
   }
 
   /** Resets and hides the member form. */

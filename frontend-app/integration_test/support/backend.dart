@@ -28,8 +28,8 @@ http.Response jsonResponse(Object body, [int status = 200]) => http.Response(
 );
 
 /// Réponses simulées par défaut ("METHODE /chemin" -> réponse).
-final Map<String, http.Response Function()> _defaultMocks = {
-  'GET /': () => jsonResponse({'status': 'ok'}),
+final Map<String, http.Response Function(http.Request)> _defaultMocks = {
+  'GET /': (_) => jsonResponse({'status': 'ok'}),
 };
 
 /// Installe le client API utilisé par l'application pour le mode demandé.
@@ -39,7 +39,7 @@ final Map<String, http.Response Function()> _defaultMocks = {
 ///   échoue en 501 "Mock manquant" au lieu de passer inaperçu.
 void installBackend(
   String mode, {
-  Map<String, http.Response Function()> mocks = const {},
+  Map<String, http.Response Function(http.Request)> mocks = const {},
 }) {
   if (mode == 'real') {
     ApiClient.instance = ApiClient(apiUrl);
@@ -54,7 +54,7 @@ void installBackend(
       if (handler == null) {
         return jsonResponse({'message': 'Mock manquant : $route'}, 501);
       }
-      return handler();
+      return handler(request);
     }),
   );
 }

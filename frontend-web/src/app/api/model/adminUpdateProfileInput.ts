@@ -10,6 +10,7 @@
 
 
 export interface AdminUpdateProfileInput { 
+    email?: string;
     name?: string;
     firstName?: string;
     phoneNumber?: string;
@@ -17,7 +18,6 @@ export interface AdminUpdateProfileInput {
     pronoun?: AdminUpdateProfileInput.PronounEnum;
     medicalCertificate?: boolean;
     rightOfPublicity?: boolean;
-    email?: string;
     role: AdminUpdateProfileInput.RoleEnum;
 }
 export namespace AdminUpdateProfileInput {
@@ -29,11 +29,11 @@ export namespace AdminUpdateProfileInput {
     } as const;
     export type PronounEnum = typeof PronounEnum[keyof typeof PronounEnum];
     export const RoleEnum = {
-        Administrateur: 'Administrateur',
-        Entraineur: 'Entraineur',
-        Capitaine: 'Capitaine',
-        Adhrent: 'Adhérent',
         Visiteur: 'Visiteur',
+        Adhrent: 'Adhérent',
+        Capitaine: 'Capitaine',
+        Entraineur: 'Entraineur',
+        Administrateur: 'Administrateur',
     } as const;
     export type RoleEnum = typeof RoleEnum[keyof typeof RoleEnum];
 }
