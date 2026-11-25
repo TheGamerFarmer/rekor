@@ -74,7 +74,7 @@ void main() {
     },
   );
 
-  testWidgets('EvenementCard bascule entre présent et à confirmer', (
+  testWidgets('EvenementCard bascule entre absent et présent', (
     tester,
   ) async {
     await tester.pumpWidget(
@@ -94,7 +94,7 @@ void main() {
       ),
     );
 
-    expect(find.text('À CONFIRMER'), findsOneWidget);
+    expect(find.text('ABSENT'), findsOneWidget);
     await tester.tap(find.byType(GestureDetector));
     await tester.pumpAndSettle();
     expect(find.text('PRÉSENT'), findsOneWidget);
