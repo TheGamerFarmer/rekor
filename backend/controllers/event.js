@@ -6,7 +6,7 @@ const Event = require('../db/models/event');
 const Group = require('../db/models/group');
 const GroupMembre = require('../db/models/group_member');
 const Participant = require('../db/models/participant');
-const { wrapAsync, toPublicEvent } = require('./services/shared');
+const { wrapAsync, toPublicEvent, toPublicParticipant } = require('./services/shared');
 const { authenticate, authorize } = require('./services/auth-middleware');
 const { EVENT_TYPE, USER_ROLE } = require('../db/enums');
 
@@ -15,11 +15,14 @@ const { EVENT_TYPE, USER_ROLE } = require('../db/enums');
  * All routes are rate-limited.
  *
  * Routes:
- * - `GET  /`     — List all events (requires Adhérent role or above)
- * - `GET  /:id`  — Get a single event by its MongoDB ObjectId (requires Adhérent role or above)
- * - `PUT  /:id`  — Create a new event from the request body (requires Entraineur role or above)
+ * - `GET  /`     — List all events (requires Visiteur role or above)
+ * - `GET  /:id`  — Get a single event by its MongoDB ObjectId (requires Visiteur role or above)
+ * - `POST /`     — Create a new event from the request body (requires Entraineur role or above)
  * - `PATCH /:id` — Partially update an existing event (requires Entraineur role or above)
  * - `DELETE /:id`— Delete an event by its MongoDB ObjectId (requires Entraineur role or above)
+ * - `POST /:id/register` — Register participation for an event (requires Entraineur role or above)
+ * - `PUT  /:id/register` — Update participation for an event (requires Entraineur role or above)
+ * - `GET  /:id/participants` — List participants of an event (requires Visiteur role or above)
  *
  * @param {{ limit?: number, windowMs?: number }} [options]
  * @param {number} [options.limit=100]   Max requests per window per IP.
@@ -47,9 +50,9 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
     authenticate,
     authorize(USER_ROLE.VISITEUR),
     wrapAsync(async (req, res) => {
-      const docs = await Event.find();
+      const events = await Event.find();
 
-      res.json(docs.map(toPublicEvent));
+      res.json(events.map(toPublicEvent));
     }),
   );
 
@@ -182,6 +185,11 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
     }),
   );
 
+  // Registers participation for an event. The body must contain participate ('true' or 'false').
+  // When participate is 'true', the authenticated user is also added to the event's group
+  // if not already a member.
+  // Returns 201 on success, 400 for invalid input, 404 if the event is not found,
+  // 409 if the user has already registered.
   router.post(
     '/:id/register',
     authenticate,
@@ -227,6 +235,9 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
     }),
   );
 
+  // Updates an existing participation for an event. The body must contain participate
+  // ('true' or 'false'). Only the participation of the authenticated user is updated.
+  // Returns 201 on success, 400 for invalid input, 404 if the event is not found.
   router.put(
     '/:id/register',
     authenticate,
@@ -252,6 +263,27 @@ function createEventsRouter({ limit = 100, windowMs = 60_000 } = {}) {
       );
 
       res.status(201).end();
+    }),
+  );
+
+  // Returns the list of participants for a given event.
+  // Returns 400 for a malformed id, 404 if the event is not found.
+  // Response: array of { id, event, participe, user }.
+  router.get(
+    '/:id/participants',
+    authenticate,
+    authorize(USER_ROLE.VISITEUR),
+    wrapAsync(async (req, res) => {
+      if (!isValidObjectId(req.params.id)) {
+        return res.status(400).json({ message: 'Identifiant invalide' });
+      }
+
+      const event = await Event.findById(req.params.id);
+      if (!event) return res.status(404).json({ message: 'Évènement introuvable' });
+
+      const participants = await Participant.find({ event: event._id });
+
+      res.json(participants.map(toPublicParticipant));
     }),
   );
 

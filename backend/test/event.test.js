@@ -703,4 +703,60 @@ describe('/event (avec un vrai mongod)', () => {
 
     assert.strictEqual(res.status, 403);
   });
+
+  // ── GET /event/:id/participants ────────────────────────────────────────────
+
+  it('GET /event/:id/participants returns participants for an event', async () => {
+    const userId = new ObjectId('000000000000000000000003');
+    await db.getDb().collection('participant').insertOne({
+      event: eventId,
+      participe: true,
+      created_by: userId,
+    });
+
+    const res = await request(directApp)
+      .get(`/event/${eventId}/participants`)
+      .set('Authorization', `Bearer ${visiteurToken}`);
+
+    assert.strictEqual(res.status, 200);
+    assert.ok(Array.isArray(res.body));
+    assert.strictEqual(res.body.length, 1);
+    assert.strictEqual(res.body[0].event, eventId.toString());
+    assert.strictEqual(res.body[0].participe, true);
+    assert.strictEqual(res.body[0].user, userId.toString());
+  });
+
+  it('GET /event/:id/participants returns empty array when no participants', async () => {
+    const res = await request(directApp)
+      .get(`/event/${eventId}/participants`)
+      .set('Authorization', `Bearer ${visiteurToken}`);
+
+    assert.strictEqual(res.status, 200);
+    assert.ok(Array.isArray(res.body));
+    assert.strictEqual(res.body.length, 0);
+  });
+
+  it('GET /event/:id/participants returns 404 when event does not exist', async () => {
+    const res = await request(directApp)
+      .get(`/event/${UNKNOWN_ID}/participants`)
+      .set('Authorization', `Bearer ${visiteurToken}`);
+
+    assert.strictEqual(res.status, 404);
+    assert.strictEqual(res.body.message, 'Évènement introuvable');
+  });
+
+  it('GET /event/:id/participants returns 400 for a malformed identifier', async () => {
+    const res = await request(directApp)
+      .get('/event/pas-un-id/participants')
+      .set('Authorization', `Bearer ${visiteurToken}`);
+
+    assert.strictEqual(res.status, 400);
+    assert.strictEqual(res.body.message, 'Identifiant invalide');
+  });
+
+  it('GET /event/:id/participants returns 401 without authentication', async () => {
+    const res = await request(directApp).get(`/event/${eventId}/participants`);
+
+    assert.strictEqual(res.status, 401);
+  });
 });

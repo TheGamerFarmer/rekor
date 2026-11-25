@@ -228,6 +228,15 @@ const RegisterParticipationInput = z
   })
   .openapi('RegisterParticipationInput');
 
+const ParticipantListItem = z
+  .object({
+    id: Id,
+    event: EventId,
+    participe: z.boolean().openapi({ example: true }),
+    user: UserId,
+  })
+  .openapi('ParticipantListItem');
+
 // ---------- Routes ----------
 registry.registerPath({
   method: 'get',
@@ -623,6 +632,25 @@ registry.registerPath({
   responses: {
     201: { description: 'Participation updated, no response content' },
     400: failure('Invalid identifier or participation state'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions'),
+    404: failure('Event not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/event/{id}/participants',
+  operationId: 'listEventParticipants',
+  tags: ['Events'],
+  summary: 'Lists participants of an event (requires Visiteur role or above)',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ id: EventId }) },
+  responses: {
+    200: { description: 'The participants', content: json(z.array(ParticipantListItem)) },
+    400: failure('Invalid identifier'),
     401: failure('Authentication required or invalid token'),
     403: failure('Insufficient permissions'),
     404: failure('Event not found'),

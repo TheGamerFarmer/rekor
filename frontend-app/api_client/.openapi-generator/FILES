@@ -28,6 +28,7 @@ lib/model/group_patch_input.dart
 lib/model/health_response.dart
 lib/model/login_input.dart
 lib/model/login_response.dart
+lib/model/participant_list_item.dart
 lib/model/publication.dart
 lib/model/refresh_token_input.dart
 lib/model/register_input.dart

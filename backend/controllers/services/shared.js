@@ -91,6 +91,18 @@ const toPublicEvent = (event) => ({
 });
 
 /**
+ * Serialises a Mongoose participant document to a public-facing object.
+ *
+ * @param {import('../../db/models/participant')} participant
+ */
+const toPublicParticipant = (participant) => ({
+  id: participant._id.toString(),
+  event: participant.event.toString(),
+  participe: participant.participe,
+  user: participant.created_by.toString(),
+});
+
+/**
  * Serialises a Mongoose group document to a public-facing object.
  *
  * @param {import('../../db/models/group')} group
@@ -115,6 +127,7 @@ module.exports = {
   toPublicUser,
   toEssentialPublicUser,
   toPublicEvent,
+  toPublicParticipant,
   toPublicGroup,
   toPublicGroupMember,
 };
