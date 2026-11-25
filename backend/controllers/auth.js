@@ -1,10 +1,7 @@
 require('../db/db');
 const express = require('express');
 const { rateLimit } = require('express-rate-limit');
-const {
-  Types: { ObjectId },
-} = require('mongoose');
-const { wrapAsync } = require('./services/shared');
+const { wrapAsync, isValidId } = require('./services/shared');
 const {
   InvalidTokenError,
   signAccessToken,
@@ -19,6 +16,7 @@ const User = require('../db/models/user');
 const Association = require('../db/models/association');
 const Registeration = require('../db/models/registration');
 const RefreshToken = require('../db/models/refresh-token');
+const { USER_ROLE } = require('../db/enums');
 
 async function createRefreshSession(user, association) {
   const refresh = signRefreshToken(user, association);
@@ -47,8 +45,18 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
   router.post(
     '/register',
     wrapAsync(async (req, res) => {
-      const { name, firstName, email, password, phoneNumber, birthday, pronoun, associationName } =
-        req.body;
+      const {
+        name,
+        firstName,
+        email,
+        password,
+        phoneNumber,
+        birthday,
+        pronoun,
+        associationName,
+        medicalCertificate,
+        rightOfPublicity,
+      } = req.body;
 
       if (await User.exists({ email: { $eq: email } })) {
         return res.status(409).json({ message: 'Un utilisateur avec cet e-mail existe déjà' });
@@ -59,6 +67,11 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         return res.status(404).json({ message: "L'association n'existe pas" });
       }
 
+      let role = USER_ROLE.VISITEUR;
+      if (!(await User.exists({}))) {
+        role = USER_ROLE.ADMINISTRATEUR;
+      }
+
       try {
         await User.create({
           name,
@@ -66,9 +79,11 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
           email,
           password: await hashPassword(password),
           phoneNumber,
-          role: 'Visiteur',
+          role: role,
           ...(birthday ? { birthday: new Date(`${birthday}T00:00:00.000Z`) } : {}),
           pronoun,
+          medicalCertificate,
+          rightOfPublicity,
         });
       } catch (error) {
         if (error.code === 11000) {
@@ -135,14 +150,14 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         throw error;
       }
 
-      if (!ObjectId.isValid(claims.sub)) {
+      if (!isValidId(claims.sub)) {
         return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
       }
 
       const oldTokenHash = hashRefreshToken(req.body.refresh_token);
       const session = await RefreshToken.findOne({
         _id: { $eq: claims.sid },
-        userId: { $eq: new ObjectId(claims.sub) },
+        userId: { $eq: claims.sub },
         tokenHash: { $eq: oldTokenHash },
         expiresAt: { $gt: new Date() },
       });
@@ -195,11 +210,11 @@ function createAuthRouter({ limit = 10, windowMs = 60_000 } = {}) {
         throw error;
       }
 
-      if (!ObjectId.isValid(claims.sub)) {
+      if (!isValidId(claims.sub)) {
         return res.status(401).json({ message: 'Refresh token invalide ou expiré' });
       }
 
-      const userId = new ObjectId(claims.sub);
+      const userId = claims.sub;
       const session = await RefreshToken.findOne({
         _id: { $eq: claims.sid },
         userId: { $eq: userId },

@@ -1,6 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ComponentConnexion } from './component-connexion';
-import { provideRouter } from '@angular/router';
+import { Navigation, provideRouter, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 
@@ -31,6 +31,29 @@ describe('ComponentConnexion', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
     expect(component['loginForm'].getRawValue().associationName).toBe('Gières Volley-Ball');
+  });
+
+  it('shows a success message after navigating from a successful registration', () => {
+    const router = TestBed.inject(Router);
+    const url = router.createUrlTree([]);
+    const navigation = {
+      id: 1,
+      initialUrl: url,
+      extractedUrl: url,
+      trigger: 'imperative',
+      extras: { state: { registrationSuccess: true } },
+      previousNavigation: null,
+      abort: vi.fn(),
+    } satisfies Navigation;
+    vi.spyOn(router, 'getCurrentNavigation').mockReturnValue(navigation);
+
+    fixture.destroy();
+    fixture = TestBed.createComponent(ComponentConnexion);
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent).toContain(
+      'Votre inscription a bien été prise en compte.',
+    );
   });
 
   it('shows email validation and submits valid credentials', async () => {

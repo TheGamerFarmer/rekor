@@ -18,6 +18,8 @@ export interface UserDetails {
     pronoun: UserDetails.PronounEnum;
     phoneNumber?: string;
     birthday?: string;
+    medicalCertificate: boolean;
+    rightOfPublicity: boolean;
 }
 export namespace UserDetails {
     export const RoleEnum = {

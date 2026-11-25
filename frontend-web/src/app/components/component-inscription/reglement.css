@@ -7,7 +7,7 @@
   margin: 0 auto;
   padding: 38px 0 56px;
   color: var(--color-text);
-  font-family: 'DM Sans', Arial, sans-serif;
+  font-family: var(--font-family-base);
 }
 
 .reglement-card {

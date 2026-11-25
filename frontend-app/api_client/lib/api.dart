@@ -33,6 +33,7 @@ part 'api/authentication_api.dart';
 part 'api/health_api.dart';
 part 'api/users_api.dart';
 
+part 'model/admin_update_profile_input.dart';
 part 'model/association.dart';
 part 'model/change_password_input.dart';
 part 'model/error_response.dart';

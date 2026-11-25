@@ -3,20 +3,10 @@
 }
 
 .registration-page {
-  align-items: center;
-  background: #f4f7fb;
-  display: flex;
-  font-family: Inter, 'Segoe UI', sans-serif;
-  justify-content: center;
   min-height: 100vh;
-  padding: 2rem 1rem;
 }
 
 .registration-card {
-  background: #fff;
-  border: 1px solid #e3e9f2;
-  border-radius: 1.25rem;
-  box-shadow: 0 1rem 3rem rgb(28 52 84 / 10%);
   max-width: 42rem;
   padding: 2.5rem;
   width: 100%;
@@ -28,7 +18,6 @@
 }
 
 .subtitle {
-  color: #62708a;
   line-height: 1.5;
   margin: 0;
 }
@@ -39,51 +28,8 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
-.field {
-  margin-bottom: 1.25rem;
-}
-
-label,
-legend {
-  color: #26354f;
-  font-size: 0.9rem;
-  font-weight: 600;
-}
-
-label {
-  display: block;
-  margin-bottom: 0.5rem;
-}
-
 .required-marker {
-  color: #e53935;
-}
-
-input[type='email'],
-input[type='password'],
-input[type='tel'],
-input[type='text'],
-input[type='date'],
-select {
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: 0.625rem;
-  box-sizing: border-box;
-  color: #18243a;
-  font: inherit;
-  padding: 0.8rem 0.9rem;
-  transition: border-color 150ms ease;
-  width: 100%;
-}
-
-input:focus {
-  border-color: #2355c4;
-  box-shadow: 0 0 0 3px rgb(38 89 216 / 15%);
-  outline: none;
-}
-
-input[aria-invalid='true'] {
-  border-color: #e53935;
+  color: var(--color-error);
 }
 
 .password-input {
@@ -97,7 +43,7 @@ input[aria-invalid='true'] {
 .password-toggle {
   background: none;
   border: 0;
-  color: #2355c4;
+  color: var(--color-primary);
   cursor: pointer;
   font: inherit;
   font-size: 0.8rem;
@@ -121,7 +67,7 @@ input[aria-invalid='true'] {
 
 .checkbox-field {
   align-items: flex-start;
-  color: #62708a;
+  color: var(--color-text-muted);
   display: flex;
   font-size: 0.85rem;
   font-weight: 400;
@@ -132,8 +78,8 @@ input[aria-invalid='true'] {
 
 .checkbox-field input {
   appearance: none;
-  background: #fff;
-  border: 1px solid #cbd5e3;
+  background: var(--color-surface);
+  border: 1px solid var(--color-control-border);
   border-radius: 0.2rem;
   flex: 0 0 auto;
   height: 1rem;
@@ -144,8 +90,8 @@ input[aria-invalid='true'] {
 }
 
 .checkbox-field input:checked {
-  background: #2355c4;
-  border-color: #2355c4;
+  background: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .checkbox-field input:checked::before {
@@ -158,16 +104,16 @@ input[aria-invalid='true'] {
 }
 
 .checkbox-field input[aria-invalid='true'] {
-  border-color: #e53935;
+  border-color: var(--color-error);
 }
 
 .checkbox-field a {
-  color: #183567;
+  color: var(--color-dark);
   font-weight: 600;
 }
 
 .checkbox-field a.document-link-opened {
-  color: #2355c4;
+  color: var(--color-primary);
 }
 
 .agreement-error {
@@ -175,7 +121,7 @@ input[aria-invalid='true'] {
 }
 
 .error {
-  color: #e53935;
+  color: var(--color-error);
   font-size: 0.8rem;
   margin: 0.4rem 0 0;
 }

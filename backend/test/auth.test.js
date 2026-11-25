@@ -33,6 +33,8 @@ const account = {
   firstName: 'Lovelace',
   password: 'mot-de-passe',
   pronoun: 'Elle',
+  medicalCertificate: false,
+  rightOfPublicity: false,
   associationName: 'Gières Volley-Ball',
 };
 const association = { name: account.associationName, address: '1 Rue des Sports 38610 Gières' };
@@ -111,10 +113,38 @@ describe('/auth', () => {
     const stored = await db.getDb().collection('users').findOne({ email: account.email });
     assert.notStrictEqual(stored.password, account.password);
     assert.strictEqual(stored.password.split(':')[0].length, 32);
+    assert.strictEqual(stored.role, USER_ROLE.ADMINISTRATEUR);
+    assert.strictEqual(stored.medicalCertificate, false);
+    assert.strictEqual(stored.rightOfPublicity, false);
     const registration = await Registration.findOne({
       association: (await Association.findOne())._id,
     });
     assert.strictEqual(registration.created_by.toString(), stored._id.toString());
+  });
+
+  it('attribue le rôle Visiteur aux inscriptions après le premier compte', async () => {
+    const first = await request(apiApp).post('/auth/register').send(account);
+    assert.strictEqual(first.status, 201);
+
+    const second = await request(apiApp)
+      .post('/auth/register')
+      .send({
+        ...account,
+        name: 'Byron',
+        firstName: 'Alan',
+        email: 'alan@exemple.fr',
+        pronoun: 'Il',
+      });
+    assert.strictEqual(second.status, 201);
+
+    const firstStored = await db.getDb().collection('users').findOne({
+      email: account.email,
+    });
+    const secondStored = await db.getDb().collection('users').findOne({
+      email: 'alan@exemple.fr',
+    });
+    assert.strictEqual(firstStored.role, USER_ROLE.ADMINISTRATEUR);
+    assert.strictEqual(secondStored.role, USER_ROLE.VISITEUR);
   });
 
   it('enregistre un compte avec un anniversaire', async () => {
@@ -161,7 +191,7 @@ describe('/auth', () => {
       .set('Authorization', `Bearer ${res.body.access_token}`);
     assert.strictEqual(me.status, 200);
     assert.strictEqual(me.body.id, storedUser._id.toString());
-    assert.strictEqual(me.body.role, 'Visiteur');
+    assert.strictEqual(me.body.role, USER_ROLE.ADMINISTRATEUR);
   });
 
   it('renouvelle et fait tourner le refresh token', async () => {

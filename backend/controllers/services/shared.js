@@ -1,3 +1,5 @@
+const mongoose = require('mongoose');
+
 /**
  * Wraps an async Express route handler so that any rejected promise is forwarded to `next(err)`
  * instead of leaving the request hanging. Converts `MongooseError` (thrown when
@@ -14,6 +16,10 @@ const wrapAsync = (handler) => (req, res, next) =>
     next(err);
   });
 
+function isValidId(id) {
+  return typeof id === 'string' && mongoose.isObjectIdOrHexString(id);
+}
+
 /**
  * Serialises a Mongoose user document to a public-facing object.
  * Omits `password` and other internal fields; includes optional fields only when present.
@@ -21,7 +27,18 @@ const wrapAsync = (handler) => (req, res, next) =>
  * @param {import('../../db/models/user')} user
  */
 const toPublicUser = (user) => {
-  const { _id, name, firstName, email, phoneNumber, role, birthday, pronoun } = user;
+  const {
+    _id,
+    name,
+    firstName,
+    email,
+    phoneNumber,
+    role,
+    birthday,
+    pronoun,
+    medicalCertificate,
+    rightOfPublicity,
+  } = user;
   const doc = {
     id: _id.toString(),
     name,
@@ -29,6 +46,8 @@ const toPublicUser = (user) => {
     email,
     role,
     pronoun,
+    medicalCertificate,
+    rightOfPublicity,
   };
 
   if (phoneNumber !== undefined && phoneNumber !== null) doc.phoneNumber = phoneNumber;
@@ -56,4 +75,4 @@ const toEssentialPublicUser = (user) => {
   );
 };
 
-module.exports = { wrapAsync, toPublicUser, toEssentialPublicUser };
+module.exports = { wrapAsync, isValidId, toPublicUser, toEssentialPublicUser };

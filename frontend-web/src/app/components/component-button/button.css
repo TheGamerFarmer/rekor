@@ -85,8 +85,17 @@
   background: color-mix(in srgb, var(--glass-background) 35%, transparent);
 }
 
+.button-success {
+  color: #155c34;
+  background: #d7f0df;
+}
+
+.button-success:hover:not(:disabled) {
+  background: #b9e5c7;
+}
+
 .button-danger {
-  color: #b52e2e;
+  color: var(--color-error);
   background: #fce4e4;
 }
 

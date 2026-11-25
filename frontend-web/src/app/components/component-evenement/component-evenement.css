@@ -7,7 +7,7 @@
   margin: 0 auto;
   padding: 42px 28px 56px;
   color: var(--color-dark);
-  font-family: 'DM Sans', Arial, sans-serif;
+  font-family: var(--font-family-base);
 }
 
 .page-heading {

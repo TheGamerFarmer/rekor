@@ -1,0 +1,211 @@
+:host {
+  display: block;
+  color: var(--color-dark);
+  font-family: var(--font-family-base);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+.credits-page {
+  display: flex;
+  width: min(100% - 48px, 1120px);
+  flex-direction: column;
+  gap: 48px;
+  margin: 0 auto;
+  padding: 38px 0 52px;
+}
+
+.credits-intro {
+  margin: 0;
+  color: var(--color-dark);
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.project-context {
+  margin: 0;
+  line-height: 1.65;
+}
+
+.developer-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.developer-list li {
+  padding: 16px 20px;
+  border-radius: 14px;
+  background: var(--color-primary-light);
+  font-weight: 700;
+}
+
+h2 {
+  position: relative;
+  margin: 0;
+  padding-left: 18px;
+  color: var(--color-dark);
+  font-size: clamp(22px, 2.5vw, 29px);
+  font-weight: 800;
+  line-height: 1.15;
+  text-transform: uppercase;
+}
+
+h2::before {
+  position: absolute;
+  top: 0.06em;
+  bottom: 0.06em;
+  left: 0;
+  width: 6px;
+  border-radius: 6px;
+  background: var(--color-secondary);
+  content: '';
+}
+
+.credit-list {
+  display: grid;
+  gap: 10px;
+}
+
+.credit-card {
+  display: grid;
+  min-height: 88px;
+  grid-template-columns: 90px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  padding: 14px 28px;
+  border-radius: 14px;
+  background: var(--color-primary-light);
+}
+
+.source-icon {
+  display: block;
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.credit-description h3,
+.credit-description p {
+  margin: 0;
+}
+
+.credit-description h3 {
+  color: var(--color-dark);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.credit-description p {
+  margin-top: 2px;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.source-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-primary);
+  font-size: 15px;
+  text-decoration: none;
+}
+
+.source-link:hover,
+.source-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.source-link svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.font-preview {
+  display: block;
+  color: var(--color-dark);
+  font-size: 46px;
+  line-height: 1;
+  text-align: center;
+}
+
+.font-preview-sans {
+  font-family: var(--font-family-base);
+}
+
+.font-preview-condensed {
+  font-family: 'Barlow Condensed', Impact, sans-serif;
+  font-weight: 700;
+}
+
+.font-preview-roboto {
+  font-family: Roboto, Arial, sans-serif;
+}
+
+@media (max-width: 720px) {
+  .credits-page {
+    width: min(100% - 36px, 600px);
+    gap: 36px;
+    padding: 30px 0 38px;
+  }
+
+  .credit-card {
+    grid-template-columns: 58px minmax(0, 1fr);
+    gap: 16px;
+    padding: 16px;
+  }
+
+  .source-icon {
+    width: 52px;
+    height: 52px;
+  }
+
+  .source-link {
+    grid-column: 2;
+    font-size: 14px;
+  }
+
+  .font-preview {
+    font-size: 38px;
+  }
+}
+
+@media (max-width: 420px) {
+  .credits-page {
+    width: min(100% - 28px, 400px);
+  }
+
+  .credits-intro {
+    font-size: 15px;
+  }
+
+  .credit-card {
+    gap: 12px;
+    padding: 14px 12px;
+  }
+
+  .credit-description h3 {
+    font-size: 16px;
+  }
+
+  .credit-description p {
+    font-size: 14px;
+  }
+}

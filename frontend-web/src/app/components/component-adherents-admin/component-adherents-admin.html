@@ -4,8 +4,8 @@
   subtitle="Gérez les profils et suivez les inscriptions du club."
 />
 
-<main class="admin-members-page">
-  <section class="admin-members-card" aria-label="Gestion des adhérents">
+<main class="admin-page admin-members-page">
+  <section class="admin-card admin-members-card" aria-label="Gestion des adhérents">
     <header class="admin-members-header">
       <nav class="registration-filters" aria-label="Filtrer les inscriptions">
         @for (status of statuses; track status.value) {
@@ -20,7 +20,7 @@
     </header>
 
     @if (isFormVisible() && editingId() !== null) {
-      <section class="member-form-card" aria-labelledby="member-form-title">
+      <section class="admin-card member-form-card" aria-labelledby="member-form-title">
         <h2 id="member-form-title">Modifier un adhérent</h2>
         <form [formGroup]="memberForm" (ngSubmit)="save()" novalidate>
           <div class="form-grid">
@@ -89,34 +89,24 @@
               }
             </label>
 
-            <fieldset class="field role-field">
-              <legend>Rôle(s)</legend>
-              <div class="role-options">
-                @for (role of roles; track role) {
-                  <label class="role-option">
-                    <input
-                      type="checkbox"
-                      [checked]="hasRole(role)"
-                      (change)="onRoleChange(role, $event)"
-                    />
-                    {{ role }}
-                  </label>
-                }
-              </div>
-              @if (submitted() && memberForm.controls.roles.invalid) {
-                <small>Sélectionnez au moins un rôle.</small>
-              }
-            </fieldset>
-
-            <label class="field" for="registration-status">
-              Statut de l’inscription
-              <select id="registration-status" formControlName="registrationStatus">
-                @for (status of statuses; track status.value) {
-                  <option [value]="status.value">
-                    {{ status.value === 'validated' ? 'Validée' : status.label }}
+            <label class="field" for="role">
+              Rôle
+              <select id="role" formControlName="role">
+                <option value="">Sélectionner un rôle</option>
+                @if (
+                  memberForm.controls.role.value && !roles.includes(memberForm.controls.role.value)
+                ) {
+                  <option [value]="memberForm.controls.role.value">
+                    {{ memberForm.controls.role.value }}
                   </option>
                 }
+                @for (role of roles; track role) {
+                  <option [value]="role">{{ role }}</option>
+                }
               </select>
+              @if (submitted() && memberForm.controls.role.invalid) {
+                <small>Sélectionnez un rôle.</small>
+              }
             </label>
           </div>
 
@@ -146,12 +136,39 @@
               <a [href]="'mailto:' + member.email">{{ member.email }}</a>
             </div>
           </div>
-          <ul class="member-roles" aria-label="Rôles">
-            @for (role of member.roles; track role) {
-              <li>{{ role }}</li>
-            }
+          <ul class="member-roles" aria-label="Rôle">
+            <li>{{ member.role }}</li>
           </ul>
           <div class="member-actions">
+            @if (member.registrationStatus === 'to-validate') {
+              <app-button
+                size="small"
+                variant="success"
+                text="Valider"
+                [ariaLabel]="'Valider l’inscription de ' + member.firstName + ' ' + member.lastName"
+                [disabled]="true"
+              ></app-button>
+              <app-button
+                size="small"
+                variant="danger"
+                text="Refuser"
+                [ariaLabel]="'Refuser l’inscription de ' + member.firstName + ' ' + member.lastName"
+                [disabled]="true"
+              ></app-button>
+            } @else if (member.registrationStatus === 'pending-validation') {
+              <app-button
+                size="small"
+                variant="success"
+                text="Confirmer la réception du certificat"
+                [ariaLabel]="
+                  'Confirmer la réception du certificat de ' +
+                  member.firstName +
+                  ' ' +
+                  member.lastName
+                "
+                [disabled]="true"
+              ></app-button>
+            }
             <button
               class="icon-action edit-action"
               type="button"

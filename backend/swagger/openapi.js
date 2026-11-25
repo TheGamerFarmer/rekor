@@ -40,6 +40,8 @@ const RegisterInput = z
     pronoun: Pronoun.openapi({ example: 'Elle' }),
     phoneNumber: z.string().optional().openapi({ example: '0612345678' }),
     birthday: z.iso.date().optional().openapi({ example: '1815-12-10' }),
+    medicalCertificate: z.boolean(),
+    rightOfPublicity: z.boolean(),
   })
   .openapi('RegisterInput');
 
@@ -50,8 +52,15 @@ const UpdateProfileInput = z
     phoneNumber: z.string().optional(),
     birthday: z.iso.date().optional(),
     pronoun: Pronoun.optional(),
+    medicalCertificate: z.boolean().optional(),
+    rightOfPublicity: z.boolean().optional(),
   })
   .openapi('UpdateProfileInput');
+
+const AdminUpdateProfileInput = UpdateProfileInput.extend({
+  email: z.email().optional(),
+  role: Role,
+}).openapi('AdminUpdateProfileInput');
 
 const LoginInput = z
   .object({
@@ -91,6 +100,8 @@ const UserDetails = UserListItem.extend({
   pronoun: Pronoun,
   phoneNumber: z.string().optional(),
   birthday: z.iso.datetime().optional(),
+  medicalCertificate: z.boolean(),
+  rightOfPublicity: z.boolean(),
 }).openapi('UserDetails');
 
 const Association = z
@@ -164,6 +175,23 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'get',
+  path: '/users/roles',
+  operationId: 'listUserRoles',
+  tags: ['Users'],
+  summary: 'Liste les rôles utilisateurs disponibles',
+  security: [{ BearerAuth: [] }],
+  responses: {
+    200: { description: 'Les rôles disponibles', content: json(z.array(Role)) },
+    401: failure('Authentification requise ou token invalide'),
+    403: failure('Accès réservé aux administrateurs'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
   path: '/association',
   operationId: 'listAssociations',
   tags: ['Associations'],
@@ -184,6 +212,7 @@ registry.registerPath({
   security: [{ BearerAuth: [] }],
   responses: {
     200: { description: 'Le profil utilisateur', content: json(UserDetails) },
+    400: failure('Identifiant invalide'),
     401: failure('Authentification requise ou token invalide'),
     404: failure('Utilisateur introuvable'),
     429: failure('Trop de requêtes'),
@@ -220,7 +249,9 @@ registry.registerPath({
   security: [{ BearerAuth: [] }],
   responses: {
     204: { description: 'Compte supprimé, sans contenu de réponse' },
+    400: failure('Identifiant invalide'),
     401: failure('Authentification requise ou token invalide'),
+    403: failure('Interdiction de supprimer le dernier administrateur'),
     404: failure('Utilisateur introuvable'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
@@ -266,6 +297,29 @@ registry.registerPath({
 });
 
 registry.registerPath({
+  method: 'patch',
+  path: '/users/{id}',
+  operationId: 'updateUser',
+  tags: ['Users'],
+  summary: 'Modifie le profil d’un utilisateur',
+  security: [{ BearerAuth: [] }],
+  request: {
+    params: z.object({ id: Id }),
+    body: { required: true, content: json(AdminUpdateProfileInput) },
+  },
+  responses: {
+    204: { description: 'Profil modifié, sans contenu de réponse' },
+    400: failure('Identifiant ou rôle invalide'),
+    401: failure('Authentification requise ou token invalide'),
+    403: failure('Accès interdit ou modification de son propre profil'),
+    404: failure('Utilisateur introuvable'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
   method: 'post',
   path: '/auth/register',
   operationId: 'register',
@@ -279,6 +333,21 @@ registry.registerPath({
     404: failure('Association introuvable'),
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/auth/re-register',
+  operationId: 'reregister',
+  tags: ['Authentication'],
+  summary: 'Réinscrit le compte authentifié dans une association',
+  security: [{ BearerAuth: [] }],
+  responses: {
+    501: failure('La réinscription n’est pas encore disponible'),
+    401: failure('Authentification requise ou token invalide'),
+    429: failure('Trop de requêtes'),
     500: failure('Erreur interne du serveur'),
   },
 });
