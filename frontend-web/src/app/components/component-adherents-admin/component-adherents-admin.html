@@ -162,7 +162,7 @@
             <li>{{ member.role }}</li>
           </ul>
           <div class="member-actions">
-            @if (member.registrationStatus === 'to-validate') {
+            @if (member.registrationStatus === 'pending') {
               <app-button
                 size="small"
                 variant="success"
@@ -175,9 +175,9 @@
                 variant="danger"
                 text="Refuser"
                 [ariaLabel]="'Refuser l’inscription de ' + member.firstName + ' ' + member.lastName"
-                [disabled]="true"
+                (click)="deleteMember(member.id)"
               ></app-button>
-            } @else if (member.registrationStatus === 'pending-validation') {
+            } @else if (member.registrationStatus === 'validated') {
               <app-button
                 size="small"
                 variant="success"

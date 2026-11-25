@@ -9,12 +9,7 @@ export const MEMBER_ROLES = [
 ] as const;
 export type MemberRole = string;
 
-export const REGISTRATION_STATUSES = [
-  'validated',
-  'pending-validation',
-  'to-validate',
-  'refused',
-] as const;
+export const REGISTRATION_STATUSES = ['finalized', 'validated', 'pending', 'refused'] as const;
 export type RegistrationStatus = (typeof REGISTRATION_STATUSES)[number];
 
 export const MEMBER_PRONOUNS = ['Il', 'Elle', 'Iel', 'Autre'] as const;
@@ -48,7 +43,7 @@ const MOCK_ADHERENTS: Adherent[] = [
     phone: '0600000001',
     email: 'alex.martin@example.fr',
     role: 'Capitaine',
-    registrationStatus: 'validated',
+    registrationStatus: 'finalized',
     medicalCertificate: true,
     rightOfPublicity: true,
   },
@@ -61,7 +56,7 @@ const MOCK_ADHERENTS: Adherent[] = [
     phone: '0600000002',
     email: 'sam.durand@example.fr',
     role: 'Visiteur',
-    registrationStatus: 'to-validate',
+    registrationStatus: 'pending',
     medicalCertificate: true,
     rightOfPublicity: false,
   },
@@ -74,7 +69,7 @@ const MOCK_ADHERENTS: Adherent[] = [
     phone: '0600000003',
     email: 'camille.bernard@example.fr',
     role: 'Entraineur',
-    registrationStatus: 'pending-validation',
+    registrationStatus: 'validated',
     medicalCertificate: false,
     rightOfPublicity: true,
   },
@@ -87,7 +82,7 @@ const MOCK_ADHERENTS: Adherent[] = [
     phone: '0600000004',
     email: 'noa.petit@example.fr',
     role: 'Visiteur',
-    registrationStatus: 'to-validate',
+    registrationStatus: 'pending',
     medicalCertificate: null,
     rightOfPublicity: null,
   },
@@ -100,7 +95,7 @@ const MOCK_ADHERENTS: Adherent[] = [
     phone: '0600000005',
     email: 'lina.robert@example.fr',
     role: 'Adhérent',
-    registrationStatus: 'validated',
+    registrationStatus: 'finalized',
     medicalCertificate: true,
     rightOfPublicity: false,
   },
@@ -178,6 +173,16 @@ function migrateLegacyAdherent(value: unknown): unknown {
   if ('birthYear' in legacyMember && !('birthDate' in legacyMember)) {
     legacyMember['birthDate'] = null;
     delete legacyMember['birthYear'];
+  }
+
+  const legacyStatuses: Record<string, RegistrationStatus> = {
+    validated: 'finalized',
+    'pending-validation': 'validated',
+    'to-validate': 'pending',
+  };
+  if (typeof legacyMember['registrationStatus'] === 'string') {
+    legacyMember['registrationStatus'] =
+      legacyStatuses[legacyMember['registrationStatus']] ?? legacyMember['registrationStatus'];
   }
 
   if (!('role' in legacyMember) && Array.isArray(legacyMember['roles'])) {

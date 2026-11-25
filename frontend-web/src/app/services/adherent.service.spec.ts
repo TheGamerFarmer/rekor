@@ -11,7 +11,7 @@ const member: Adherent = {
   phone: '0600000000',
   email: 'alex@example.fr',
   role: 'Adhérent',
-  registrationStatus: 'validated',
+  registrationStatus: 'finalized',
   medicalCertificate: true,
   rightOfPublicity: false,
 };
@@ -36,11 +36,9 @@ describe('AdherentService', () => {
     const members = new AdherentService().adherents();
 
     expect(members).toHaveLength(5);
+    expect(members.map(({ registrationStatus }) => registrationStatus)).toContain('finalized');
     expect(members.map(({ registrationStatus }) => registrationStatus)).toContain('validated');
-    expect(members.map(({ registrationStatus }) => registrationStatus)).toContain(
-      'pending-validation',
-    );
-    expect(members.map(({ registrationStatus }) => registrationStatus)).toContain('to-validate');
+    expect(members.map(({ registrationStatus }) => registrationStatus)).toContain('pending');
     expect(members.some(({ birthDate }) => birthDate === null)).toBe(true);
   });
 
@@ -50,6 +48,21 @@ describe('AdherentService', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([legacyMember]));
 
     expect(new AdherentService().adherents()).toEqual([{ ...member, birthDate: null }]);
+  });
+
+  it('migrates legacy registration status values', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([
+        member,
+        { ...member, id: 5, registrationStatus: 'pending-validation' },
+        { ...member, id: 6, registrationStatus: 'to-validate' },
+      ]),
+    );
+
+    expect(
+      new AdherentService().adherents().map(({ registrationStatus }) => registrationStatus),
+    ).toEqual(['finalized', 'validated', 'pending']);
   });
 
   it('marks missing legacy consents as unknown without changing known values', () => {

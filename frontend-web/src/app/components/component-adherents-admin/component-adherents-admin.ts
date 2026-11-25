@@ -29,7 +29,7 @@ import {
 export class ComponentAdherentsAdmin {
   private readonly adherentService = inject(AdherentService);
   protected readonly adherents = this.adherentService.adherents;
-  protected readonly registrationFilter = signal<RegistrationStatus>('to-validate');
+  protected readonly registrationFilter = signal<RegistrationStatus>('pending');
   protected readonly editingId = signal<number | null>(null);
   protected readonly isFormVisible = signal(false);
   protected readonly submitted = signal(false);
@@ -37,9 +37,9 @@ export class ComponentAdherentsAdmin {
   protected readonly pronouns = MEMBER_PRONOUNS;
   protected readonly roles: readonly MemberRole[] = MEMBER_ROLES;
   protected readonly statuses = [
+    { value: 'finalized', label: 'Finalisées' },
     { value: 'validated', label: 'Validées' },
-    { value: 'pending-validation', label: 'En cours de validation' },
-    { value: 'to-validate', label: 'À valider' },
+    { value: 'pending', label: 'En attente' },
     { value: 'refused', label: 'Refusées' },
   ] as const satisfies readonly { value: RegistrationStatus; label: string }[];
 
@@ -79,7 +79,7 @@ export class ComponentAdherentsAdmin {
       nonNullable: true,
       validators: [Validators.required],
     }),
-    registrationStatus: new FormControl<RegistrationStatus>('to-validate', {
+    registrationStatus: new FormControl<RegistrationStatus>('pending', {
       nonNullable: true,
       validators: [Validators.required],
     }),

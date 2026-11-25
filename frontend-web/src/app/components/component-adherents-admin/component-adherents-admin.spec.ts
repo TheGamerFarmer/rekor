@@ -19,7 +19,7 @@ describe('ComponentAdherentsAdmin', () => {
     phone: '0600000000',
     email: 'alex@example.fr',
     role: 'Capitaine',
-    registrationStatus: 'validated',
+    registrationStatus: 'finalized',
     medicalCertificate: true,
     rightOfPublicity: false,
   };
@@ -30,7 +30,7 @@ describe('ComponentAdherentsAdmin', () => {
     firstName: 'Sam',
     email: 'sam@example.fr',
     role: 'Adhérent',
-    registrationStatus: 'to-validate',
+    registrationStatus: 'pending',
   };
 
   beforeEach(async () => {
@@ -59,8 +59,11 @@ describe('ComponentAdherentsAdmin', () => {
     const buttons = fixture.nativeElement.querySelectorAll(
       '.registration-filters button',
     ) as NodeListOf<HTMLButtonElement>;
+    expect(Array.from(buttons).map((button) => button.textContent)).toEqual(
+      expect.arrayContaining(['Finalisées (1)', 'Validées (0)', 'En attente (1)', 'Refusées (0)']),
+    );
     const validatedFilter = Array.from(buttons).find((button) =>
-      button.textContent?.includes('Validées'),
+      button.textContent?.includes('Finalisées'),
     );
     expect(validatedFilter).toBeDefined();
     validatedFilter?.click();
@@ -99,7 +102,7 @@ describe('ComponentAdherentsAdmin', () => {
     expect(rows[2].textContent).toContain('Droit à l’image : Inconnu');
   });
 
-  it('presents disabled registration decisions without an explanatory notice', () => {
+  it('removes a member when their registration is refused', () => {
     const accept = fixture.nativeElement.querySelector(
       '[aria-label="Valider l’inscription de Sam Durand"]',
     ) as HTMLButtonElement;
@@ -108,10 +111,13 @@ describe('ComponentAdherentsAdmin', () => {
     ) as HTMLButtonElement;
 
     expect(accept.disabled).toBe(true);
-    expect(refuse.disabled).toBe(true);
+    expect(refuse.disabled).toBe(false);
     expect(accept.classList.contains('button-success')).toBe(true);
     expect(fixture.nativeElement.querySelector('.registration-notice')).toBeNull();
     expect(update).not.toHaveBeenCalled();
+
+    refuse.click();
+    expect(remove).toHaveBeenCalledWith(toValidateMember.id);
   });
 
   it('shows the disabled certificate confirmation only for pending registrations', () => {
@@ -121,14 +127,14 @@ describe('ComponentAdherentsAdmin', () => {
         ...toValidateMember,
         id: 3,
         firstName: 'Camille',
-        registrationStatus: 'pending-validation',
+        registrationStatus: 'validated',
       },
     ]);
     const pendingFilter = Array.from(
       fixture.nativeElement.querySelectorAll(
         '.registration-filters button',
       ) as NodeListOf<HTMLButtonElement>,
-    ).find((button) => button.textContent?.includes('En cours de validation'));
+    ).find((button) => button.textContent?.includes('Validées'));
     pendingFilter?.click();
     fixture.detectChanges();
 
@@ -147,14 +153,14 @@ describe('ComponentAdherentsAdmin', () => {
     members.set([
       {
         ...toValidateMember,
-        registrationStatus: 'pending-validation',
+        registrationStatus: 'validated',
         medicalCertificate: false,
       },
       {
         ...toValidateMember,
         id: 3,
         firstName: 'Camille',
-        registrationStatus: 'pending-validation',
+        registrationStatus: 'validated',
         medicalCertificate: null,
       },
     ]);
@@ -162,7 +168,7 @@ describe('ComponentAdherentsAdmin', () => {
       fixture.nativeElement.querySelectorAll(
         '.registration-filters button',
       ) as NodeListOf<HTMLButtonElement>,
-    ).find((button) => button.textContent?.includes('En cours de validation'));
+    ).find((button) => button.textContent?.includes('Validées'));
     pendingFilter?.click();
     fixture.detectChanges();
 
@@ -231,7 +237,7 @@ describe('ComponentAdherentsAdmin', () => {
       fixture.nativeElement.querySelectorAll(
         '.registration-filters button',
       ) as NodeListOf<HTMLButtonElement>,
-    ).find((button) => button.textContent?.includes('En cours de validation'));
+    ).find((button) => button.textContent?.includes('Validées'));
     pendingFilter?.click();
     fixture.detectChanges();
 
@@ -355,7 +361,7 @@ describe('ComponentAdherentsAdmin', () => {
       fixture.nativeElement.querySelectorAll(
         '.registration-filters button',
       ) as NodeListOf<HTMLButtonElement>,
-    ).find((button) => button.textContent?.includes('Validées'));
+    ).find((button) => button.textContent?.includes('Finalisées'));
     validatedFilter?.click();
     fixture.detectChanges();
 
