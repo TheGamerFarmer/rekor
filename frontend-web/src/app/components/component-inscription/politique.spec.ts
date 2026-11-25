@@ -25,5 +25,18 @@ describe('ComponentPolitique', () => {
     expect(clubLinks).toHaveLength(2);
     expect(clubLinks[0].textContent).toContain('contacter le club');
     expect(clubLinks[1].textContent).toContain('par ses canaux de contact');
+    expect(page.querySelector('.document-actions button')?.textContent?.trim()).toBe(
+      'Quitter la page',
+    );
+  });
+
+  it('closes the page when the exit button is clicked', () => {
+    const closeSpy = vi.spyOn(window, 'close').mockImplementation(() => undefined);
+    const button = fixture.nativeElement.querySelector('.document-close') as HTMLButtonElement;
+
+    button.click();
+
+    expect(closeSpy).toHaveBeenCalledOnce();
+    closeSpy.mockRestore();
   });
 });

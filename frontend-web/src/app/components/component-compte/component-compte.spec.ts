@@ -14,7 +14,9 @@ describe('ComponentCompte', () => {
   let getMyProfile: ReturnType<typeof vi.fn>;
 
   beforeEach(async () => {
-    getMyProfile = vi.fn().mockReturnValue(of({ role: UserDetails.RoleEnum.Visiteur }));
+    getMyProfile = vi
+      .fn()
+      .mockReturnValue(of({ role: UserDetails.RoleEnum.Visiteur, medicalCertificate: false }));
     await TestBed.configureTestingModule({
       imports: [ComponentCompte],
       providers: [
@@ -92,9 +94,42 @@ describe('ComponentCompte', () => {
     date.value = '2026-11-24';
     date.dispatchEvent(new Event('input', { bubbles: true }));
     expect(date.value).toBe('2026-11-24');
-    expect(submit?.disabled).toBe(true);
+    expect(submit?.disabled).toBe(false);
     expect(fixture.nativeElement.textContent).toContain('le remettre directement au club');
-    expect(fixture.nativeElement.querySelector('#certificate-unavailable')).toBeNull();
+  });
+
+  it('requires consent before attempting to transmit a certificate', () => {
+    component['profileRole'].set(UserDetails.RoleEnum.Adhrent);
+    fixture.detectChanges();
+    const submit = Array.from(
+      fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
+    ).find((button) => button.textContent?.includes('Transmettre le certificat'))!;
+    const consent = fixture.nativeElement.querySelector(
+      '[formControlName="healthData"]',
+    ) as HTMLInputElement;
+
+    submit.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
+      'Cochez la case autorisant la collecte',
+    );
+
+    consent.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+
+    submit.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+
+    consent.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+    submit.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
+      'Cochez la case autorisant la collecte',
+    );
   });
 
   it('shows the certificate card for every non-visitor role', () => {
@@ -134,6 +169,44 @@ describe('ComponentCompte', () => {
     });
     pending.detectChanges();
     expect(pending.nativeElement.querySelector('#medical-certificate')).not.toBeNull();
+    pending.destroy();
+  });
+
+  it('loads the saved certificate consent from the profile', () => {
+    getMyProfile.mockReturnValue(
+      of({ role: UserDetails.RoleEnum.Adhrent, medicalCertificate: true }),
+    );
+    const saved = TestBed.createComponent(ComponentCompte);
+    saved.detectChanges();
+
+    const consent = saved.nativeElement.querySelector(
+      '[formControlName="healthData"]',
+    ) as HTMLInputElement;
+    expect(consent.checked).toBe(true);
+    saved.destroy();
+  });
+
+  it('does not overwrite a consent change made while the profile is loading', () => {
+    const profile = new Subject<UserDetails>();
+    getMyProfile.mockReturnValue(profile);
+    const pending = TestBed.createComponent(ComponentCompte);
+    pending.detectChanges();
+    const consent = pending.nativeElement.querySelector(
+      '[formControlName="healthData"]',
+    ) as HTMLInputElement;
+    consent.click();
+
+    profile.next({
+      id: '1',
+      name: 'Martin',
+      email: 'alex@example.com',
+      pronoun: UserDetails.PronounEnum.Iel,
+      role: UserDetails.RoleEnum.Adhrent,
+      medicalCertificate: false,
+      rightOfPublicity: false,
+    });
+    pending.detectChanges();
+    expect(consent.checked).toBe(true);
     pending.destroy();
   });
 

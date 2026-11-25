@@ -9,6 +9,7 @@ describe('ComponentAdherentsAdmin', () => {
   let add: ReturnType<typeof vi.fn>;
   let update: ReturnType<typeof vi.fn>;
   let remove: ReturnType<typeof vi.fn>;
+  let confirmRequirement: ReturnType<typeof vi.fn>;
 
   const validatedMember: Adherent = {
     id: 1,
@@ -19,7 +20,11 @@ describe('ComponentAdherentsAdmin', () => {
     phone: '0600000000',
     email: 'alex@example.fr',
     role: 'Capitaine',
-    registrationStatus: 'validated',
+    registrationStatus: 'finalized',
+    medicalCertificate: true,
+    medicalCertificateReceivedDate: null,
+    membershipPaymentDate: null,
+    rightOfPublicity: false,
   };
   const toValidateMember: Adherent = {
     ...validatedMember,
@@ -28,7 +33,7 @@ describe('ComponentAdherentsAdmin', () => {
     firstName: 'Sam',
     email: 'sam@example.fr',
     role: 'Adhérent',
-    registrationStatus: 'to-validate',
+    registrationStatus: 'pending',
   };
 
   beforeEach(async () => {
@@ -36,12 +41,13 @@ describe('ComponentAdherentsAdmin', () => {
     add = vi.fn();
     update = vi.fn();
     remove = vi.fn();
+    confirmRequirement = vi.fn();
     await TestBed.configureTestingModule({
       imports: [ComponentAdherentsAdmin],
       providers: [
         {
           provide: AdherentService,
-          useValue: { adherents: members, add, update, remove },
+          useValue: { adherents: members, add, update, remove, confirmRequirement },
         },
       ],
     }).compileComponents();
@@ -57,8 +63,11 @@ describe('ComponentAdherentsAdmin', () => {
     const buttons = fixture.nativeElement.querySelectorAll(
       '.registration-filters button',
     ) as NodeListOf<HTMLButtonElement>;
+    expect(Array.from(buttons).map((button) => button.textContent)).toEqual(
+      expect.arrayContaining(['Finalisées (1)', 'Validées (0)', 'En attente (1)', 'Refusées (0)']),
+    );
     const validatedFilter = Array.from(buttons).find((button) =>
-      button.textContent?.includes('Validées'),
+      button.textContent?.includes('Finalisées'),
     );
     expect(validatedFilter).toBeDefined();
     validatedFilter?.click();
@@ -68,7 +77,36 @@ describe('ComponentAdherentsAdmin', () => {
     expect(fixture.nativeElement.textContent).not.toContain('Sam Durand');
   });
 
-  it('presents disabled registration decisions without an explanatory notice', () => {
+  it('displays each member’s consent without treating unknown values as refusals', () => {
+    members.set([
+      toValidateMember,
+      {
+        ...toValidateMember,
+        id: 3,
+        firstName: 'Noa',
+        medicalCertificate: false,
+        rightOfPublicity: true,
+      },
+      {
+        ...toValidateMember,
+        id: 4,
+        firstName: 'Camille',
+        medicalCertificate: null,
+        rightOfPublicity: null,
+      },
+    ]);
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll('.member-row') as NodeListOf<HTMLElement>;
+    expect(rows[0].textContent).toContain('Collecte du certificat médical : Acceptée');
+    expect(rows[0].textContent).toContain('Droit à l’image : Refusé');
+    expect(rows[1].textContent).toContain('Collecte du certificat médical : Refusée');
+    expect(rows[1].textContent).toContain('Droit à l’image : Accepté');
+    expect(rows[2].textContent).toContain('Collecte du certificat médical : Inconnu');
+    expect(rows[2].textContent).toContain('Droit à l’image : Inconnu');
+  });
+
+  it('removes a member when their registration is refused', () => {
     const accept = fixture.nativeElement.querySelector(
       '[aria-label="Valider l’inscription de Sam Durand"]',
     ) as HTMLButtonElement;
@@ -77,36 +115,112 @@ describe('ComponentAdherentsAdmin', () => {
     ) as HTMLButtonElement;
 
     expect(accept.disabled).toBe(true);
-    expect(refuse.disabled).toBe(true);
+    expect(refuse.disabled).toBe(false);
     expect(accept.classList.contains('button-success')).toBe(true);
     expect(fixture.nativeElement.querySelector('.registration-notice')).toBeNull();
     expect(update).not.toHaveBeenCalled();
+
+    refuse.click();
+    expect(remove).toHaveBeenCalledWith(toValidateMember.id);
   });
 
-  it('shows the disabled certificate confirmation only for pending registrations', () => {
+  it('allows dated certificate and payment confirmations for validated registrations', () => {
     members.set([
       ...members(),
       {
         ...toValidateMember,
         id: 3,
         firstName: 'Camille',
-        registrationStatus: 'pending-validation',
+        registrationStatus: 'validated',
       },
     ]);
     const pendingFilter = Array.from(
       fixture.nativeElement.querySelectorAll(
         '.registration-filters button',
       ) as NodeListOf<HTMLButtonElement>,
-    ).find((button) => button.textContent?.includes('En cours de validation'));
+    ).find((button) => button.textContent?.includes('Validées'));
     pendingFilter?.click();
     fixture.detectChanges();
 
     const confirmation = fixture.nativeElement.querySelector(
       '[aria-label="Confirmer la réception du certificat de Camille Durand"]',
     ) as HTMLButtonElement;
-    expect(confirmation.disabled).toBe(true);
+    expect(confirmation.disabled).toBe(false);
     expect(confirmation.classList.contains('button-success')).toBe(true);
+    expect(fixture.nativeElement.querySelector('.certificate-notice')).toBeNull();
+    const certificateDate = fixture.nativeElement.querySelector(
+      '#certificate-date-3',
+    ) as HTMLInputElement;
+    const paymentDate = fixture.nativeElement.querySelector('#payment-date-3') as HTMLInputElement;
+    expect(certificateDate.required).toBe(true);
+    expect(paymentDate.required).toBe(true);
+    certificateDate.value = '2024-01-02';
+    paymentDate.value = '2024-01-03';
+    confirmation.click();
+    (
+      fixture.nativeElement.querySelector(
+        '[aria-label="Confirmer le paiement de l’adhésion de Camille Durand"]',
+      ) as HTMLButtonElement
+    ).click();
+    expect(confirmRequirement).toHaveBeenCalledWith(3, 'certificate', '2024-01-02');
+    expect(confirmRequirement).toHaveBeenCalledWith(3, 'payment', '2024-01-03');
     expect(fixture.nativeElement.querySelector('[aria-label^="Valider l’inscription"]')).toBeNull();
+  });
+
+  it('displays saved dates and only offers the outstanding confirmation', () => {
+    members.set([
+      { ...toValidateMember, registrationStatus: 'validated', membershipPaymentDate: '2024-01-03' },
+    ]);
+    Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.registration-filters button',
+      ) as NodeListOf<HTMLButtonElement>,
+    )
+      .find((button) => button.textContent?.includes('Validées'))
+      ?.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Adhésion payée le 03/01/2024');
+    expect(fixture.nativeElement.querySelector('#payment-date-2')).toBeNull();
+    expect(fixture.nativeElement.querySelector('#certificate-date-2')).not.toBeNull();
+  });
+
+  it('blocks certificate confirmation when consent is refused or unknown', () => {
+    members.set([
+      {
+        ...toValidateMember,
+        registrationStatus: 'validated',
+        medicalCertificate: false,
+      },
+      {
+        ...toValidateMember,
+        id: 3,
+        firstName: 'Camille',
+        registrationStatus: 'validated',
+        medicalCertificate: null,
+      },
+    ]);
+    const pendingFilter = Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.registration-filters button',
+      ) as NodeListOf<HTMLButtonElement>,
+    ).find((button) => button.textContent?.includes('Validées'));
+    pendingFilter?.click();
+    fixture.detectChanges();
+
+    const rows = fixture.nativeElement.querySelectorAll('.member-row') as NodeListOf<HTMLElement>;
+    expect(
+      rows[0].querySelector<HTMLButtonElement>('[aria-label^="Confirmer la réception"]')?.disabled,
+    ).toBe(true);
+    expect(rows[0].querySelector('.certificate-notice')?.textContent).toContain(
+      'l’adhérent n’a pas accepté la collecte du certificat médical',
+    );
+    expect(
+      rows[1].querySelector<HTMLButtonElement>('[aria-label^="Confirmer la réception"]')?.disabled,
+    ).toBe(true);
+    expect(rows[1].querySelector('.certificate-notice')?.textContent).toContain(
+      'le consentement à la collecte du certificat médical est inconnu',
+    );
+    expect(update).not.toHaveBeenCalled();
   });
 
   it('provides a refused registrations filter', () => {
@@ -147,6 +261,10 @@ describe('ComponentAdherentsAdmin', () => {
       'Modifier',
     );
     expect(fixture.nativeElement.querySelector('#registration-status')).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('[formControlName="medicalCertificate"]'),
+    ).toBeNull();
+    expect(fixture.nativeElement.querySelector('[formControlName="rightOfPublicity"]')).toBeNull();
   });
 
   it('shows the empty state when a registration category has no members', () => {
@@ -154,7 +272,7 @@ describe('ComponentAdherentsAdmin', () => {
       fixture.nativeElement.querySelectorAll(
         '.registration-filters button',
       ) as NodeListOf<HTMLButtonElement>,
-    ).find((button) => button.textContent?.includes('En cours de validation'));
+    ).find((button) => button.textContent?.includes('Validées'));
     pendingFilter?.click();
     fixture.detectChanges();
 
@@ -278,7 +396,7 @@ describe('ComponentAdherentsAdmin', () => {
       fixture.nativeElement.querySelectorAll(
         '.registration-filters button',
       ) as NodeListOf<HTMLButtonElement>,
-    ).find((button) => button.textContent?.includes('Validées'));
+    ).find((button) => button.textContent?.includes('Finalisées'));
     validatedFilter?.click();
     fixture.detectChanges();
 
@@ -308,5 +426,56 @@ describe('ComponentAdherentsAdmin', () => {
     deleteButton.click();
 
     expect(remove).toHaveBeenCalledWith(2);
+  });
+});
+
+describe('ComponentAdherentsAdmin with stored members', () => {
+  beforeEach(() => localStorage.removeItem('rekor-adherents'));
+  afterEach(() => localStorage.removeItem('rekor-adherents'));
+
+  it('finalizes only after both dated confirmations and keeps them after reload', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ComponentAdherentsAdmin],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(ComponentAdherentsAdmin);
+    fixture.detectChanges();
+    Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.registration-filters button',
+      ) as NodeListOf<HTMLButtonElement>,
+    )
+      .find((button) => button.textContent?.includes('Validées'))
+      ?.click();
+    fixture.detectChanges();
+
+    const certificateDate = fixture.nativeElement.querySelector(
+      '#certificate-date-6',
+    ) as HTMLInputElement;
+    certificateDate.value = '2024-01-02';
+    (
+      fixture.nativeElement.querySelector(
+        '[aria-label="Confirmer la réception du certificat de Lou Leroy"]',
+      ) as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Certificat reçu le 02/01/2024');
+    expect(new AdherentService().adherents().find(({ id }) => id === 6)?.registrationStatus).toBe(
+      'validated',
+    );
+
+    const paymentDate = fixture.nativeElement.querySelector('#payment-date-6') as HTMLInputElement;
+    paymentDate.value = '2024-01-03';
+    (
+      fixture.nativeElement.querySelector(
+        '[aria-label="Confirmer le paiement de l’adhésion de Lou Leroy"]',
+      ) as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('Lou Leroy');
+    expect(new AdherentService().adherents().find(({ id }) => id === 6)).toMatchObject({
+      registrationStatus: 'finalized',
+      medicalCertificateReceivedDate: '2024-01-02',
+      membershipPaymentDate: '2024-01-03',
+    });
   });
 });

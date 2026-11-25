@@ -8,4 +8,8 @@ import { DocumentReading } from './document-reading';
   styleUrl: './reglement.css',
   templateUrl: './réglement.html',
 })
-export class ComponentReglement {}
+export class ComponentReglement {
+  closePage(): void {
+    window.close();
+  }
+}
