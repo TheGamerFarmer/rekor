@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:frontend_app/api/api_client.dart';
 import 'package:frontend_app/mobile_pages/arbitrage.dart';
 import 'package:frontend_app/mobile_pages/cout_page.dart';
 import 'package:frontend_app/mobile_pages/evenement_page.dart';
@@ -14,8 +15,11 @@ import 'package:frontend_app/models/groupe.dart';
 import 'package:frontend_app/models/equipe.dart';
 import 'package:frontend_app/models/fiche_presence.dart';
 import 'package:frontend_app/models/utilisateur.dart';
+import 'package:rekor_api/api.dart' as generated;
 
 void main() {
+  final apiClientOriginal = ApiClient.instance;
+
   Future<void> afficher(WidgetTester tester, Widget page) async {
     await tester.binding.setSurfaceSize(const Size(1200, 1100));
     await tester.pumpWidget(MaterialApp(home: page));
@@ -68,6 +72,26 @@ void main() {
   });
 
   group('ParametresPage', () {
+    setUp(() {
+      ApiClient.instance = _ApiClientProfilFictif();
+    });
+
+    tearDown(() {
+      ApiClient.instance = apiClientOriginal;
+    });
+
+    testWidgets('affiche les informations reçues du profil API', (
+      tester,
+    ) async {
+      await afficher(tester, const ParametresPage());
+      await tester.pumpAndSettle();
+
+      expect(find.text('Ada'), findsOneWidget);
+      expect(find.text('Lovelace'), findsWidgets);
+      expect(find.text('ada@exemple.fr'), findsOneWidget);
+      expect(find.text('Adhérent'), findsOneWidget);
+    });
+
     testWidgets('modifie les interrupteurs de notification', (tester) async {
       await afficher(tester, const ParametresPage());
 
@@ -452,4 +476,25 @@ void main() {
       await tester.pumpAndSettle();
     });
   });
+}
+
+class _ApiClientProfilFictif extends ApiClient {
+  _ApiClientProfilFictif() : super('http://localhost:3000');
+
+  @override
+  Future<generated.UserDetails?> getMyProfile() async {
+    return generated.UserDetails(
+      id: '1',
+      name: 'Lovelace',
+      firstName: 'Ada',
+      email: 'ada@exemple.fr',
+      role: generated.UserDetailsRoleEnum.adhrent,
+      pronoun: generated.UserDetailsPronounEnum.elle,
+      medicalCertificate: false,
+      rightOfPublicity: false,
+    );
+  }
+
+  @override
+  Future<void> logout() async {}
 }

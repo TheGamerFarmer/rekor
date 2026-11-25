@@ -69,8 +69,7 @@ void main() {
           expect(request.headers['authorization'], 'Bearer access');
           return http.Response(
             '{"id":"1","name":"Lovelace","firstName":"Ada",'
-            '"email":"ada@exemple.fr","role":"Adhérent","pronoun":"Elle",'
-            '"medicalCertificate":false,"rightOfPublicity":false}',
+            '"email":"ada@exemple.fr","role":"Adhérent","pronoun":"Elle"}',
             200,
             headers: {'content-type': 'application/json'},
           );
@@ -82,6 +81,8 @@ void main() {
       expect(profile?.id, '1');
       expect(profile?.email, 'ada@exemple.fr');
       expect(profile?.firstName, 'Ada');
+      expect(profile?.medicalCertificate, isFalse);
+      expect(profile?.rightOfPublicity, isFalse);
     });
 
     test('Modifie le profil de l’utilisateur connecté', () async {

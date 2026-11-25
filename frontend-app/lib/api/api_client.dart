@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:rekor_api/api.dart' as generated;
@@ -93,7 +95,18 @@ class ApiClient {
 
   /// Récupère le profil de l'utilisateur connecté.
   Future<generated.UserDetails?> getMyProfile() {
-    return authenticatedRequest(() => _users.getMyProfile());
+    return authenticatedRequest(() async {
+      final response = await _users.getMyProfileWithHttpInfo();
+      if (response.statusCode >= 400) {
+        throw generated.ApiException(response.statusCode, response.body);
+      }
+      if (response.body.isEmpty || response.statusCode == 204) return null;
+
+      final profile = jsonDecode(response.body) as Map<String, dynamic>;
+      profile['medicalCertificate'] ??= false;
+      profile['rightOfPublicity'] ??= false;
+      return generated.UserDetails.fromJson(profile);
+    });
   }
 
   /// Modifie les informations du profil de l'utilisateur connecté.
