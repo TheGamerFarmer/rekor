@@ -24,6 +24,7 @@ class _ParametresPageState extends State<ParametresPage> {
   bool _chargementProfil = true;
   bool _enregistrementProfil = false;
   bool _changementMotDePasse = false;
+  bool _suppressionCompte = false;
   String? _erreurProfil;
 
   // Photo de profil choisie (null = initiales)
@@ -256,7 +257,7 @@ class _ParametresPageState extends State<ParametresPage> {
       );
       if (!mounted) return;
       setState(() => _changementMotDePasse = false);
-      await _afficherResultatMotDePasse(
+      await _afficherResultat(
         succes: true,
         message: 'Mot de passe modifié avec succès.',
       );
@@ -264,14 +265,14 @@ class _ParametresPageState extends State<ParametresPage> {
       debugPrint('Erreur lors du changement de mot de passe : $error');
       if (!mounted) return;
       setState(() => _changementMotDePasse = false);
-      await _afficherResultatMotDePasse(
+      await _afficherResultat(
         succes: false,
         message: 'Impossible de modifier le mot de passe.',
       );
     }
   }
 
-  Future<void> _afficherResultatMotDePasse({
+  Future<void> _afficherResultat({
     required bool succes,
     required String message,
   }) {
@@ -351,7 +352,21 @@ class _ParametresPageState extends State<ParametresPage> {
       bouton: 'Supprimer',
     );
     if (!ok || !mounted) return;
-    // TODO : prévenir l'API, puis revenir à la page de connexion
+    setState(() => _suppressionCompte = true);
+    try {
+      await ApiClient.instance.deleteMyProfile();
+    } catch (error) {
+      debugPrint('Erreur lors de la suppression du compte : $error');
+      if (!mounted) return;
+      setState(() => _suppressionCompte = false);
+      await _afficherResultat(
+        succes: false,
+        message: 'Impossible de supprimer le compte. Veuillez réessayer.',
+      );
+      return;
+    }
+    if (!mounted) return;
+    await _seDeconnecter();
   }
 
   // ---------- Affichage ----------
@@ -494,7 +509,7 @@ class _ParametresPageState extends State<ParametresPage> {
                 ),
               ),
               ListTile(
-                onTap: _supprimerCompte,
+                onTap: _suppressionCompte ? null : _supprimerCompte,
                 leading: const Icon(
                   Icons.delete_forever,
                   color: Colors.redAccent,
@@ -503,6 +518,13 @@ class _ParametresPageState extends State<ParametresPage> {
                   'Supprimer mon compte',
                   style: TextStyle(color: Colors.redAccent),
                 ),
+                trailing: _suppressionCompte
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : null,
               ),
             ]),
           ],

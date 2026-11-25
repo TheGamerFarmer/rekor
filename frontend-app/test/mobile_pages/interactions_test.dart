@@ -233,6 +233,43 @@ void main() {
       await tester.tap(find.text('Annuler').first);
       await tester.pumpAndSettle();
       expect(find.text('Supprimer mon compte'), findsWidgets);
+      expect(apiClientProfil.suppressionsCompte, 0);
+    });
+
+    testWidgets('supprime le compte et revient à la connexion', (tester) async {
+      await afficher(tester, const ParametresPage());
+
+      await tester.ensureVisible(find.text('Supprimer mon compte'));
+      await tester.tap(find.text('Supprimer mon compte'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Supprimer').last);
+      await tester.pumpAndSettle();
+
+      expect(apiClientProfil.suppressionsCompte, 1);
+      expect(find.text('Connexion'), findsOneWidget);
+      expect(find.text('Supprimer mon compte'), findsNothing);
+    });
+
+    testWidgets('affiche une erreur si la suppression du compte échoue', (
+      tester,
+    ) async {
+      apiClientProfil.echecSuppressionCompte = true;
+      await afficher(tester, const ParametresPage());
+
+      await tester.ensureVisible(find.text('Supprimer mon compte'));
+      await tester.tap(find.text('Supprimer mon compte'));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Supprimer').last);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Impossible de supprimer le compte. Veuillez réessayer.'),
+        findsOneWidget,
+      );
+      expect(find.byIcon(Icons.error_outline), findsOneWidget);
+      expect(find.text('Supprimer mon compte'), findsWidgets);
+      await tester.tap(find.text('Fermer'));
+      await tester.pumpAndSettle();
     });
   });
 
@@ -551,6 +588,11 @@ class _ApiClientProfilFictif extends ApiClient {
   final updates = <generated.UpdateProfileInput>[];
   final changementsMotDePasse = <({String ancien, String nouveau})>[];
   bool echecChangementMotDePasse = false;
+  bool echecSuppressionCompte = false;
+  int suppressionsCompte = 0;
+
+  @override
+  Future<List<generated.Association>> getAssociations() async => [];
 
   @override
   Future<generated.UserDetails?> getMyProfile() async {
@@ -580,6 +622,14 @@ class _ApiClientProfilFictif extends ApiClient {
       throw StateError('Échec simulé du changement de mot de passe.');
     }
     changementsMotDePasse.add((ancien: oldPassword, nouveau: newPassword));
+  }
+
+  @override
+  Future<void> deleteMyProfile() async {
+    if (echecSuppressionCompte) {
+      throw StateError('Échec simulé de la suppression du compte.');
+    }
+    suppressionsCompte++;
   }
 
   @override
