@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/home_page.dart';
+import 'package:frontend_app/mobile_pages/groupe.dart';
 
 // Footer de l'application mobile avec lien vers Accueil, Menu et Discussions
 class AppFooter extends StatelessWidget {
@@ -9,9 +10,9 @@ class AppFooter extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.65),
+        color: Colors.black,
         border: Border.all(color: Colors.white, width: 2),
         borderRadius: BorderRadius.circular(15),
       ),
@@ -37,7 +38,10 @@ class AppFooter extends StatelessWidget {
           _buildFooterButton(
             label: 'Discussions',
             onTap: () {
-              // Navigation vers discussions à ajouter
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const GroupesPage()),
+              );
             },
           ),
         ],
