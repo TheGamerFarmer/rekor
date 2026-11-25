@@ -36,24 +36,6 @@ ng build
 
 This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
 
-## Trésorerie
-
-La page utilise actuellement des données fictives en mémoire ; elle n'est pas encore reliée à la
-base de données. Le commentaire d'une opération contient un objet JSON avec les champs `type`
-(`income` ou `expense`), `category` et `description`. Le front les restitue séparément dans les
-formulaires, l'historique et l'export.
-L'export CSV présente deux tableaux successifs, recettes puis dépenses, avec leurs totaux et le
-solde de l'année sélectionnée.
-
-## Gestion des adhérents
-
-La page d'administration des adhérents utilise actuellement des données fictives conservées dans
-le stockage local du navigateur : elle n'est pas reliée aux inscriptions ni à la base de données.
-Pour une inscription validée, l'administrateur peut enregistrer séparément les dates de réception
-du certificat médical (si sa collecte a été acceptée) et de paiement de l'adhésion. L'inscription
-est finalisée lorsque les deux confirmations sont enregistrées. Les inscriptions déjà finalisées
-conservent leur statut lorsque les dates historiques ne sont pas connues.
-
 ## Tests
 
 Il y a trois commandes principales de test de tests
