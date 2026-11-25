@@ -177,20 +177,29 @@
       "UpdateProfileInput": {
         "type": "object",
         "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ada@exemple.fr"
+          },
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "example": "Lovelace"
           },
           "firstName": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "example": "Ada"
           },
           "phoneNumber": {
-            "type": "string"
+            "type": "string",
+            "example": "0612345678"
           },
           "birthday": {
             "type": "string",
-            "format": "date"
+            "format": "date",
+            "example": "1815-12-10"
           },
           "pronoun": {
             "type": "string",
@@ -199,13 +208,16 @@
               "Elle",
               "Iel",
               "Autre"
-            ]
+            ],
+            "example": "Elle"
           },
           "medicalCertificate": {
-            "type": "boolean"
+            "type": "boolean",
+            "example": false
           },
           "rightOfPublicity": {
-            "type": "boolean"
+            "type": "boolean",
+            "example": false
           }
         }
       },
@@ -214,11 +226,13 @@
         "properties": {
           "old_password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "example": "ancien-mot-de-passe"
           },
           "new_password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "example": "nouveau-mot-de-passe"
           }
         },
         "required": [
@@ -234,10 +248,6 @@
           {
             "type": "object",
             "properties": {
-              "email": {
-                "type": "string",
-                "format": "email"
-              },
               "role": {
                 "type": "string",
                 "enum": [
@@ -246,7 +256,8 @@
                   "Capitaine",
                   "Entraineur",
                   "Administrateur"
-                ]
+                ],
+                "example": "Adhérent"
               }
             },
             "required": [
@@ -1440,13 +1451,114 @@
         }
       }
     },
+    "/users/{id}/validate": {
+      "post": {
+        "operationId": "validateUser",
+        "tags": [
+          "Users"
+        ],
+        "summary": "Valide un compte visiteur et le passe au rôle Adhérent",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Utilisateur validé, sans contenu de réponse"
+          },
+          "400": {
+            "description": "Identifiant invalide ou utilisateur déjà validé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentification requise ou token invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès réservé aux administrateurs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur introuvable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/register": {
       "post": {
         "operationId": "register",
         "tags": [
           "Authentication"
         ],
-        "summary": "Crée un compte Visiteur et l’inscrit dans l’association indiquée",
+        "summary": "Crée un compte et l’inscrit dans l’association indiquée",
         "requestBody": {
           "required": true,
           "content": {
