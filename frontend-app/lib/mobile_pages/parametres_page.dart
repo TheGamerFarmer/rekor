@@ -22,6 +22,7 @@ class ParametresPage extends StatefulWidget {
 class _ParametresPageState extends State<ParametresPage> {
   generated.UserDetails? _profil;
   bool _chargementProfil = true;
+  bool _enregistrementProfil = false;
   String? _erreurProfil;
 
   // Photo de profil choisie (null = initiales)
@@ -97,16 +98,20 @@ class _ParametresPageState extends State<ParametresPage> {
       valeur: profil.firstName ?? '',
     );
     if (valeur == null || valeur.isEmpty || !mounted) return;
-    setState(() => profil.firstName = valeur);
-    // TODO : envoyer à l'API
+    await _enregistrerProfil(
+      generated.UpdateProfileInput(firstName: valeur),
+      (profil) => profil.firstName = valeur,
+    );
   }
 
   Future<void> _modifierNom() async {
     final profil = _profil!;
     final valeur = await _saisirTexte(titre: 'Nom', valeur: profil.name);
     if (valeur == null || valeur.isEmpty || !mounted) return;
-    setState(() => profil.name = valeur);
-    // TODO : envoyer à l'API
+    await _enregistrerProfil(
+      generated.UpdateProfileInput(name: valeur),
+      (profil) => profil.name = valeur,
+    );
   }
 
   Future<void> _modifierMail() async {
@@ -117,8 +122,10 @@ class _ParametresPageState extends State<ParametresPage> {
       clavier: TextInputType.emailAddress,
     );
     if (valeur == null || valeur.isEmpty || !mounted) return;
-    setState(() => profil.email = valeur);
-    // TODO : envoyer à l'API
+    await _enregistrerProfil(
+      generated.UpdateProfileInput(email: valeur),
+      (profil) => profil.email = valeur,
+    );
   }
 
   Future<void> _modifierTel() async {
@@ -129,8 +136,10 @@ class _ParametresPageState extends State<ParametresPage> {
       clavier: TextInputType.phone,
     );
     if (valeur == null || !mounted) return;
-    setState(() => profil.phoneNumber = valeur);
-    // TODO : envoyer à l'API
+    await _enregistrerProfil(
+      generated.UpdateProfileInput(phoneNumber: valeur),
+      (profil) => profil.phoneNumber = valeur,
+    );
   }
 
   Future<void> _modifierPronom() async {
@@ -155,8 +164,13 @@ class _ParametresPageState extends State<ParametresPage> {
       ),
     );
     if (choix == null || !mounted) return;
-    setState(() => profil.pronoun = choix);
-    // TODO : envoyer à l'API
+    final pronom = generated.UpdateProfileInputPronounEnum.values.firstWhere(
+      (pronom) => pronom.toString() == choix.toString(),
+    );
+    await _enregistrerProfil(
+      generated.UpdateProfileInput(pronoun: pronom),
+      (profil) => profil.pronoun = choix,
+    );
   }
 
   Future<void> _modifierDateNaissance() async {
@@ -178,8 +192,52 @@ class _ParametresPageState extends State<ParametresPage> {
       ),
     );
     if (date == null || !mounted) return;
-    setState(() => profil.birthday = date);
-    // TODO : envoyer à l'API
+    await _enregistrerProfil(
+      generated.UpdateProfileInput(birthday: date),
+      (profil) => profil.birthday = date,
+    );
+  }
+
+  Future<void> _enregistrerProfil(
+    generated.UpdateProfileInput modifications,
+    void Function(generated.UserDetails profil) appliquer,
+  ) async {
+    final profil = _profil!;
+    final requete = generated.UpdateProfileInput(
+      email: modifications.email ?? profil.email,
+      name: modifications.name ?? profil.name,
+      firstName: modifications.firstName ?? profil.firstName,
+      phoneNumber: modifications.phoneNumber ?? profil.phoneNumber,
+      birthday: modifications.birthday ?? profil.birthday,
+      pronoun:
+          modifications.pronoun ??
+          generated.UpdateProfileInputPronounEnum.values.firstWhere(
+            (pronom) => pronom.toString() == profil.pronoun.toString(),
+          ),
+      medicalCertificate: profil.medicalCertificate,
+      rightOfPublicity: profil.rightOfPublicity,
+    );
+
+    setState(() => _enregistrementProfil = true);
+    try {
+      await ApiClient.instance.updateMyProfile(requete);
+      if (!mounted) return;
+      setState(() {
+        appliquer(profil);
+        _enregistrementProfil = false;
+      });
+    } catch (error) {
+      debugPrint('Erreur lors de la mise à jour du profil : $error');
+      if (!mounted) return;
+      setState(() => _enregistrementProfil = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Impossible d’enregistrer les modifications du profil.',
+          ),
+        ),
+      );
+    }
   }
 
   // Popup de confirmation : renvoie true si l'utilisateur confirme
@@ -294,25 +352,25 @@ class _ParametresPageState extends State<ParametresPage> {
                   icone: Icons.person_outline,
                   titre: 'Prénom',
                   valeur: _profil!.firstName ?? 'Non renseigné',
-                  onTap: _modifierPrenom,
+                  onTap: _enregistrementProfil ? null : _modifierPrenom,
                 ),
                 _ligne(
                   icone: Icons.person_outline,
                   titre: 'Nom',
                   valeur: _profil!.name,
-                  onTap: _modifierNom,
+                  onTap: _enregistrementProfil ? null : _modifierNom,
                 ),
                 _ligne(
                   icone: Icons.mail_outline,
                   titre: 'Adresse mail',
                   valeur: _profil!.email,
-                  onTap: _modifierMail,
+                  onTap: _enregistrementProfil ? null : _modifierMail,
                 ),
                 _ligne(
                   icone: Icons.badge_outlined,
                   titre: 'Pronom',
                   valeur: _profil!.pronoun.toString(),
-                  onTap: _modifierPronom,
+                  onTap: _enregistrementProfil ? null : _modifierPronom,
                 ),
                 _ligne(
                   icone: Icons.phone_outlined,
@@ -320,7 +378,7 @@ class _ParametresPageState extends State<ParametresPage> {
                   valeur: _profil!.phoneNumber?.isNotEmpty == true
                       ? _profil!.phoneNumber!
                       : 'Non renseigné',
-                  onTap: _modifierTel,
+                  onTap: _enregistrementProfil ? null : _modifierTel,
                 ),
                 _ligne(
                   icone: Icons.cake_outlined,
@@ -328,7 +386,7 @@ class _ParametresPageState extends State<ParametresPage> {
                   valeur: _profil!.birthday == null
                       ? 'Non renseignée'
                       : _formaterDate(_profil!.birthday!),
-                  onTap: _modifierDateNaissance,
+                  onTap: _enregistrementProfil ? null : _modifierDateNaissance,
                 ),
                 _ligne(
                   icone: Icons.shield_outlined,

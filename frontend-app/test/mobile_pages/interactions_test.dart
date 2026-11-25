@@ -72,8 +72,11 @@ void main() {
   });
 
   group('ParametresPage', () {
+    late _ApiClientProfilFictif apiClientProfil;
+
     setUp(() {
-      ApiClient.instance = _ApiClientProfilFictif();
+      apiClientProfil = _ApiClientProfilFictif();
+      ApiClient.instance = apiClientProfil;
     });
 
     tearDown(() {
@@ -115,6 +118,7 @@ void main() {
       await tester.tap(find.text('Enregistrer'));
       await tester.pumpAndSettle();
       expect(find.text('Camille'), findsWidgets);
+      expect(apiClientProfil.updates.single.firstName, 'Camille');
     });
 
     testWidgets('modifie l’adresse mail depuis le dialogue', (tester) async {
@@ -130,6 +134,7 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(find.text('camille@example.com'), findsOneWidget);
+      expect(apiClientProfil.updates.single.email, 'camille@example.com');
     });
 
     testWidgets('choisit un pronom depuis les options', (tester) async {
@@ -140,6 +145,10 @@ void main() {
       await tester.tap(find.text('Iel'));
       await tester.pumpAndSettle();
       expect(find.text('Iel'), findsWidgets);
+      expect(
+        apiClientProfil.updates.single.pronoun,
+        generated.UpdateProfileInputPronounEnum.iel,
+      );
     });
 
     testWidgets('déconnecte et revient à la connexion', (tester) async {
@@ -481,6 +490,8 @@ void main() {
 class _ApiClientProfilFictif extends ApiClient {
   _ApiClientProfilFictif() : super('http://localhost:3000');
 
+  final updates = <generated.UpdateProfileInput>[];
+
   @override
   Future<generated.UserDetails?> getMyProfile() async {
     return generated.UserDetails(
@@ -493,6 +504,11 @@ class _ApiClientProfilFictif extends ApiClient {
       medicalCertificate: false,
       rightOfPublicity: false,
     );
+  }
+
+  @override
+  Future<void> updateMyProfile(generated.UpdateProfileInput profile) async {
+    updates.add(profile);
   }
 
   @override
