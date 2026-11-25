@@ -669,6 +669,19 @@ describe('/users (avec un vrai mongod)', () => {
     await GroupMember.deleteMany({});
   });
 
+  it('DELETE /users/me supprime les participations de l’utilisateur', async () => {
+    const Participant = require('../db/models/participant');
+    const eventId = new ObjectId();
+    await Participant.create({ user: adaId, event: eventId, participe: true });
+
+    const res = await request(app).delete('/users/me').set('Authorization', `Bearer ${adaToken}`);
+    assert.strictEqual(res.status, 204);
+
+    assert.strictEqual(await Participant.findOne({ user: adaId }), null);
+
+    await Participant.deleteMany({});
+  });
+
   it("DELETE /users/me renvoie 404 si le compte n'existe plus", async () => {
     const token = signAccessToken(
       {

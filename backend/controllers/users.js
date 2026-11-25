@@ -3,6 +3,7 @@ const express = require('express');
 const { rateLimit } = require('express-rate-limit');
 const User = require('../db/models/user');
 const RefreshToken = require('../db/models/refresh-token');
+const Participant = require('../db/models/participant');
 const GroupMember = require('../db/models/group_member');
 const Group = require('../db/models/group');
 const { wrapAsync, toPublicUser, toEssentialPublicUser, isValidId } = require('./services/shared');
@@ -130,6 +131,8 @@ function createUsersRouter({ limit = 100, windowMs = 60_000 } = {}) {
       for (const group of groups) {
         await groupService.changeOwnerFromGroup(group._id);
       }
+
+      await Participant.deleteMany({ user: user._id });
 
       res.status(204).end();
     }),

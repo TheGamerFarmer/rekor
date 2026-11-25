@@ -339,6 +339,9 @@ registry.registerPath({
   operationId: 'deleteMyProfile',
   tags: ['Users'],
   summary: 'Supprime le compte authentifié',
+  description:
+    'Supprime le compte, les refresh tokens, les appartenances aux groupes, ' +
+    'les participations aux événements et transfère la propriété des groupes.',
   security: [{ BearerAuth: [] }],
   responses: {
     204: { description: 'Compte supprimé, sans contenu de réponse' },
