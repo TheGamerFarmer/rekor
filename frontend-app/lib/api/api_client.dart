@@ -96,6 +96,31 @@ class ApiClient {
     return authenticatedRequest(() => _users.getMyProfile());
   }
 
+  /// Modifie les informations du profil de l'utilisateur connecté.
+  Future<void> updateMyProfile(generated.UpdateProfileInput profile) {
+    return authenticatedRequest(() => _users.updateMyProfile(profile));
+  }
+
+  /// Supprime le compte de l'utilisateur connecté.
+  Future<void> deleteMyProfile() {
+    return authenticatedRequest(() => _users.deleteMyProfile());
+  }
+
+  /// Modifie le mot de passe de l'utilisateur connecté.
+  Future<void> changeMyPassword({
+    required String oldPassword,
+    required String newPassword,
+  }) {
+    return authenticatedRequest(
+      () => _users.changeMyPassword(
+        generated.ChangePasswordInput(
+          oldPassword: oldPassword,
+          newPassword: newPassword,
+        ),
+      ),
+    );
+  }
+
   /// Restaure la session utilisateur au démarrage de l'application.
   Future<bool> restoreSession() async {
     final refreshToken = await getRefreshToken();

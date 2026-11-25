@@ -291,51 +291,51 @@ class _ParametresPageState extends State<ParametresPage> {
             ]),
             const SizedBox(height: 32),
 
-            _titreSection('NOTIFICATIONS'),
-            _carte([
-              _interrupteur(
-                titre: 'Nouveaux messages',
-                valeur: _notifMessages,
-                onChanged: (v) => setState(() => _notifMessages = v),
-              ),
-              _interrupteur(
-                titre: 'Rappels d\'évènements',
-                valeur: _notifEvenements,
-                onChanged: (v) => setState(() => _notifEvenements = v),
-              ),
-            ]),
-            const SizedBox(height: 32),
+              _titreSection('NOTIFICATIONS'),
+              _carte([
+                _interrupteur(
+                  titre: 'Nouveaux messages',
+                  valeur: _notifMessages,
+                  onChanged: (v) => setState(() => _notifMessages = v),
+                ),
+                _interrupteur(
+                  titre: 'Rappels d\'évènements',
+                  valeur: _notifEvenements,
+                  onChanged: (v) => setState(() => _notifEvenements = v),
+                ),
+              ]),
+              const SizedBox(height: 32),
 
-            _titreSection('COMPTE'),
-            _carte([
-              ListTile(
-                onTap: _seDeconnecter,
-                leading: const Icon(Icons.logout, color: Colors.white),
-                title: const Text(
-                  'Se déconnecter',
-                  style: TextStyle(color: Colors.white),
+              _titreSection('COMPTE'),
+              _carte([
+                ListTile(
+                  onTap: _seDeconnecter,
+                  leading: const Icon(Icons.logout, color: Colors.white),
+                  title: const Text(
+                    'Se déconnecter',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-              ),
-              ListTile(
-                //onTap: _seDeconnecter,
-                leading: const Icon(Icons.lock_reset, color: Colors.white),
-                title: const Text(
-                  'Changer mon mot de passe',
-                  style: TextStyle(color: Colors.white),
+                ListTile(
+                  //onTap: _seDeconnecter,
+                  leading: const Icon(Icons.lock_reset, color: Colors.white),
+                  title: const Text(
+                    'Changer mon mot de passe',
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-              ),
-              ListTile(
-                onTap: _supprimerCompte,
-                leading: const Icon(
-                  Icons.delete_forever,
-                  color: Colors.redAccent,
+                ListTile(
+                  onTap: _supprimerCompte,
+                  leading: const Icon(
+                    Icons.delete_forever,
+                    color: Colors.redAccent,
+                  ),
+                  title: const Text(
+                    'Supprimer mon compte',
+                    style: TextStyle(color: Colors.redAccent),
+                  ),
                 ),
-                title: const Text(
-                  'Supprimer mon compte',
-                  style: TextStyle(color: Colors.redAccent),
-                ),
-              ),
-            ]),
+              ]),
           ],
         ),
       ),

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:frontend_app/api/api_client.dart';
@@ -56,6 +58,84 @@ void main() {
 
       expect(associations, hasLength(1));
       expect(associations.single.name, 'Gières Volley-Ball');
+    });
+
+    test('Récupère le profil de l’utilisateur connecté', () async {
+      final api = ApiClient(
+        'http://localhost:3000',
+        client: MockClient((request) async {
+          expect(request.method, 'GET');
+          expect(request.url.path, '/users/me');
+          expect(request.headers['authorization'], 'Bearer access');
+          return http.Response(
+            '{"id":"1","name":"Lovelace","firstName":"Ada",'
+            '"email":"ada@exemple.fr","role":"Adhérent","pronoun":"Elle",'
+            '"medicalCertificate":false,"rightOfPublicity":false}',
+            200,
+            headers: {'content-type': 'application/json'},
+          );
+        }),
+      )..setAccessToken('access');
+
+      final profile = await api.getMyProfile();
+
+      expect(profile?.id, '1');
+      expect(profile?.email, 'ada@exemple.fr');
+      expect(profile?.firstName, 'Ada');
+    });
+
+    test('Modifie le profil de l’utilisateur connecté', () async {
+      final api = ApiClient(
+        'http://localhost:3000',
+        client: MockClient((request) async {
+          expect(request.method, 'PATCH');
+          expect(request.url.path, '/users/me');
+          expect(request.headers['authorization'], 'Bearer access');
+          final body = jsonDecode(request.body) as Map<String, dynamic>;
+          expect(body['email'], 'ada.nouveau@exemple.fr');
+          expect(body['firstName'], 'Ada');
+          return http.Response('', 204);
+        }),
+      )..setAccessToken('access');
+
+      await api.updateMyProfile(
+        generated.UpdateProfileInput(
+          email: 'ada.nouveau@exemple.fr',
+          firstName: 'Ada',
+        ),
+      );
+    });
+
+    test('Supprime le profil de l’utilisateur connecté', () async {
+      final api = ApiClient(
+        'http://localhost:3000',
+        client: MockClient((request) async {
+          expect(request.method, 'DELETE');
+          expect(request.url.path, '/users/me');
+          expect(request.headers['authorization'], 'Bearer access');
+          return http.Response('', 204);
+        }),
+      )..setAccessToken('access');
+
+      await api.deleteMyProfile();
+    });
+
+    test('Modifie le mot de passe de l’utilisateur connecté', () async {
+      final api = ApiClient(
+        'http://localhost:3000',
+        client: MockClient((request) async {
+          expect(request.method, 'PUT');
+          expect(request.url.path, '/users/me/password');
+          expect(request.headers['authorization'], 'Bearer access');
+          expect(jsonDecode(request.body), {
+            'old_password': 'ancien',
+            'new_password': 'nouveau',
+          });
+          return http.Response('', 204);
+        }),
+      )..setAccessToken('access');
+
+      await api.changeMyPassword(oldPassword: 'ancien', newPassword: 'nouveau');
     });
 
     test('Effectue la connexion et stocke le refresh token', () async {
