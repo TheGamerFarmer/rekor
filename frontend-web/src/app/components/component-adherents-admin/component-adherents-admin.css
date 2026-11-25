@@ -162,6 +162,12 @@ small {
   gap: 8px;
 }
 
+.confirmation-form {
+  display: grid;
+  flex-basis: 100%;
+  gap: 8px;
+}
+
 .certificate-notice {
   flex-basis: 100%;
   margin: 0;

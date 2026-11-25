@@ -28,7 +28,7 @@ describe('ComponentReglement', () => {
   });
 
   it('closes the page when the exit button is clicked', () => {
-    const closeSpy = vi.spyOn(window, 'close').mockImplementation(() => {});
+    const closeSpy = vi.spyOn(window, 'close').mockImplementation(() => undefined);
     const button = fixture.nativeElement.querySelector('.document-close') as HTMLButtonElement;
 
     button.click();

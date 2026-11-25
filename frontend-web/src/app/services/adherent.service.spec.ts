@@ -13,6 +13,8 @@ const member: Adherent = {
   role: 'Adhérent',
   registrationStatus: 'finalized',
   medicalCertificate: true,
+  medicalCertificateReceivedDate: null,
+  membershipPaymentDate: null,
   rightOfPublicity: false,
 };
 
@@ -24,7 +26,7 @@ const memberInput: AdherentInput = {
   phone: member.phone,
   email: member.email,
   role: member.role,
-  registrationStatus: member.registrationStatus,
+  registrationStatus: 'pending',
 };
 
 describe('AdherentService', () => {
@@ -35,7 +37,7 @@ describe('AdherentService', () => {
   it('starts with mock members when storage is empty', () => {
     const members = new AdherentService().adherents();
 
-    expect(members).toHaveLength(5);
+    expect(members).toHaveLength(6);
     expect(members.map(({ registrationStatus }) => registrationStatus)).toContain('finalized');
     expect(members.map(({ registrationStatus }) => registrationStatus)).toContain('validated');
     expect(members.map(({ registrationStatus }) => registrationStatus)).toContain('pending');
@@ -109,6 +111,8 @@ describe('AdherentService', () => {
       ...memberInput,
       id: 5,
       medicalCertificate: null,
+      medicalCertificateReceivedDate: null,
+      membershipPaymentDate: null,
       rightOfPublicity: null,
     });
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toEqual(service.adherents());
@@ -128,6 +132,8 @@ describe('AdherentService', () => {
         firstName: 'Alexandre',
         role: 'Capitaine',
         medicalCertificate: null,
+        medicalCertificateReceivedDate: null,
+        membershipPaymentDate: null,
         rightOfPublicity: null,
       },
     ]);
@@ -136,7 +142,11 @@ describe('AdherentService', () => {
   it('preserves stored consents when updating a member', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([member]));
     const service = new AdherentService();
-    service.update(member.id, { ...memberInput, firstName: 'Alexandre' });
+    service.update(member.id, {
+      ...memberInput,
+      registrationStatus: 'finalized',
+      firstName: 'Alexandre',
+    });
 
     expect(service.adherents()[0]).toEqual({ ...member, firstName: 'Alexandre' });
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toEqual(service.adherents());
@@ -174,9 +184,82 @@ describe('AdherentService', () => {
     service.remove(99);
 
     expect(service.adherents()).toEqual([
-      { ...memberInput, id: 2, medicalCertificate: null, rightOfPublicity: null },
+      {
+        ...memberInput,
+        id: 2,
+        medicalCertificate: null,
+        medicalCertificateReceivedDate: null,
+        membershipPaymentDate: null,
+        rightOfPublicity: null,
+      },
     ]);
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toEqual(service.adherents());
+  });
+
+  it.each([
+    ['certificate', 'payment'],
+    ['payment', 'certificate'],
+  ] as const)(
+    'finalizes only after %s and %s are confirmed and persists both dates',
+    (first, second) => {
+      localStorage.setItem(
+        STORAGE_KEY,
+        JSON.stringify([{ ...member, registrationStatus: 'validated' }]),
+      );
+      const service = new AdherentService();
+      service.confirmRequirement(member.id, first, '2024-01-02');
+      expect(service.adherents()[0].registrationStatus).toBe('validated');
+      expect(new AdherentService().adherents()[0].registrationStatus).toBe('validated');
+      service.confirmRequirement(member.id, second, '2024-01-03');
+      const reloaded = new AdherentService().adherents()[0];
+      expect(reloaded.registrationStatus).toBe('finalized');
+      expect(
+        reloaded[
+          first === 'certificate' ? 'medicalCertificateReceivedDate' : 'membershipPaymentDate'
+        ],
+      ).toBe('2024-01-02');
+      expect(
+        reloaded[
+          second === 'certificate' ? 'medicalCertificateReceivedDate' : 'membershipPaymentDate'
+        ],
+      ).toBe('2024-01-03');
+    },
+  );
+
+  it('rejects invalid confirmation dates, missing consent, repeated confirmations and status bypasses', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([{ ...member, registrationStatus: 'validated', medicalCertificate: false }]),
+    );
+    const service = new AdherentService();
+    for (const date of ['', '2024-02-30', '2999-01-01', '1899-12-31']) {
+      expect(() => service.confirmRequirement(member.id, 'payment', date)).toThrow();
+    }
+    expect(() => service.confirmRequirement(member.id, 'certificate', '2024-01-02')).toThrow();
+    expect(() =>
+      service.update(member.id, { ...memberInput, registrationStatus: 'finalized' }),
+    ).toThrow();
+    expect(() => service.add({ ...memberInput, registrationStatus: 'finalized' })).toThrow();
+    service.confirmRequirement(member.id, 'payment', '2024-01-02');
+    expect(() => service.confirmRequirement(member.id, 'payment', '2024-01-03')).toThrow();
+    expect(service.adherents()[0].registrationStatus).toBe('validated');
+    expect(service.adherents()[0].membershipPaymentDate).toBe('2024-01-02');
+    expect(() => service.confirmRequirement(999, 'payment', '2024-01-02')).toThrow();
+  });
+
+  it('migrates missing dates without turning a validated registration into a finalized one', () => {
+    const { medicalCertificateReceivedDate, membershipPaymentDate, ...oldMember } = member;
+    void medicalCertificateReceivedDate;
+    void membershipPaymentDate;
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([{ ...oldMember, registrationStatus: 'validated' }]),
+    );
+    expect(new AdherentService().adherents()[0]).toMatchObject({
+      registrationStatus: 'validated',
+      medicalCertificateReceivedDate: null,
+      membershipPaymentDate: null,
+    });
   });
 
   it('does not access storage when localStorage is unavailable', () => {

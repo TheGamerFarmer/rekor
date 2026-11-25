@@ -26,10 +26,34 @@ export interface Adherent {
   role: MemberRole;
   registrationStatus: RegistrationStatus;
   medicalCertificate: boolean | null;
+  medicalCertificateReceivedDate: string | null;
+  membershipPaymentDate: string | null;
   rightOfPublicity: boolean | null;
 }
 
-export type AdherentInput = Omit<Adherent, 'id' | 'medicalCertificate' | 'rightOfPublicity'>;
+export type AdherentInput = Omit<
+  Adherent,
+  | 'id'
+  | 'medicalCertificate'
+  | 'medicalCertificateReceivedDate'
+  | 'membershipPaymentDate'
+  | 'rightOfPublicity'
+>;
+
+function isValidStoredDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value) || value < '1900-01-01') return false;
+  const date = new Date(`${value}T00:00:00`);
+  const [year, month, day] = value.split('-').map(Number);
+  return date.getFullYear() === year && date.getMonth() === month - 1 && date.getDate() === day;
+}
+
+export function isValidConfirmationDate(value: string): boolean {
+  if (!isValidStoredDate(value)) return false;
+  const date = new Date(`${value}T00:00:00`);
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return date <= today;
+}
 
 const MEMBERS_STORAGE_KEY = 'rekor-adherents';
 
@@ -45,6 +69,8 @@ const MOCK_ADHERENTS: Adherent[] = [
     role: 'Capitaine',
     registrationStatus: 'finalized',
     medicalCertificate: true,
+    medicalCertificateReceivedDate: null,
+    membershipPaymentDate: null,
     rightOfPublicity: true,
   },
   {
@@ -58,6 +84,8 @@ const MOCK_ADHERENTS: Adherent[] = [
     role: 'Visiteur',
     registrationStatus: 'pending',
     medicalCertificate: true,
+    medicalCertificateReceivedDate: null,
+    membershipPaymentDate: null,
     rightOfPublicity: false,
   },
   {
@@ -71,6 +99,8 @@ const MOCK_ADHERENTS: Adherent[] = [
     role: 'Entraineur',
     registrationStatus: 'validated',
     medicalCertificate: false,
+    medicalCertificateReceivedDate: null,
+    membershipPaymentDate: null,
     rightOfPublicity: true,
   },
   {
@@ -84,6 +114,8 @@ const MOCK_ADHERENTS: Adherent[] = [
     role: 'Visiteur',
     registrationStatus: 'pending',
     medicalCertificate: null,
+    medicalCertificateReceivedDate: null,
+    membershipPaymentDate: null,
     rightOfPublicity: null,
   },
   {
@@ -97,7 +129,24 @@ const MOCK_ADHERENTS: Adherent[] = [
     role: 'Adhérent',
     registrationStatus: 'finalized',
     medicalCertificate: true,
+    medicalCertificateReceivedDate: null,
+    membershipPaymentDate: null,
     rightOfPublicity: false,
+  },
+  {
+    id: 6,
+    lastName: 'Leroy',
+    firstName: 'Lou',
+    pronoun: 'Iel',
+    birthDate: '2001-04-10',
+    phone: '0600000006',
+    email: 'lou.leroy@example.fr',
+    role: 'Adhérent',
+    registrationStatus: 'validated',
+    medicalCertificate: true,
+    medicalCertificateReceivedDate: null,
+    membershipPaymentDate: null,
+    rightOfPublicity: true,
   },
 ];
 
@@ -108,18 +157,59 @@ export class AdherentService {
 
   /** Adds a member and persists the updated collection. */
   add(values: AdherentInput): void {
+    if (values.registrationStatus === 'finalized') {
+      throw new Error('Une inscription ne peut être finalisée sans certificat et paiement.');
+    }
     const id = Math.max(0, ...this.members().map((member) => member.id)) + 1;
     this.updateMembers([
       ...this.members(),
-      { ...values, id, medicalCertificate: null, rightOfPublicity: null },
+      {
+        ...values,
+        id,
+        medicalCertificate: null,
+        medicalCertificateReceivedDate: null,
+        membershipPaymentDate: null,
+        rightOfPublicity: null,
+      },
     ]);
   }
 
   /** Updates a member while preserving their identifier. */
   update(id: number, values: AdherentInput): void {
+    const member = this.members().find((item) => item.id === id);
+    if (
+      member &&
+      member.registrationStatus !== 'finalized' &&
+      values.registrationStatus === 'finalized'
+    ) {
+      throw new Error('Une inscription ne peut être finalisée sans certificat et paiement.');
+    }
     this.updateMembers(
       this.members().map((member) => (member.id === id ? { ...member, ...values } : member)),
     );
+  }
+
+  confirmRequirement(id: number, requirement: 'certificate' | 'payment', date: string): void {
+    const member = this.members().find((item) => item.id === id);
+    if (!member || member.registrationStatus !== 'validated') {
+      throw new Error('Seule une inscription validée peut être confirmée.');
+    }
+    if (!isValidConfirmationDate(date)) {
+      throw new Error('La date de confirmation est invalide.');
+    }
+    if (requirement === 'certificate' && member.medicalCertificate !== true) {
+      throw new Error('Le consentement à la collecte du certificat est requis.');
+    }
+    const field =
+      requirement === 'certificate' ? 'medicalCertificateReceivedDate' : 'membershipPaymentDate';
+    if (member[field] !== null) {
+      throw new Error('Cette confirmation a déjà été enregistrée.');
+    }
+    const updated = { ...member, [field]: date };
+    if (updated.medicalCertificateReceivedDate && updated.membershipPaymentDate) {
+      updated.registrationStatus = 'finalized';
+    }
+    this.updateMembers(this.members().map((item) => (item.id === id ? updated : item)));
   }
 
   /** Removes a member and persists the updated collection. */
@@ -129,10 +219,10 @@ export class AdherentService {
 
   /** Updates the member signal and stores the resulting collection. */
   private updateMembers(members: Adherent[]): void {
-    this.members.set(members);
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem(MEMBERS_STORAGE_KEY, JSON.stringify(members));
     }
+    this.members.set(members);
   }
 
   /** Loads members from browser storage, using the fixtures when storage is empty. */
@@ -169,6 +259,9 @@ function migrateLegacyAdherent(value: unknown): unknown {
   const member = value as Record<string, unknown>;
   const legacyMember = { ...member };
   if (!('medicalCertificate' in legacyMember)) legacyMember['medicalCertificate'] = null;
+  if (!('medicalCertificateReceivedDate' in legacyMember))
+    legacyMember['medicalCertificateReceivedDate'] = null;
+  if (!('membershipPaymentDate' in legacyMember)) legacyMember['membershipPaymentDate'] = null;
   if (!('rightOfPublicity' in legacyMember)) legacyMember['rightOfPublicity'] = null;
   if ('birthYear' in legacyMember && !('birthDate' in legacyMember)) {
     legacyMember['birthDate'] = null;
@@ -176,7 +269,6 @@ function migrateLegacyAdherent(value: unknown): unknown {
   }
 
   const legacyStatuses: Record<string, RegistrationStatus> = {
-    validated: 'finalized',
     'pending-validation': 'validated',
     'to-validate': 'pending',
   };
@@ -213,6 +305,12 @@ function isAdherent(value: unknown): value is Adherent {
     typeof member['role'] === 'string' &&
     member['role'].trim().length > 0 &&
     (typeof member['medicalCertificate'] === 'boolean' || member['medicalCertificate'] === null) &&
+    (member['medicalCertificateReceivedDate'] === null ||
+      (typeof member['medicalCertificateReceivedDate'] === 'string' &&
+        isValidStoredDate(member['medicalCertificateReceivedDate']))) &&
+    (member['membershipPaymentDate'] === null ||
+      (typeof member['membershipPaymentDate'] === 'string' &&
+        isValidStoredDate(member['membershipPaymentDate']))) &&
     (typeof member['rightOfPublicity'] === 'boolean' || member['rightOfPublicity'] === null) &&
     REGISTRATION_STATUSES.includes(member['registrationStatus'] as RegistrationStatus)
   );

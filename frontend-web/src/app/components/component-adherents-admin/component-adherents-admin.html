@@ -156,6 +156,21 @@
                       : 'Refusé'
                 }}
               </p>
+              @if (member.medicalCertificateReceivedDate) {
+                <p>
+                  Certificat reçu le
+                  {{
+                    member.medicalCertificateReceivedDate + 'T00:00:00Z'
+                      | date: 'dd/MM/yyyy' : 'UTC'
+                  }}
+                </p>
+              }
+              @if (member.membershipPaymentDate) {
+                <p>
+                  Adhésion payée le
+                  {{ member.membershipPaymentDate + 'T00:00:00Z' | date: 'dd/MM/yyyy' : 'UTC' }}
+                </p>
+              }
             </div>
           </div>
           <ul class="member-roles" aria-label="Rôle">
@@ -178,29 +193,84 @@
                 (click)="deleteMember(member.id)"
               ></app-button>
             } @else if (member.registrationStatus === 'validated') {
-              <app-button
-                size="small"
-                variant="success"
-                text="Confirmer la réception du certificat"
-                [ariaLabel]="
-                  'Confirmer la réception du certificat de ' +
-                  member.firstName +
-                  ' ' +
-                  member.lastName
-                "
-                [disabled]="true"
-              ></app-button>
-              <p class="certificate-notice">
-                @if (member.medicalCertificate === false) {
-                  Confirmation impossible : l’adhérent n’a pas accepté la collecte du certificat
-                  médical.
-                } @else if (member.medicalCertificate === null) {
-                  Confirmation impossible : le consentement à la collecte du certificat médical est
-                  inconnu.
-                } @else {
-                  La confirmation de réception n’est pas encore disponible.
+              @if (!member.medicalCertificateReceivedDate) {
+                <form
+                  class="confirmation-form"
+                  (submit)="
+                    $event.preventDefault();
+                    confirmRequirement(member, 'certificate', certificateDate)
+                  "
+                >
+                  <label class="field" [for]="'certificate-date-' + member.id">
+                    Date de réception du certificat
+                    <input
+                      #certificateDate
+                      [id]="'certificate-date-' + member.id"
+                      type="date"
+                      min="1900-01-01"
+                      [max]="currentDate"
+                      required
+                      [disabled]="member.medicalCertificate !== true"
+                    />
+                  </label>
+                  <app-button
+                    type="submit"
+                    size="small"
+                    variant="success"
+                    text="Confirmer la réception du certificat"
+                    [ariaLabel]="
+                      'Confirmer la réception du certificat de ' +
+                      member.firstName +
+                      ' ' +
+                      member.lastName
+                    "
+                    [disabled]="member.medicalCertificate !== true"
+                  ></app-button>
+                </form>
+                @if (member.medicalCertificate !== true) {
+                  <p class="certificate-notice">
+                    @if (member.medicalCertificate === false) {
+                      Confirmation impossible : l’adhérent n’a pas accepté la collecte du certificat
+                      médical.
+                    } @else {
+                      Confirmation impossible : le consentement à la collecte du certificat médical
+                      est inconnu.
+                    }
+                  </p>
                 }
-              </p>
+              }
+              @if (!member.membershipPaymentDate) {
+                <form
+                  class="confirmation-form"
+                  (submit)="
+                    $event.preventDefault(); confirmRequirement(member, 'payment', paymentDate)
+                  "
+                >
+                  <label class="field" [for]="'payment-date-' + member.id">
+                    Date de paiement de l’adhésion
+                    <input
+                      #paymentDate
+                      [id]="'payment-date-' + member.id"
+                      type="date"
+                      min="1900-01-01"
+                      [max]="currentDate"
+                      required
+                    />
+                  </label>
+                  <app-button
+                    type="submit"
+                    size="small"
+                    variant="success"
+                    text="Confirmer le paiement de l’adhésion"
+                    [ariaLabel]="
+                      'Confirmer le paiement de l’adhésion de ' +
+                      member.firstName +
+                      ' ' +
+                      member.lastName
+                    "
+                  ></app-button>
+                </form>
+              }
             }
             <button
               class="icon-action edit-action"

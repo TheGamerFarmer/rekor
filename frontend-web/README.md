@@ -45,6 +45,15 @@ formulaires, l'historique et l'export.
 L'export CSV présente deux tableaux successifs, recettes puis dépenses, avec leurs totaux et le
 solde de l'année sélectionnée.
 
+## Gestion des adhérents
+
+La page d'administration des adhérents utilise actuellement des données fictives conservées dans
+le stockage local du navigateur : elle n'est pas reliée aux inscriptions ni à la base de données.
+Pour une inscription validée, l'administrateur peut enregistrer séparément les dates de réception
+du certificat médical (si sa collecte a été acceptée) et de paiement de l'adhésion. L'inscription
+est finalisée lorsque les deux confirmations sont enregistrées. Les inscriptions déjà finalisées
+conservent leur statut lorsque les dates historiques ne sont pas connues.
+
 ## Tests
 
 Il y a trois commandes principales de test de tests

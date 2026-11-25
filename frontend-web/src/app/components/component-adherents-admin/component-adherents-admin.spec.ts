@@ -9,6 +9,7 @@ describe('ComponentAdherentsAdmin', () => {
   let add: ReturnType<typeof vi.fn>;
   let update: ReturnType<typeof vi.fn>;
   let remove: ReturnType<typeof vi.fn>;
+  let confirmRequirement: ReturnType<typeof vi.fn>;
 
   const validatedMember: Adherent = {
     id: 1,
@@ -21,6 +22,8 @@ describe('ComponentAdherentsAdmin', () => {
     role: 'Capitaine',
     registrationStatus: 'finalized',
     medicalCertificate: true,
+    medicalCertificateReceivedDate: null,
+    membershipPaymentDate: null,
     rightOfPublicity: false,
   };
   const toValidateMember: Adherent = {
@@ -38,12 +41,13 @@ describe('ComponentAdherentsAdmin', () => {
     add = vi.fn();
     update = vi.fn();
     remove = vi.fn();
+    confirmRequirement = vi.fn();
     await TestBed.configureTestingModule({
       imports: [ComponentAdherentsAdmin],
       providers: [
         {
           provide: AdherentService,
-          useValue: { adherents: members, add, update, remove },
+          useValue: { adherents: members, add, update, remove, confirmRequirement },
         },
       ],
     }).compileComponents();
@@ -120,7 +124,7 @@ describe('ComponentAdherentsAdmin', () => {
     expect(remove).toHaveBeenCalledWith(toValidateMember.id);
   });
 
-  it('shows the disabled certificate confirmation only for pending registrations', () => {
+  it('allows dated certificate and payment confirmations for validated registrations', () => {
     members.set([
       ...members(),
       {
@@ -141,12 +145,43 @@ describe('ComponentAdherentsAdmin', () => {
     const confirmation = fixture.nativeElement.querySelector(
       '[aria-label="Confirmer la réception du certificat de Camille Durand"]',
     ) as HTMLButtonElement;
-    expect(confirmation.disabled).toBe(true);
+    expect(confirmation.disabled).toBe(false);
     expect(confirmation.classList.contains('button-success')).toBe(true);
-    expect(fixture.nativeElement.querySelector('.certificate-notice').textContent).toContain(
-      'La confirmation de réception n’est pas encore disponible.',
-    );
+    expect(fixture.nativeElement.querySelector('.certificate-notice')).toBeNull();
+    const certificateDate = fixture.nativeElement.querySelector(
+      '#certificate-date-3',
+    ) as HTMLInputElement;
+    const paymentDate = fixture.nativeElement.querySelector('#payment-date-3') as HTMLInputElement;
+    expect(certificateDate.required).toBe(true);
+    expect(paymentDate.required).toBe(true);
+    certificateDate.value = '2024-01-02';
+    paymentDate.value = '2024-01-03';
+    confirmation.click();
+    (
+      fixture.nativeElement.querySelector(
+        '[aria-label="Confirmer le paiement de l’adhésion de Camille Durand"]',
+      ) as HTMLButtonElement
+    ).click();
+    expect(confirmRequirement).toHaveBeenCalledWith(3, 'certificate', '2024-01-02');
+    expect(confirmRequirement).toHaveBeenCalledWith(3, 'payment', '2024-01-03');
     expect(fixture.nativeElement.querySelector('[aria-label^="Valider l’inscription"]')).toBeNull();
+  });
+
+  it('displays saved dates and only offers the outstanding confirmation', () => {
+    members.set([
+      { ...toValidateMember, registrationStatus: 'validated', membershipPaymentDate: '2024-01-03' },
+    ]);
+    Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.registration-filters button',
+      ) as NodeListOf<HTMLButtonElement>,
+    )
+      .find((button) => button.textContent?.includes('Validées'))
+      ?.click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Adhésion payée le 03/01/2024');
+    expect(fixture.nativeElement.querySelector('#payment-date-2')).toBeNull();
+    expect(fixture.nativeElement.querySelector('#certificate-date-2')).not.toBeNull();
   });
 
   it('blocks certificate confirmation when consent is refused or unknown', () => {
@@ -391,5 +426,56 @@ describe('ComponentAdherentsAdmin', () => {
     deleteButton.click();
 
     expect(remove).toHaveBeenCalledWith(2);
+  });
+});
+
+describe('ComponentAdherentsAdmin with stored members', () => {
+  beforeEach(() => localStorage.removeItem('rekor-adherents'));
+  afterEach(() => localStorage.removeItem('rekor-adherents'));
+
+  it('finalizes only after both dated confirmations and keeps them after reload', async () => {
+    await TestBed.configureTestingModule({
+      imports: [ComponentAdherentsAdmin],
+    }).compileComponents();
+    const fixture = TestBed.createComponent(ComponentAdherentsAdmin);
+    fixture.detectChanges();
+    Array.from(
+      fixture.nativeElement.querySelectorAll(
+        '.registration-filters button',
+      ) as NodeListOf<HTMLButtonElement>,
+    )
+      .find((button) => button.textContent?.includes('Validées'))
+      ?.click();
+    fixture.detectChanges();
+
+    const certificateDate = fixture.nativeElement.querySelector(
+      '#certificate-date-6',
+    ) as HTMLInputElement;
+    certificateDate.value = '2024-01-02';
+    (
+      fixture.nativeElement.querySelector(
+        '[aria-label="Confirmer la réception du certificat de Lou Leroy"]',
+      ) as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Certificat reçu le 02/01/2024');
+    expect(new AdherentService().adherents().find(({ id }) => id === 6)?.registrationStatus).toBe(
+      'validated',
+    );
+
+    const paymentDate = fixture.nativeElement.querySelector('#payment-date-6') as HTMLInputElement;
+    paymentDate.value = '2024-01-03';
+    (
+      fixture.nativeElement.querySelector(
+        '[aria-label="Confirmer le paiement de l’adhésion de Lou Leroy"]',
+      ) as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).not.toContain('Lou Leroy');
+    expect(new AdherentService().adherents().find(({ id }) => id === 6)).toMatchObject({
+      registrationStatus: 'finalized',
+      medicalCertificateReceivedDate: '2024-01-02',
+      membershipPaymentDate: '2024-01-03',
+    });
   });
 });

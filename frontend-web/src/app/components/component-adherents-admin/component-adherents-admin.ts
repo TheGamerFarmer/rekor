@@ -12,6 +12,7 @@ import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
 import {
   AdherentService,
+  isValidConfirmationDate,
   MEMBER_PRONOUNS,
   MEMBER_ROLES,
   type Adherent,
@@ -135,6 +136,20 @@ export class ComponentAdherentsAdmin {
   /** Removes the selected member from the shared collection. */
   protected deleteMember(id: number): void {
     this.adherentService.remove(id);
+  }
+
+  protected confirmRequirement(
+    member: Adherent,
+    requirement: 'certificate' | 'payment',
+    dateInput: HTMLInputElement,
+  ): void {
+    if (!isValidConfirmationDate(dateInput.value)) {
+      dateInput.setCustomValidity('Saisissez une date valide qui ne soit pas dans le futur.');
+      dateInput.reportValidity();
+      dateInput.setCustomValidity('');
+      return;
+    }
+    this.adherentService.confirmRequirement(member.id, requirement, dateInput.value);
   }
 
   /** Resets and hides the member form. */
