@@ -4,8 +4,8 @@
   subtitle="Connectez-vous pour retrouver votre espace."
 />
 
-<main class="login-page">
-  <section class="login-card">
+<main class="form-page login-page">
+  <section class="surface-card login-card">
     <form [formGroup]="loginForm" (ngSubmit)="submit()" novalidate>
       <div class="field">
         <label for="email">E-mail</label>
@@ -51,6 +51,13 @@
       </div>
 
       <app-button type="submit" [fullWidth]="true" text="Se connecter"></app-button>
+
+      @if (registrationSuccess()) {
+        <p class="form-message success" role="status">
+          Votre inscription a bien été prise en compte. Votre candidature sera étudiée par un
+          responsable.
+        </p>
+      }
 
       @if (loginError()) {
         <p class="form-message error" role="alert">{{ loginError() }}</p>

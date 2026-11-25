@@ -64,7 +64,7 @@ const INITIAL_TRANSACTIONS: TreasuryTransaction[] = [
     id: 6,
     type: 'expense',
     date: '2026-11-01',
-    category: 'Nourriture',
+    category: 'Nourriture/ Boisson',
     description: 'Goûter tournoi',
     amount: 120,
   },
@@ -100,13 +100,7 @@ export class ComponentTresorerie {
   protected readonly statusMessage = signal('');
   protected readonly years = Array.from({ length: 6 }, (_, index) => CURRENT_YEAR - index);
   protected readonly incomeCategories = ['Adhésion', 'Subvention', 'Don', 'Autre'];
-  protected readonly expenseCategories = [
-    'Matériel',
-    'Nourriture',
-    'Service',
-    'Déplacement',
-    'Autre',
-  ];
+  protected readonly expenseCategories = ['Matériel', 'Nourriture/ Boisson', 'Service', 'Autre'];
 
   protected readonly incomes = computed(() =>
     this.transactions()
@@ -133,44 +127,52 @@ export class ComponentTresorerie {
   );
 
   protected readonly incomeForm = new FormBuilder().nonNullable.group({
+    date: [this.dateForYear(CURRENT_YEAR), Validators.required],
     category: ['Adhésion', Validators.required],
     amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     description: [''],
   });
   protected readonly expenseForm = new FormBuilder().nonNullable.group({
+    date: [this.dateForYear(CURRENT_YEAR), Validators.required],
     category: ['Matériel', Validators.required],
     amount: [null as number | null, [Validators.required, Validators.min(0.01)]],
     description: [''],
   });
   private nextId = Math.max(...INITIAL_TRANSACTIONS.map((transaction) => transaction.id)) + 1;
 
+  /** Changes the selected year and updates forms that still use their default date. */
   protected onYearChange(event: Event): void {
     const select = event.currentTarget;
     if (select instanceof HTMLSelectElement) {
+      const previousDefaultDate = this.dateForYear(this.year());
       this.year.set(Number(select.value));
+      const nextDefaultDate = this.dateForYear(this.year());
+      for (const form of [this.incomeForm, this.expenseForm]) {
+        if (form.controls.date.value === previousDefaultDate) {
+          form.controls.date.setValue(nextDefaultDate);
+        }
+      }
       this.showAllIncome.set(false);
       this.showAllExpenses.set(false);
     }
   }
 
+  /** Validates and adds a transaction to the selected year's balance. */
   protected addTransaction(type: TransactionType): void {
     const form = type === 'income' ? this.incomeForm : this.expenseForm;
     if (form.invalid) {
       form.markAllAsTouched();
-      this.statusMessage.set('Veuillez saisir une catégorie et un montant supérieur à zéro.');
+      this.statusMessage.set(
+        'Veuillez saisir une date, une catégorie et un montant supérieur à zéro.',
+      );
       return;
     }
 
     const values = form.getRawValue();
-    const now = new Date();
-    const date =
-      this.year() === now.getFullYear()
-        ? this.formatDate(now)
-        : `${this.year()}-${this.formatDate(now).slice(5)}`;
     const transaction: TreasuryTransaction = {
       id: this.nextId++,
       type,
-      date,
+      date: values.date,
       category: values.category,
       description: values.description.trim(),
       amount: Number(values.amount),
@@ -178,6 +180,7 @@ export class ComponentTresorerie {
 
     this.transactions.update((transactions) => [transaction, ...transactions]);
     form.reset({
+      date: this.dateForYear(this.year()),
       category: type === 'income' ? 'Adhésion' : 'Matériel',
       amount: null,
       description: '',
@@ -187,6 +190,7 @@ export class ComponentTresorerie {
     );
   }
 
+  /** Downloads the selected year's income and expense summary as a CSV file. */
   protected exportBalance(): void {
     const rows = [
       ['Date', 'Type', 'Catégorie', 'Description', 'Montant (€)'],
@@ -215,24 +219,35 @@ export class ComponentTresorerie {
     this.statusMessage.set(`Bilan ${this.year()} exporté.`);
   }
 
+  /** Toggles whether all income transactions are displayed. */
   protected toggleIncomeHistory(): void {
     this.showAllIncome.update((showAll) => !showAll);
   }
 
+  /** Toggles whether all expense transactions are displayed. */
   protected toggleExpenseHistory(): void {
     this.showAllExpenses.update((showAll) => !showAll);
   }
 
+  /** Checks whether a transaction belongs to the selected year. */
   private inYear(transaction: TreasuryTransaction): boolean {
     return Number(transaction.date.slice(0, 4)) === this.year();
   }
 
+  /** Formats a date as the local YYYY-MM-DD value used by date inputs. */
   private formatDate(date: Date): string {
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     return `${date.getFullYear()}-${month}-${day}`;
   }
 
+  /** Returns the current calendar date expressed in the requested year. */
+  private dateForYear(year: number): string {
+    const now = new Date();
+    return this.formatDate(new Date(year, now.getMonth(), now.getDate()));
+  }
+
+  /** Escapes a CSV cell and wraps it in quotes. */
   private escapeCsv(value: string): string {
     return `"${value.replaceAll('"', '""')}"`;
   }

@@ -10,7 +10,7 @@ const member: Adherent = {
   birthDate: '2000-05-12',
   phone: '0600000000',
   email: 'alex@example.fr',
-  roles: ['Adhérent'],
+  role: 'Adhérent',
   registrationStatus: 'validated',
 };
 
@@ -21,7 +21,7 @@ const memberInput: AdherentInput = {
   birthDate: member.birthDate,
   phone: member.phone,
   email: member.email,
-  roles: member.roles,
+  role: member.role,
   registrationStatus: member.registrationStatus,
 };
 
@@ -59,7 +59,7 @@ describe('AdherentService', () => {
       JSON.stringify([{ ...member, pronoun: 'Unknown' }]),
       JSON.stringify([{ ...member, birthDate: 2000 }]),
       JSON.stringify([{ ...member, phone: null }]),
-      JSON.stringify([{ ...member, roles: ['Unknown'] }]),
+      JSON.stringify([{ ...member, role: '' }]),
       JSON.stringify([{ ...member, registrationStatus: 'unknown' }]),
       JSON.stringify([{ ...member, id: '4' }]),
     ]) {
@@ -68,32 +68,47 @@ describe('AdherentService', () => {
     }
   });
 
-  it('adds members with a new identifier and persists a copy of their roles', () => {
+  it('adds members with a new identifier and persists their role', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([member]));
     const service = new AdherentService();
-    const roles = [...memberInput.roles];
-
-    service.add({ ...memberInput, roles });
+    service.add(memberInput);
 
     expect(service.adherents()).toHaveLength(2);
     expect(service.adherents()[1]).toEqual({ ...memberInput, id: 5 });
-    expect(service.adherents()[1].roles).not.toBe(roles);
     expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toEqual(service.adherents());
   });
 
   it('updates only the matching member while preserving its identifier', () => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify([]));
     const service = new AdherentService();
-    const roles = ['Capitaine'] as AdherentInput['roles'];
-
     service.add(memberInput);
-    service.update(1, { ...memberInput, firstName: 'Alexandre', roles });
+    service.update(1, { ...memberInput, firstName: 'Alexandre', role: 'Capitaine' });
     service.update(99, memberInput);
 
     expect(service.adherents()).toEqual([
-      { ...memberInput, id: 1, firstName: 'Alexandre', roles: ['Capitaine'] },
+      { ...memberInput, id: 1, firstName: 'Alexandre', role: 'Capitaine' },
     ]);
-    expect(service.adherents()[0].roles).not.toBe(roles);
+  });
+
+  it('migrates multiple legacy roles to the highest role and normalizes coach spelling', () => {
+    const { role, ...rest } = member;
+    void role;
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([
+        { ...rest, roles: ['Adhérent', 'Capitaine'] },
+        { ...rest, id: 5, roles: ['Entraîneur', 'Visiteur'] },
+      ]),
+    );
+    expect(new AdherentService().adherents()).toEqual([
+      { ...rest, role: 'Capitaine' },
+      { ...rest, id: 5, role: 'Entraineur' },
+    ]);
+  });
+
+  it('preserves new roles without requiring a frontend update', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([{ ...member, role: 'Arbitre' }]));
+    expect(new AdherentService().adherents()[0].role).toBe('Arbitre');
   });
 
   it('removes matching members and persists even when no member matches', () => {

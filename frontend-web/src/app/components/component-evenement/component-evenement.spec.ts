@@ -4,13 +4,17 @@ import { ComponentEvenement } from './component-evenement';
 import { defaultEvenements, getDateDuJour, getHeureEvenement } from './evenements.data';
 import { createTestEvenements, dateRelativeToToday } from './evenements.test-data';
 import { EvenementService } from '../../services/evenement.service';
+import { AuthService } from '../../services/auth.service';
+import { UserDetails } from '../../api/model/userDetails';
 
 describe('ComponentEvenement', () => {
   let fixture: ComponentFixture<ComponentEvenement>;
   let events = signal(createTestEvenements());
+  let role = signal<UserDetails.RoleEnum | null>(UserDetails.RoleEnum.Administrateur);
 
   beforeEach(async () => {
     events = signal(createTestEvenements());
+    role = signal<UserDetails.RoleEnum | null>(UserDetails.RoleEnum.Administrateur);
     await TestBed.configureTestingModule({
       imports: [ComponentEvenement],
       providers: [
@@ -18,6 +22,7 @@ describe('ComponentEvenement', () => {
           provide: EvenementService,
           useValue: { evenements: events },
         },
+        { provide: AuthService, useValue: { role } },
       ],
     }).compileComponents();
 
@@ -49,6 +54,28 @@ describe('ComponentEvenement', () => {
     expect(fixture.nativeElement.textContent).toContain('Entraînement');
     expect(fixture.nativeElement.querySelector('.event-list')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('a[href="/admin/evenements"]')).not.toBeNull();
+  });
+
+  it('shows event management only for administrators, coaches, and captains', () => {
+    for (const authorizedRole of [
+      UserDetails.RoleEnum.Administrateur,
+      UserDetails.RoleEnum.Entraineur,
+      UserDetails.RoleEnum.Capitaine,
+    ]) {
+      role.set(authorizedRole);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('a[href="/admin/evenements"]')).not.toBeNull();
+    }
+
+    for (const unauthorizedRole of [
+      null,
+      UserDetails.RoleEnum.Adhrent,
+      UserDetails.RoleEnum.Visiteur,
+    ]) {
+      role.set(unauthorizedRole);
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('a[href="/admin/evenements"]')).toBeNull();
+    }
   });
 
   it('switches between upcoming and past events', () => {

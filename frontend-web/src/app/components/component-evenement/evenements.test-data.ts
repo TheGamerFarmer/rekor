@@ -10,6 +10,7 @@ const daysFromToday: Record<number, number> = {
   7: 12,
 };
 
+/** Creates event fixtures with dates relative to the current day for stable tests. */
 export function createTestEvenements(): Evenement[] {
   return defaultEvenements.map((event) => ({
     ...event,
@@ -17,6 +18,7 @@ export function createTestEvenements(): Evenement[] {
   }));
 }
 
+/** Returns the local calendar date at the requested offset from today. */
 export function dateRelativeToToday(daysFromToday: number): string {
   const date = new Date();
   date.setDate(date.getDate() + daysFromToday);

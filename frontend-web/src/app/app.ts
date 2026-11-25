@@ -3,6 +3,7 @@ import { Router, RouterOutlet } from '@angular/router';
 
 import { Button } from './components/component-button/button';
 import { AuthService } from './services/auth.service';
+import { UserDetails } from './api/model/userDetails';
 
 @Component({
   imports: [Button, RouterOutlet],
@@ -12,7 +13,15 @@ import { AuthService } from './services/auth.service';
 })
 export class App {
   protected readonly authService = inject(AuthService);
+  protected readonly roles = UserDetails.RoleEnum;
   private readonly router = inject(Router);
+
+  /** Loads the user's role when restoring an existing session. */
+  constructor() {
+    if (this.authService.isAuthenticated()) {
+      this.authService.loadRole().subscribe({ error: () => undefined });
+    }
+  }
 
   /** Ends the current session. */
   protected logout(): void {

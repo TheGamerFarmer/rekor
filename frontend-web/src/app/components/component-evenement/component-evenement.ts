@@ -2,10 +2,12 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { interval } from 'rxjs';
+import { UserDetails } from '../../api/model/userDetails';
+import { AuthService } from '../../services/auth.service';
+import { EvenementService } from '../../services/evenement.service';
 import { Banner } from '../component-banner/banner';
 import { Button } from '../component-button/button';
 import { getDateDuJour, getHeureEvenement, getNomGymnase } from './evenements.data';
-import { EvenementService } from '../../services/evenement.service';
 
 const PAGE_SIZE = 6;
 
@@ -17,6 +19,15 @@ const PAGE_SIZE = 6;
 })
 export class ComponentEvenement {
   private readonly evenementService = inject(EvenementService);
+  private readonly authService = inject(AuthService);
+  protected readonly canManageEvents = computed(() => {
+    const role = this.authService.role();
+    return (
+      role === UserDetails.RoleEnum.Administrateur ||
+      role === UserDetails.RoleEnum.Entraineur ||
+      role === UserDetails.RoleEnum.Capitaine
+    );
+  });
   protected readonly evenements = this.evenementService.evenements;
   protected readonly eventFilter = signal<'past' | 'upcoming'>('upcoming');
   protected readonly currentPage = signal(1);

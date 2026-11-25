@@ -20,7 +20,13 @@
         (click)="setFilter('past')"
       ></app-button>
     </div>
-    <app-button variant="primary" href="/admin/evenements" text="Gérer les événements"></app-button>
+    @if (canManageEvents()) {
+      <app-button
+        variant="primary"
+        href="/admin/evenements"
+        text="Gérer les événements"
+      ></app-button>
+    }
   </div>
 
   <section class="event-list" aria-label="Liste des événements">
