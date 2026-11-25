@@ -23,6 +23,7 @@ class _ParametresPageState extends State<ParametresPage> {
   generated.UserDetails? _profil;
   bool _chargementProfil = true;
   bool _enregistrementProfil = false;
+  bool _changementMotDePasse = false;
   String? _erreurProfil;
 
   // Photo de profil choisie (null = initiales)
@@ -240,6 +241,68 @@ class _ParametresPageState extends State<ParametresPage> {
     }
   }
 
+  Future<void> _modifierMotDePasse() async {
+    final informations = await showDialog<({String ancien, String nouveau})>(
+      context: context,
+      builder: (context) => const _ChangerMotDePasseDialog(),
+    );
+    if (informations == null || !mounted) return;
+
+    setState(() => _changementMotDePasse = true);
+    try {
+      await ApiClient.instance.changeMyPassword(
+        oldPassword: informations.ancien,
+        newPassword: informations.nouveau,
+      );
+      if (!mounted) return;
+      setState(() => _changementMotDePasse = false);
+      await _afficherResultatMotDePasse(
+        succes: true,
+        message: 'Mot de passe modifié avec succès.',
+      );
+    } catch (error) {
+      debugPrint('Erreur lors du changement de mot de passe : $error');
+      if (!mounted) return;
+      setState(() => _changementMotDePasse = false);
+      await _afficherResultatMotDePasse(
+        succes: false,
+        message: 'Impossible de modifier le mot de passe.',
+      );
+    }
+  }
+
+  Future<void> _afficherResultatMotDePasse({
+    required bool succes,
+    required String message,
+  }) {
+    return showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: _fondPopup,
+        icon: Icon(
+          succes ? Icons.check_circle_outline : Icons.error_outline,
+          color: succes ? _jaune : Colors.redAccent,
+          size: 40,
+        ),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            style: FilledButton.styleFrom(
+              backgroundColor: _jaune,
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('Fermer'),
+          ),
+        ],
+      ),
+    );
+  }
+
   // Popup de confirmation : renvoie true si l'utilisateur confirme
   Future<bool> _confirmer({
     required String titre,
@@ -423,7 +486,7 @@ class _ParametresPageState extends State<ParametresPage> {
                 ),
               ),
               ListTile(
-                //onTap: _seDeconnecter,
+                onTap: _changementMotDePasse ? null : _modifierMotDePasse,
                 leading: const Icon(Icons.lock_reset, color: Colors.white),
                 title: const Text(
                   'Changer mon mot de passe',
@@ -641,6 +704,125 @@ class _ChampTexteDialogState extends State<_ChampTexteDialog> {
           child: const Text('Enregistrer'),
         ),
       ],
+    );
+  }
+}
+
+class _ChangerMotDePasseDialog extends StatefulWidget {
+  const _ChangerMotDePasseDialog();
+
+  @override
+  State<_ChangerMotDePasseDialog> createState() =>
+      _ChangerMotDePasseDialogState();
+}
+
+class _ChangerMotDePasseDialogState extends State<_ChangerMotDePasseDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _ancienMotDePasse = TextEditingController();
+  final _nouveauMotDePasse = TextEditingController();
+  final _confirmation = TextEditingController();
+
+  @override
+  void dispose() {
+    _ancienMotDePasse.dispose();
+    _nouveauMotDePasse.dispose();
+    _confirmation.dispose();
+    super.dispose();
+  }
+
+  void _soumettre() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.pop(context, (
+      ancien: _ancienMotDePasse.text,
+      nouveau: _nouveauMotDePasse.text,
+    ));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: _fondPopup,
+      title: const Text(
+        'Changer mon mot de passe',
+        style: TextStyle(color: Colors.white),
+      ),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _champMotDePasse(
+              controller: _ancienMotDePasse,
+              label: 'Ancien mot de passe',
+            ),
+            const SizedBox(height: 12),
+            _champMotDePasse(
+              controller: _nouveauMotDePasse,
+              label: 'Nouveau mot de passe',
+            ),
+            const SizedBox(height: 12),
+            _champMotDePasse(
+              controller: _confirmation,
+              label: 'Confirmer le nouveau mot de passe',
+              validator: (valeur) {
+                if (valeur == null || valeur.isEmpty) {
+                  return 'Veuillez confirmer le nouveau mot de passe.';
+                }
+                if (valeur != _nouveauMotDePasse.text) {
+                  return 'Les mots de passe ne correspondent pas.';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(foregroundColor: Colors.white70),
+          child: const Text('Annuler'),
+        ),
+        FilledButton(
+          onPressed: _soumettre,
+          style: FilledButton.styleFrom(
+            backgroundColor: _jaune,
+            foregroundColor: Colors.black,
+          ),
+          child: const Text('Enregistrer'),
+        ),
+      ],
+    );
+  }
+
+  Widget _champMotDePasse({
+    required TextEditingController controller,
+    required String label,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: true,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white70),
+        filled: true,
+        fillColor: Colors.white10,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.white24),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.white54),
+        ),
+      ),
+      validator:
+          validator ??
+          (valeur) => valeur == null || valeur.isEmpty
+              ? 'Ce champ est obligatoire.'
+              : null,
     );
   }
 }

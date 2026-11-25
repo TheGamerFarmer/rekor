@@ -151,6 +151,64 @@ void main() {
       );
     });
 
+    testWidgets('change le mot de passe avec les informations saisies', (
+      tester,
+    ) async {
+      await afficher(tester, const ParametresPage());
+      await tester.ensureVisible(find.text('Changer mon mot de passe'));
+      await tester.tap(find.text('Changer mon mot de passe'));
+      await tester.pumpAndSettle();
+
+      final champs = find.byType(TextFormField);
+      await tester.enterText(champs.at(0), 'ancien-secret');
+      await tester.enterText(champs.at(1), 'nouveau-secret');
+      await tester.enterText(champs.at(2), 'incorrect');
+      await tester.tap(find.text('Enregistrer').last);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Les mots de passe ne correspondent pas.'),
+        findsOneWidget,
+      );
+      expect(apiClientProfil.changementsMotDePasse, isEmpty);
+
+      await tester.enterText(champs.at(2), 'nouveau-secret');
+      await tester.tap(find.text('Enregistrer').last);
+      await tester.pumpAndSettle();
+
+      expect(apiClientProfil.changementsMotDePasse, [
+        (ancien: 'ancien-secret', nouveau: 'nouveau-secret'),
+      ]);
+      expect(find.text('Mot de passe modifié avec succès.'), findsOneWidget);
+      await tester.tap(find.text('Fermer'));
+      await tester.pumpAndSettle();
+    });
+
+    testWidgets('affiche clairement une erreur de changement de mot de passe', (
+      tester,
+    ) async {
+      apiClientProfil.echecChangementMotDePasse = true;
+      await afficher(tester, const ParametresPage());
+      await tester.ensureVisible(find.text('Changer mon mot de passe'));
+      await tester.tap(find.text('Changer mon mot de passe'));
+      await tester.pumpAndSettle();
+
+      final champs = find.byType(TextFormField);
+      await tester.enterText(champs.at(0), 'ancien-secret');
+      await tester.enterText(champs.at(1), 'nouveau-secret');
+      await tester.enterText(champs.at(2), 'nouveau-secret');
+      await tester.tap(find.text('Enregistrer').last);
+      await tester.pumpAndSettle();
+
+      expect(
+        find.text('Impossible de modifier le mot de passe.'),
+        findsOneWidget,
+      );
+      expect(find.byIcon(Icons.error_outline), findsOneWidget);
+      await tester.tap(find.text('Fermer'));
+      await tester.pumpAndSettle();
+    });
+
     testWidgets('déconnecte et revient à la connexion', (tester) async {
       FlutterSecureStorage.setMockInitialValues({});
       await afficher(tester, const ParametresPage());
@@ -491,6 +549,8 @@ class _ApiClientProfilFictif extends ApiClient {
   _ApiClientProfilFictif() : super('http://localhost:3000');
 
   final updates = <generated.UpdateProfileInput>[];
+  final changementsMotDePasse = <({String ancien, String nouveau})>[];
+  bool echecChangementMotDePasse = false;
 
   @override
   Future<generated.UserDetails?> getMyProfile() async {
@@ -509,6 +569,17 @@ class _ApiClientProfilFictif extends ApiClient {
   @override
   Future<void> updateMyProfile(generated.UpdateProfileInput profile) async {
     updates.add(profile);
+  }
+
+  @override
+  Future<void> changeMyPassword({
+    required String oldPassword,
+    required String newPassword,
+  }) async {
+    if (echecChangementMotDePasse) {
+      throw StateError('Échec simulé du changement de mot de passe.');
+    }
+    changementsMotDePasse.add((ancien: oldPassword, nouveau: newPassword));
   }
 
   @override
