@@ -135,11 +135,11 @@
               "role": {
                 "type": "string",
                 "enum": [
-                  "Administrateur",
-                  "Entraineur",
-                  "Capitaine",
+                  "Visiteur",
                   "Adhérent",
-                  "Visiteur"
+                  "Capitaine",
+                  "Entraineur",
+                  "Administrateur"
                 ]
               },
               "pronoun": {
@@ -177,20 +177,29 @@
       "UpdateProfileInput": {
         "type": "object",
         "properties": {
+          "email": {
+            "type": "string",
+            "format": "email",
+            "example": "ada@exemple.fr"
+          },
           "name": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "example": "Lovelace"
           },
           "firstName": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "example": "Ada"
           },
           "phoneNumber": {
-            "type": "string"
+            "type": "string",
+            "example": "0612345678"
           },
           "birthday": {
             "type": "string",
-            "format": "date"
+            "format": "date",
+            "example": "1815-12-10"
           },
           "pronoun": {
             "type": "string",
@@ -199,13 +208,16 @@
               "Elle",
               "Iel",
               "Autre"
-            ]
+            ],
+            "example": "Elle"
           },
           "medicalCertificate": {
-            "type": "boolean"
+            "type": "boolean",
+            "example": false
           },
           "rightOfPublicity": {
-            "type": "boolean"
+            "type": "boolean",
+            "example": false
           }
         }
       },
@@ -214,11 +226,13 @@
         "properties": {
           "old_password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "example": "ancien-mot-de-passe"
           },
           "new_password": {
             "type": "string",
-            "minLength": 1
+            "minLength": 1,
+            "example": "nouveau-mot-de-passe"
           }
         },
         "required": [
@@ -234,19 +248,16 @@
           {
             "type": "object",
             "properties": {
-              "email": {
-                "type": "string",
-                "format": "email"
-              },
               "role": {
                 "type": "string",
                 "enum": [
-                  "Administrateur",
-                  "Entraineur",
-                  "Capitaine",
+                  "Visiteur",
                   "Adhérent",
-                  "Visiteur"
-                ]
+                  "Capitaine",
+                  "Entraineur",
+                  "Administrateur"
+                ],
+                "example": "Adhérent"
               }
             },
             "required": [
@@ -373,6 +384,312 @@
         "required": [
           "refresh_token"
         ]
+      },
+      "EventListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          },
+          "name": {
+            "type": "string",
+            "example": "Entraînement du lundi"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-03-15T00:00:00.000Z"
+          },
+          "place": {
+            "type": "string",
+            "example": "Gymnase municipal"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Entrainement",
+              "Match-amical",
+              "Match-compétitif",
+              "Réunion",
+              "Autre"
+            ],
+            "example": "Entrainement"
+          },
+          "description": {
+            "type": "string",
+            "example": "Entraînement hebdomadaire"
+          },
+          "group": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "date",
+          "place",
+          "type",
+          "description",
+          "group"
+        ]
+      },
+      "EventDetails": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          },
+          "name": {
+            "type": "string",
+            "example": "Entraînement du lundi"
+          },
+          "date": {
+            "type": "string",
+            "format": "date-time",
+            "example": "2025-03-15T00:00:00.000Z"
+          },
+          "place": {
+            "type": "string",
+            "example": "Gymnase municipal"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Entrainement",
+              "Match-amical",
+              "Match-compétitif",
+              "Réunion",
+              "Autre"
+            ],
+            "example": "Entrainement"
+          },
+          "description": {
+            "type": "string",
+            "example": "Entraînement hebdomadaire"
+          },
+          "group": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "date",
+          "place",
+          "type",
+          "description",
+          "group"
+        ]
+      },
+      "EventInput": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2025-03-15"
+          },
+          "place": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Gymnase municipal"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Entrainement",
+              "Match-amical",
+              "Match-compétitif",
+              "Réunion",
+              "Autre"
+            ],
+            "example": "Entrainement"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Entraînement du lundi"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Entraînement hebdomadaire"
+          }
+        },
+        "required": [
+          "date",
+          "place",
+          "type",
+          "name",
+          "description"
+        ]
+      },
+      "EventPatchInput": {
+        "type": "object",
+        "properties": {
+          "date": {
+            "type": "string",
+            "format": "date",
+            "example": "2025-03-15"
+          },
+          "place": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Gymnase municipal"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "Entrainement",
+              "Match-amical",
+              "Match-compétitif",
+              "Réunion",
+              "Autre"
+            ],
+            "example": "Entrainement"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Entraînement du lundi"
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Entraînement hebdomadaire"
+          },
+          "group": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          }
+        },
+        "required": [
+          "group"
+        ]
+      },
+      "RegisterParticipationInput": {
+        "type": "object",
+        "properties": {
+          "participate": {
+            "type": "string",
+            "enum": [
+              "true",
+              "false"
+            ],
+            "example": "true"
+          }
+        },
+        "required": [
+          "participate"
+        ]
+      },
+      "ParticipantListItem": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          },
+          "event": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          },
+          "participe": {
+            "type": "boolean",
+            "example": true
+          },
+          "user": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          }
+        },
+        "required": [
+          "id",
+          "event",
+          "participe",
+          "user"
+        ]
+      },
+      "GroupDetails": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          },
+          "name": {
+            "type": "string",
+            "example": "Équipe A"
+          },
+          "owner": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "owner"
+        ]
+      },
+      "GroupInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Équipe A"
+          },
+          "owner": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "example": [
+              "6ac8c78e50318b28d457048f"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "owner"
+        ]
+      },
+      "GroupPatchInput": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "example": "Équipe B"
+          },
+          "owner": {
+            "type": "string",
+            "pattern": "^[0-9a-f]{24}$",
+            "example": "6ac8c78e50318b28d457048f"
+          }
+        }
       }
     },
     "parameters": {}
@@ -475,11 +792,11 @@
                   "items": {
                     "type": "string",
                     "enum": [
-                      "Administrateur",
-                      "Entraineur",
-                      "Capitaine",
+                      "Visiteur",
                       "Adhérent",
-                      "Visiteur"
+                      "Capitaine",
+                      "Entraineur",
+                      "Administrateur"
                     ]
                   }
                 }
@@ -761,6 +1078,7 @@
           "Users"
         ],
         "summary": "Supprime le compte authentifié",
+        "description": "Supprime le compte, les refresh tokens, les appartenances aux groupes, les participations aux événements et transfère la propriété des groupes.",
         "security": [
           {
             "BearerAuth": []
@@ -1134,13 +1452,114 @@
         }
       }
     },
+    "/users/{id}/validate": {
+      "post": {
+        "operationId": "validateUser",
+        "tags": [
+          "Users"
+        ],
+        "summary": "Valide un compte visiteur et le passe au rôle Adhérent",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Utilisateur validé, sans contenu de réponse"
+          },
+          "400": {
+            "description": "Identifiant invalide ou utilisateur déjà validé",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentification requise ou token invalide",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Accès réservé aux administrateurs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Utilisateur introuvable",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Trop de requêtes",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Erreur interne du serveur",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/register": {
       "post": {
         "operationId": "register",
         "tags": [
           "Authentication"
         ],
-        "summary": "Crée un compte Visiteur et l’inscrit dans l’association indiquée",
+        "summary": "Crée un compte et l’inscrit dans l’association indiquée",
         "requestBody": {
           "required": true,
           "content": {
@@ -1509,6 +1928,1502 @@
           },
           "503": {
             "description": "Base de données indisponible",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/event": {
+      "get": {
+        "operationId": "listEvents",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Lists events",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The events",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/EventListItem"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createEvent",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Creates a new event with an auto-created group (requires Entraineur role or above)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Event created with its group, creator added as group member"
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Event already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/event/{id}": {
+      "get": {
+        "operationId": "getEvent",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Retrieves an event by its identifier",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The event",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid identifier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required, invalid token, or user not a member of the event group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateEvent",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Partially updates an event (requires Entraineur role or above)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/EventPatchInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Event updated, no response content"
+          },
+          "400": {
+            "description": "Invalid identifier or invalid group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event or group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteEvent",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Deletes an event and its group (requires Entraineur role or above, must be group owner)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Event and group deleted, no response content"
+          },
+          "400": {
+            "description": "Invalid identifier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions or not the group owner",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event or group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/event/{id}/register": {
+      "post": {
+        "operationId": "registerParticipation",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Registers participation for an event and joins the group if accepting (requires authentication, Visiteurs excluded from match compétitif)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterParticipationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Participation registered, no response content"
+          },
+          "400": {
+            "description": "Invalid identifier or participation state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Visiteur cannot participate in competitive matches",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User already registered for this event",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "operationId": "updateParticipation",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Updates participation for an event (requires authentication)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterParticipationInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Participation updated, no response content"
+          },
+          "400": {
+            "description": "Invalid identifier or participation state",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event not found or no existing participation",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/event/{id}/participants": {
+      "get": {
+        "operationId": "listEventParticipants",
+        "tags": [
+          "Events"
+        ],
+        "summary": "Lists participants of an event (requires authentication)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The participants",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ParticipantListItem"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid identifier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Event not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/group": {
+      "get": {
+        "operationId": "listGroups",
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Lists all groups (requires authentication)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The groups",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/GroupDetails"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "operationId": "createGroup",
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Creates a new group (requires Adhérent role or above)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Group created, no response content"
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Owner user or member not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Group already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/group/{id}": {
+      "get": {
+        "operationId": "getGroup",
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Retrieves a group by its identifier (requires authentication)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GroupDetails"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid identifier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "updateGroup",
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Partially updates a group (requires Adhérent role or above, must be owner)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GroupPatchInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": "Group updated, no response content"
+          },
+          "400": {
+            "description": "Invalid identifier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions or not the group owner",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group or owner user not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "deleteGroup",
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Deletes a group (requires Adhérent role or above, must be owner)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Group deleted, no response content"
+          },
+          "400": {
+            "description": "Invalid identifier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions or not the group owner",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/group/{id}/members": {
+      "get": {
+        "operationId": "listGroupMembers",
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Lists the members of a group (requires authentication)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The group members",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/UserDetails"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid identifier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/group/{id}/members/{userId}": {
+      "post": {
+        "operationId": "addGroupMember",
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Adds a user to a group (requires Adhérent role or above, must be owner)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "User added, no response content"
+          },
+          "400": {
+            "description": "Invalid identifier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Insufficient permissions or not the group owner",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group or user not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "User is already a member of the group",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "removeGroupMember",
+        "tags": [
+          "Groups"
+        ],
+        "summary": "Removes a user from a group (requires authentication, owner or self)",
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "id",
+            "in": "path"
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[0-9a-f]{24}$",
+              "example": "6ac8c78e50318b28d457048f"
+            },
+            "required": true,
+            "name": "userId",
+            "in": "path"
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User removed, no response content"
+          },
+          "400": {
+            "description": "Invalid identifier",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Authentication required or invalid token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Not the group owner and not removing self",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Group, user, or membership not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Too many requests",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
             "content": {
               "application/json": {
                 "schema": {

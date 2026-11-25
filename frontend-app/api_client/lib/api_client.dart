@@ -191,18 +191,36 @@ class ApiClient {
           return ChangePasswordInput.fromJson(value);
         case 'ErrorResponse':
           return ErrorResponse.fromJson(value);
+        case 'EventDetails':
+          return EventDetails.fromJson(value);
+        case 'EventInput':
+          return EventInput.fromJson(value);
+        case 'EventListItem':
+          return EventListItem.fromJson(value);
+        case 'EventPatchInput':
+          return EventPatchInput.fromJson(value);
+        case 'GroupDetails':
+          return GroupDetails.fromJson(value);
+        case 'GroupInput':
+          return GroupInput.fromJson(value);
+        case 'GroupPatchInput':
+          return GroupPatchInput.fromJson(value);
         case 'HealthResponse':
           return HealthResponse.fromJson(value);
         case 'LoginInput':
           return LoginInput.fromJson(value);
         case 'LoginResponse':
           return LoginResponse.fromJson(value);
+        case 'ParticipantListItem':
+          return ParticipantListItem.fromJson(value);
         case 'Publication':
           return Publication.fromJson(value);
         case 'RefreshTokenInput':
           return RefreshTokenInput.fromJson(value);
         case 'RegisterInput':
           return RegisterInput.fromJson(value);
+        case 'RegisterParticipationInput':
+          return RegisterParticipationInput.fromJson(value);
         case 'UpdateProfileInput':
           return UpdateProfileInput.fromJson(value);
         case 'UserDetails':

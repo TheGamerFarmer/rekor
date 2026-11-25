@@ -18,16 +18,16 @@ async function cleanupExpiredAccounts() {
     created_at: { $lt: twoMonthsAgo },
   });
 
-  const fourteenMonthsAgo = new Date(now);
-  fourteenMonthsAgo.setMonth(fourteenMonthsAgo.getMonth() - 14);
+  const thirtySixMonthsAgo = new Date(now);
+  thirtySixMonthsAgo.setMonth(thirtySixMonthsAgo.getMonth() - 36);
 
   const activeUserIds = await Registration.distinct('created_by', {
-    created_at: { $gte: fourteenMonthsAgo },
+    created_at: { $gte: thirtySixMonthsAgo },
   });
 
   const userResult = await User.deleteMany({
     role: { $ne: 'Visiteur' },
-    created_at: { $lt: fourteenMonthsAgo },
+    created_at: { $lt: thirtySixMonthsAgo },
     _id: { $nin: activeUserIds },
   });
 

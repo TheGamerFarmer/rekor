@@ -5,7 +5,7 @@ const {
   OpenAPIRegistry,
   OpenApiGeneratorV3,
 } = require('@asteasolutions/zod-to-openapi');
-const { USER_ROLE, USER_PRONOUN } = require('../db/enums');
+const { USER_ROLE, USER_PRONOUN, EVENT_TYPE } = require('../db/enums');
 const { version } = require('../package.json');
 
 extendZodWithOpenApi(z);
@@ -47,19 +47,19 @@ const RegisterInput = z
 
 const UpdateProfileInput = z
   .object({
-    name: z.string().min(1).optional(),
-    firstName: z.string().min(1).optional(),
-    phoneNumber: z.string().optional(),
-    birthday: z.iso.date().optional(),
-    pronoun: Pronoun.optional(),
-    medicalCertificate: z.boolean().optional(),
-    rightOfPublicity: z.boolean().optional(),
+    email: z.email().optional().openapi({ example: 'ada@exemple.fr' }),
+    name: z.string().min(1).optional().openapi({ example: 'Lovelace' }),
+    firstName: z.string().min(1).optional().openapi({ example: 'Ada' }),
+    phoneNumber: z.string().optional().openapi({ example: '0612345678' }),
+    birthday: z.iso.date().optional().openapi({ example: '1815-12-10' }),
+    pronoun: Pronoun.optional().openapi({ example: 'Elle' }),
+    medicalCertificate: z.boolean().optional().openapi({ example: false }),
+    rightOfPublicity: z.boolean().optional().openapi({ example: false }),
   })
   .openapi('UpdateProfileInput');
 
 const AdminUpdateProfileInput = UpdateProfileInput.extend({
-  email: z.email().optional(),
-  role: Role,
+  role: Role.openapi({ example: USER_ROLE.ADHERENT }),
 }).openapi('AdminUpdateProfileInput');
 
 const LoginInput = z
@@ -81,8 +81,8 @@ const RefreshTokenInput = z
 
 const ChangePasswordInput = z
   .object({
-    old_password: z.string().min(1),
-    new_password: z.string().min(1),
+    old_password: z.string().min(1).openapi({ example: 'ancien-mot-de-passe' }),
+    new_password: z.string().min(1).openapi({ example: 'nouveau-mot-de-passe' }),
   })
   .openapi('ChangePasswordInput');
 
@@ -143,6 +143,99 @@ const ErrorResponse = z.object({ message: z.string() }).openapi('ErrorResponse')
 const json = (schema) => ({ 'application/json': { schema } });
 /** @param {string} description */
 const failure = (description) => ({ description, content: json(ErrorResponse) });
+
+const EventId = z
+  .string()
+  .regex(/^[0-9a-f]{24}$/)
+  .openapi({ example: '6ac8c78e50318b28d457048f' });
+
+const EventType = z.enum(Object.values(EVENT_TYPE)).openapi({ example: 'Entrainement' });
+
+const EventListItem = z
+  .object({
+    id: EventId,
+    name: z.string().openapi({ example: 'Entraînement du lundi' }),
+    date: z.iso.datetime().openapi({ example: '2025-03-15T00:00:00.000Z' }),
+    place: z.string().openapi({ example: 'Gymnase municipal' }),
+    type: EventType,
+    description: z.string().openapi({ example: 'Entraînement hebdomadaire' }),
+    group: EventId,
+  })
+  .openapi('EventListItem');
+
+const EventDetails = EventListItem.openapi('EventDetails');
+
+const UserId = z
+  .string()
+  .regex(/^[0-9a-f]{24}$/)
+  .openapi({ example: '6ac8c78e50318b28d457048f' });
+
+const GroupId = z
+  .string()
+  .regex(/^[0-9a-f]{24}$/)
+  .openapi({ example: '6ac8c78e50318b28d457048f' });
+
+const GroupDetails = z
+  .object({
+    id: GroupId,
+    name: z.string().openapi({ example: 'Équipe A' }),
+    owner: UserId,
+  })
+  .openapi('GroupDetails');
+
+const GroupInput = z
+  .object({
+    name: z.string().min(1).openapi({ example: 'Équipe A' }),
+    owner: UserId,
+    members: z
+      .array(UserId)
+      .optional()
+      .openapi({ example: ['6ac8c78e50318b28d457048f'] }),
+  })
+  .openapi('GroupInput');
+
+const GroupPatchInput = z
+  .object({
+    name: z.string().min(1).optional().openapi({ example: 'Équipe B' }),
+    owner: UserId.optional(),
+  })
+  .openapi('GroupPatchInput');
+
+const EventInput = z
+  .object({
+    date: z.iso.date().openapi({ example: '2025-03-15' }),
+    place: z.string().min(1).openapi({ example: 'Gymnase municipal' }),
+    type: EventType,
+    name: z.string().min(1).openapi({ example: 'Entraînement du lundi' }),
+    description: z.string().min(1).openapi({ example: 'Entraînement hebdomadaire' }),
+  })
+  .openapi('EventInput');
+
+const EventPatchInput = z
+  .object({
+    date: z.iso.date().optional().openapi({ example: '2025-03-15' }),
+    place: z.string().min(1).optional().openapi({ example: 'Gymnase municipal' }),
+    type: EventType.optional(),
+    name: z.string().min(1).optional().openapi({ example: 'Entraînement du lundi' }),
+    description: z.string().min(1).optional().openapi({ example: 'Entraînement hebdomadaire' }),
+    group: EventId,
+  })
+  .openapi('EventPatchInput');
+
+const RegisterParticipationInput = z
+  .object({
+    participate: z.enum(['true', 'false']).openapi({ example: 'true' }),
+  })
+  .openapi('RegisterParticipationInput');
+
+const ParticipantListItem = z
+  .object({
+    id: Id,
+    event: EventId,
+    participe: z.boolean().openapi({ example: true }),
+    user: UserId,
+  })
+  .openapi('ParticipantListItem');
 
 // ---------- Routes ----------
 registry.registerPath({
@@ -246,6 +339,9 @@ registry.registerPath({
   operationId: 'deleteMyProfile',
   tags: ['Users'],
   summary: 'Supprime le compte authentifié',
+  description:
+    'Supprime le compte, les refresh tokens, les appartenances aux groupes, ' +
+    'les participations aux événements et transfère la propriété des groupes.',
   security: [{ BearerAuth: [] }],
   responses: {
     204: { description: 'Compte supprimé, sans contenu de réponse' },
@@ -321,10 +417,30 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'post',
+  path: '/users/{id}/validate',
+  operationId: 'validateUser',
+  tags: ['Users'],
+  summary: 'Valide un compte visiteur et le passe au rôle Adhérent',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ id: Id }) },
+  responses: {
+    204: { description: 'Utilisateur validé, sans contenu de réponse' },
+    400: failure('Identifiant invalide ou utilisateur déjà validé'),
+    401: failure('Authentification requise ou token invalide'),
+    403: failure('Accès réservé aux administrateurs'),
+    404: failure('Utilisateur introuvable'),
+    429: failure('Trop de requêtes'),
+    503: failure('Base de données indisponible'),
+    500: failure('Erreur interne du serveur'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
   path: '/auth/register',
   operationId: 'register',
   tags: ['Authentication'],
-  summary: 'Crée un compte Visiteur et l’inscrit dans l’association indiquée',
+  summary: 'Crée un compte et l’inscrit dans l’association indiquée',
   request: { body: { required: true, content: json(RegisterInput) } },
   responses: {
     201: { description: 'Compte créé, sans contenu de réponse' },
@@ -401,6 +517,323 @@ registry.registerPath({
     429: failure('Trop de requêtes'),
     503: failure('Base de données indisponible'),
     500: failure('Erreur interne ou configuration d’authentification indisponible'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/event',
+  operationId: 'listEvents',
+  tags: ['Events'],
+  summary: 'Lists events',
+  security: [{ BearerAuth: [] }],
+  responses: {
+    200: { description: 'The events', content: json(z.array(EventListItem)) },
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/event/{id}',
+  operationId: 'getEvent',
+  tags: ['Events'],
+  summary: 'Retrieves an event by its identifier',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ id: EventId }) },
+  responses: {
+    200: { description: 'The event', content: json(EventDetails) },
+    400: failure('Invalid identifier'),
+    401: failure('Authentication required, invalid token, or user not a member of the event group'),
+    403: failure('Insufficient permissions'),
+    404: failure('Event not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/event',
+  operationId: 'createEvent',
+  tags: ['Events'],
+  summary: 'Creates a new event with an auto-created group (requires Entraineur role or above)',
+  security: [{ BearerAuth: [] }],
+  request: {
+    body: { required: true, content: json(EventInput) },
+  },
+  responses: {
+    201: { description: 'Event created with its group, creator added as group member' },
+    400: failure('Invalid request body'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions'),
+    409: failure('Event already exists'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'patch',
+  path: '/event/{id}',
+  operationId: 'updateEvent',
+  tags: ['Events'],
+  summary: 'Partially updates an event (requires Entraineur role or above)',
+  security: [{ BearerAuth: [] }],
+  request: {
+    params: z.object({ id: EventId }),
+    body: { required: true, content: json(EventPatchInput) },
+  },
+  responses: {
+    204: { description: 'Event updated, no response content' },
+    400: failure('Invalid identifier or invalid group'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions'),
+    404: failure('Event or group not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/event/{id}',
+  operationId: 'deleteEvent',
+  tags: ['Events'],
+  summary:
+    'Deletes an event and its group (requires Entraineur role or above, must be group owner)',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ id: EventId }) },
+  responses: {
+    204: { description: 'Event and group deleted, no response content' },
+    400: failure('Invalid identifier'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions or not the group owner'),
+    404: failure('Event or group not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/event/{id}/register',
+  operationId: 'registerParticipation',
+  tags: ['Events'],
+  summary:
+    'Registers participation for an event and joins the group if accepting (requires authentication, Visiteurs excluded from match compétitif)',
+  security: [{ BearerAuth: [] }],
+  request: {
+    params: z.object({ id: EventId }),
+    body: { required: true, content: json(RegisterParticipationInput) },
+  },
+  responses: {
+    201: { description: 'Participation registered, no response content' },
+    400: failure('Invalid identifier or participation state'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Visiteur cannot participate in competitive matches'),
+    404: failure('Event not found'),
+    409: failure('User already registered for this event'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'put',
+  path: '/event/{id}/register',
+  operationId: 'updateParticipation',
+  tags: ['Events'],
+  summary: 'Updates participation for an event (requires authentication)',
+  security: [{ BearerAuth: [] }],
+  request: {
+    params: z.object({ id: EventId }),
+    body: { required: true, content: json(RegisterParticipationInput) },
+  },
+  responses: {
+    204: { description: 'Participation updated, no response content' },
+    400: failure('Invalid identifier or participation state'),
+    401: failure('Authentication required or invalid token'),
+    404: failure('Event not found or no existing participation'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/event/{id}/participants',
+  operationId: 'listEventParticipants',
+  tags: ['Events'],
+  summary: 'Lists participants of an event (requires authentication)',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ id: EventId }) },
+  responses: {
+    200: { description: 'The participants', content: json(z.array(ParticipantListItem)) },
+    400: failure('Invalid identifier'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions'),
+    404: failure('Event not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/group',
+  operationId: 'listGroups',
+  tags: ['Groups'],
+  summary: 'Lists all groups (requires authentication)',
+  security: [{ BearerAuth: [] }],
+  responses: {
+    200: { description: 'The groups', content: json(z.array(GroupDetails)) },
+    401: failure('Authentication required or invalid token'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/group/{id}',
+  operationId: 'getGroup',
+  tags: ['Groups'],
+  summary: 'Retrieves a group by its identifier (requires authentication)',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ id: GroupId }) },
+  responses: {
+    200: { description: 'The group', content: json(GroupDetails) },
+    400: failure('Invalid identifier'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions'),
+    404: failure('Group not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/group',
+  operationId: 'createGroup',
+  tags: ['Groups'],
+  summary: 'Creates a new group (requires Adhérent role or above)',
+  security: [{ BearerAuth: [] }],
+  request: {
+    body: { required: true, content: json(GroupInput) },
+  },
+  responses: {
+    201: { description: 'Group created, no response content' },
+    400: failure('Invalid request body'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions'),
+    404: failure('Owner user or member not found'),
+    409: failure('Group already exists'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'patch',
+  path: '/group/{id}',
+  operationId: 'updateGroup',
+  tags: ['Groups'],
+  summary: 'Partially updates a group (requires Adhérent role or above, must be owner)',
+  security: [{ BearerAuth: [] }],
+  request: {
+    params: z.object({ id: GroupId }),
+    body: { required: true, content: json(GroupPatchInput) },
+  },
+  responses: {
+    204: { description: 'Group updated, no response content' },
+    400: failure('Invalid identifier'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions or not the group owner'),
+    404: failure('Group or owner user not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/group/{id}',
+  operationId: 'deleteGroup',
+  tags: ['Groups'],
+  summary: 'Deletes a group (requires Adhérent role or above, must be owner)',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ id: GroupId }) },
+  responses: {
+    204: { description: 'Group deleted, no response content' },
+    400: failure('Invalid identifier'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions or not the group owner'),
+    404: failure('Group not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/group/{id}/members',
+  operationId: 'listGroupMembers',
+  tags: ['Groups'],
+  summary: 'Lists the members of a group (requires authentication)',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ id: GroupId }) },
+  responses: {
+    200: { description: 'The group members', content: json(z.array(UserDetails)) },
+    400: failure('Invalid identifier'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions'),
+    404: failure('Group not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/group/{id}/members/{userId}',
+  operationId: 'addGroupMember',
+  tags: ['Groups'],
+  summary: 'Adds a user to a group (requires Adhérent role or above, must be owner)',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ id: GroupId, userId: UserId }) },
+  responses: {
+    201: { description: 'User added, no response content' },
+    400: failure('Invalid identifier'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Insufficient permissions or not the group owner'),
+    404: failure('Group or user not found'),
+    409: failure('User is already a member of the group'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/group/{id}/members/{userId}',
+  operationId: 'removeGroupMember',
+  tags: ['Groups'],
+  summary: 'Removes a user from a group (requires authentication, owner or self)',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ id: GroupId, userId: UserId }) },
+  responses: {
+    204: { description: 'User removed, no response content' },
+    400: failure('Invalid identifier'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Not the group owner and not removing self'),
+    404: failure('Group, user, or membership not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
   },
 });
 

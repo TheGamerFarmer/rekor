@@ -1,11 +1,18 @@
-/** Roles a user can hold within the application, ordered from most to least privileged. */
+/** Roles a user can hold within the application, ordered from least to most privileged. */
 const USER_ROLE = {
-  ADMINISTRATEUR: 'Administrateur',
-  ENTRAINEUR: 'Entraineur',
-  CAPITAINE: 'Capitaine',
-  ADHERENT: 'Adhérent',
   VISITEUR: 'Visiteur',
+  ADHERENT: 'Adhérent',
+  CAPITAINE: 'Capitaine',
+  ENTRAINEUR: 'Entraineur',
+  ADMINISTRATEUR: 'Administrateur',
 };
+
+const USER_ROLE_HIERARCHY = Object.values(USER_ROLE);
+
+Object.defineProperty(USER_ROLE, 'compareTo', {
+  value: (a, b) => USER_ROLE_HIERARCHY.indexOf(a) - USER_ROLE_HIERARCHY.indexOf(b),
+  enumerable: false,
+});
 
 /** Accepted pronouns for a user profile. */
 const USER_PRONOUN = {
