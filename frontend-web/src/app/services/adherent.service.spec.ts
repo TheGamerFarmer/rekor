@@ -68,17 +68,27 @@ describe('AdherentService', () => {
   });
 
   it('marks missing legacy consents as unknown without changing known values', () => {
-    const { medicalCertificate, rightOfPublicity, ...legacyMember } = member;
+    const legacyMember = {
+      ...memberInput,
+      id: 4,
+      registrationStatus: 'finalized' as const,
+      medicalCertificateReceivedDate: null,
+      membershipPaymentDate: null,
+    };
     localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify([legacyMember, { ...legacyMember, id: 5, medicalCertificate }]),
+      JSON.stringify([
+        legacyMember,
+        { ...legacyMember, id: 5, medicalCertificate: true },
+        { ...legacyMember, id: 6, medicalCertificate: false, rightOfPublicity: false },
+      ]),
     );
 
     expect(new AdherentService().adherents()).toEqual([
       { ...legacyMember, medicalCertificate: null, rightOfPublicity: null },
-      { ...legacyMember, id: 5, medicalCertificate, rightOfPublicity: null },
+      { ...legacyMember, id: 5, medicalCertificate: true, rightOfPublicity: null },
+      { ...legacyMember, id: 6, medicalCertificate: false, rightOfPublicity: false },
     ]);
-    expect(rightOfPublicity).toBe(false);
   });
 
   it('ignores malformed or invalid stored members', () => {
