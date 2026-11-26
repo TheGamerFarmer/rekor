@@ -1,17 +1,68 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ComponentActualite } from './component-actualite';
 import { actualites, type Actualite } from './actualites.data';
+import { signal } from '@angular/core';
+import { UserDetails } from '../../api/model/userDetails';
+import { AuthService } from '../../services/auth.service';
+import { ActualiteService } from '../../services/actualite.service';
 
 describe('ComponentActualite', () => {
   let fixture: ComponentFixture<ComponentActualite>;
+  const isAuthenticated = signal(false);
+  const role = signal<UserDetails.RoleEnum | null>(null);
 
   beforeEach(async () => {
+    localStorage.removeItem('rekor-actualites');
+    isAuthenticated.set(false);
+    role.set(null);
     await TestBed.configureTestingModule({
       imports: [ComponentActualite],
+      providers: [{ provide: AuthService, useValue: { isAuthenticated, role } }],
     }).compileComponents();
 
     fixture = TestBed.createComponent(ComponentActualite);
     fixture.detectChanges();
+  });
+
+  it('shows the creation link only to authenticated administrators', () => {
+    const creationLink = () =>
+      fixture.nativeElement.querySelector('a[href="/admin/actualites/nouveau"]');
+    expect(creationLink()).toBeNull();
+    isAuthenticated.set(true);
+    for (const otherRole of [
+      UserDetails.RoleEnum.Entraineur,
+      UserDetails.RoleEnum.Capitaine,
+      UserDetails.RoleEnum.Adhrent,
+    ]) {
+      role.set(otherRole);
+      fixture.detectChanges();
+      expect(creationLink()).toBeNull();
+    }
+    role.set(UserDetails.RoleEnum.Administrateur);
+    fixture.detectChanges();
+    expect(creationLink()).not.toBeNull();
+    isAuthenticated.set(false);
+    fixture.detectChanges();
+    expect(creationLink()).toBeNull();
+  });
+
+  it('displays newly added news at the beginning of the list', () => {
+    TestBed.inject(ActualiteService).add({
+      titre: 'Une nouvelle actualité',
+      summary: 'Résumé',
+      image: '/images/volley2.jpg',
+      date: '2026-12-01',
+      association: 'Gières Volley-Ball',
+      corps: 'Contenu',
+    });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.news-card h2')?.textContent).toContain(
+      'Une nouvelle actualité',
+    );
+    expect(fixture.nativeElement.querySelector('.news-link a')?.getAttribute('href')).toBe(
+      '/actualites/5',
+    );
+    localStorage.removeItem('rekor-actualites');
   });
 
   it('renders the club news with their images and destinations', () => {

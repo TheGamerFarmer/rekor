@@ -7,6 +7,7 @@ export interface TreasuryTransaction {
   category: string;
   description: string;
   amount: number;
+  document?: File;
 }
 
 export interface BankOperation {

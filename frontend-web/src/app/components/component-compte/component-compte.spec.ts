@@ -95,7 +95,9 @@ describe('ComponentCompte', () => {
     date.dispatchEvent(new Event('input', { bubbles: true }));
     expect(date.value).toBe('2026-11-24');
     expect(submit?.disabled).toBe(false);
-    expect(fixture.nativeElement.textContent).toContain('le remettre directement au club');
+    expect(fixture.nativeElement.textContent).toContain(
+      'Le dépôt du certificat depuis votre compte n’est pas encore disponible.',
+    );
   });
 
   it('requires consent before attempting to transmit a certificate', () => {
@@ -120,7 +122,9 @@ describe('ComponentCompte', () => {
 
     submit.click();
     fixture.detectChanges();
-    expect(fixture.nativeElement.querySelector('[role="alert"]')).toBeNull();
+    expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
+      'Le certificat n’a pas été transmis',
+    );
 
     consent.click();
     fixture.detectChanges();
@@ -130,6 +134,71 @@ describe('ComponentCompte', () => {
     expect(fixture.nativeElement.querySelector('[role="alert"]').textContent).toContain(
       'Cochez la case autorisant la collecte',
     );
+  });
+
+  it('accepts a certificate dated exactly three years ago and rejects an older date', () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date(2026, 10, 25, 12));
+      component['profileRole'].set(UserDetails.RoleEnum.Adhrent);
+      fixture.detectChanges();
+      const date = fixture.nativeElement.querySelector('#certificate-date') as HTMLInputElement;
+      const consent = fixture.nativeElement.querySelector(
+        '[formControlName="healthData"]',
+      ) as HTMLInputElement;
+      const submit = Array.from(
+        fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>,
+      ).find((button) => button.textContent?.includes('Transmettre le certificat'))!;
+      consent.click();
+      expect(date.min).toBe('2023-11-25');
+
+      date.value = '2023-11-24';
+      date.dispatchEvent(new Event('input', { bubbles: true }));
+      submit.click();
+      fixture.detectChanges();
+      expect(date.getAttribute('aria-invalid')).toBe('true');
+      expect(fixture.nativeElement.textContent).toContain(
+        'La date du certificat doit être comprise entre aujourd’hui et trois ans auparavant.',
+      );
+      expect(fixture.nativeElement.textContent).not.toContain('Le certificat n’a pas été transmis');
+
+      date.value = '2023-11-25';
+      date.dispatchEvent(new Event('input', { bubbles: true }));
+      submit.click();
+      fixture.detectChanges();
+      expect(date.getAttribute('aria-invalid')).toBe('false');
+      expect(fixture.nativeElement.textContent).toContain('Le certificat n’a pas été transmis');
+
+      expect(date.max).toBe('2026-11-25');
+      date.value = '2026-11-26';
+      date.dispatchEvent(new Event('input', { bubbles: true }));
+      submit.click();
+      fixture.detectChanges();
+      expect(date.getAttribute('aria-invalid')).toBe('true');
+      expect(fixture.nativeElement.textContent).not.toContain('Le certificat n’a pas été transmis');
+
+      date.value = '2026-11-25';
+      date.dispatchEvent(new Event('input', { bubbles: true }));
+      submit.click();
+      fixture.detectChanges();
+      expect(date.getAttribute('aria-invalid')).toBe('false');
+      expect(fixture.nativeElement.textContent).toContain('Le certificat n’a pas été transmis');
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('uses the last day of February for the three-year limit on leap day', () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(new Date(2028, 1, 29, 12));
+      component['profileRole'].set(UserDetails.RoleEnum.Adhrent);
+      fixture.detectChanges();
+      const date = fixture.nativeElement.querySelector('#certificate-date') as HTMLInputElement;
+      expect(date.min).toBe('2025-02-28');
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('shows the certificate card for every non-visitor role', () => {

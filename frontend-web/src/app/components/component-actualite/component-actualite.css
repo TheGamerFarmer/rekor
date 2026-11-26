@@ -15,6 +15,12 @@
   gap: 22px;
 }
 
+.news-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 24px;
+}
+
 .news-card {
   position: relative;
   isolation: isolate;

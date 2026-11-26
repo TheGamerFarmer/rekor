@@ -81,6 +81,15 @@
             placeholder="Ex : Adhésion saison 2026/2027"
           />
         </label>
+        <label class="document-field" for="income-document">
+          Justificatif (facultatif)
+          <input
+            id="income-document"
+            type="file"
+            accept=".pdf,image/jpeg,image/png"
+            (change)="onDocumentChange('income', $event)"
+          />
+        </label>
       </div>
       <button class="add-button" type="submit">
         <span aria-hidden="true">＋</span> Ajouter la recette
@@ -121,6 +130,15 @@
             placeholder="Ex : Ballons pour le club"
           />
         </label>
+        <label class="document-field" for="expense-document">
+          Justificatif (facultatif)
+          <input
+            id="expense-document"
+            type="file"
+            accept=".pdf,image/jpeg,image/png"
+            (change)="onDocumentChange('expense', $event)"
+          />
+        </label>
       </div>
       <button class="add-button" type="submit">
         <span aria-hidden="true">＋</span> Ajouter la dépense
@@ -141,6 +159,7 @@
               <th>Catégorie</th>
               <th>Description</th>
               <th>Montant</th>
+              <th>Justificatif</th>
             </tr>
           </thead>
           <tbody>
@@ -152,10 +171,24 @@
                 <td class="amount income-amount">
                   + {{ transaction.amount | currency: 'EUR' : 'symbol' : '1.0-2' : 'fr-FR' }}
                 </td>
+                <td>
+                  @if (transaction.document) {
+                    <button
+                      class="document-download"
+                      type="button"
+                      [attr.aria-label]="'Télécharger ' + transaction.document.name"
+                      (click)="downloadDocument(transaction)"
+                    >
+                      Télécharger
+                    </button>
+                  } @else {
+                    —
+                  }
+                </td>
               </tr>
             } @empty {
               <tr>
-                <td class="empty-row" colspan="4">Aucune recette pour {{ year() }}.</td>
+                <td class="empty-row" colspan="5">Aucune recette pour {{ year() }}.</td>
               </tr>
             }
           </tbody>
@@ -179,6 +212,7 @@
               <th>Catégorie</th>
               <th>Description</th>
               <th>Montant</th>
+              <th>Justificatif</th>
             </tr>
           </thead>
           <tbody>
@@ -190,10 +224,24 @@
                 <td class="amount expense-amount">
                   − {{ transaction.amount | currency: 'EUR' : 'symbol' : '1.0-2' : 'fr-FR' }}
                 </td>
+                <td>
+                  @if (transaction.document) {
+                    <button
+                      class="document-download"
+                      type="button"
+                      [attr.aria-label]="'Télécharger ' + transaction.document.name"
+                      (click)="downloadDocument(transaction)"
+                    >
+                      Télécharger
+                    </button>
+                  } @else {
+                    —
+                  }
+                </td>
               </tr>
             } @empty {
               <tr>
-                <td class="empty-row" colspan="4">Aucune dépense pour {{ year() }}.</td>
+                <td class="empty-row" colspan="5">Aucune dépense pour {{ year() }}.</td>
               </tr>
             }
           </tbody>

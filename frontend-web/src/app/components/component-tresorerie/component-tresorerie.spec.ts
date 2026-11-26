@@ -23,6 +23,12 @@ describe('ComponentTresorerie', () => {
     expect(page.querySelectorAll('.history-card tbody tr')).toHaveLength(6);
     expect(page.querySelectorAll('input[type="date"]')).toHaveLength(2);
     expect(page.textContent).toContain('Nourriture/ Boisson');
+    const yearOptions = Array.from(
+      page.querySelector('[aria-label="Année du bilan"]')!.querySelectorAll('option'),
+    );
+    expect(yearOptions).toHaveLength(10);
+    expect(yearOptions[0].value).toBe(String(new Date().getFullYear()));
+    expect(yearOptions[9].value).toBe(String(new Date().getFullYear() - 9));
     const expenseOptions = Array.from(
       page.querySelectorAll('.entry-form select')[1].querySelectorAll('option'),
     ).map((option) => option.textContent);
@@ -36,6 +42,7 @@ describe('ComponentTresorerie', () => {
       category: 'Don',
       amount: 50,
       description: 'Don du tournoi',
+      document: null,
     });
     (
       fixture.nativeElement.querySelector('.entry-form button[type="submit"]') as HTMLButtonElement
@@ -45,6 +52,7 @@ describe('ComponentTresorerie', () => {
       category: 'Matériel',
       amount: 25,
       description: 'Ballon',
+      document: null,
     });
     (
       fixture.nativeElement.querySelectorAll(
@@ -85,6 +93,7 @@ describe('ComponentTresorerie', () => {
       category: 'Don',
       amount: 0,
       description: '',
+      document: null,
     });
     (
       fixture.nativeElement.querySelector('.entry-form button[type="submit"]') as HTMLButtonElement
@@ -93,6 +102,46 @@ describe('ComponentTresorerie', () => {
 
     expect(component['totalIncome']()).toBe(2450);
     expect(component['statusMessage']()).toContain('supérieur à zéro');
+  });
+
+  it('keeps an optional supporting document and lets the user download it', () => {
+    const component = fixture.componentInstance;
+    const file = new File(['facture'], 'facture.pdf', { type: 'application/pdf' });
+    const input = fixture.nativeElement.querySelector('#income-document') as HTMLInputElement;
+    Object.defineProperty(input, 'files', { configurable: true, value: [file] });
+    input.dispatchEvent(new Event('change'));
+    component['incomeForm'].patchValue({
+      date: '2026-11-24',
+      category: 'Autre',
+      amount: 35,
+      description: 'Achat club',
+    });
+
+    (
+      fixture.nativeElement.querySelector('.entry-form button[type="submit"]') as HTMLButtonElement
+    ).click();
+    fixture.detectChanges();
+
+    const transaction = component['incomes']().find(
+      ({ description }) => description === 'Achat club',
+    );
+    expect(transaction?.document).toBe(file);
+    const createObjectURL = vi.spyOn(URL, 'createObjectURL').mockReturnValue('blob:document');
+    const revokeObjectURL = vi.spyOn(URL, 'revokeObjectURL').mockImplementation(() => undefined);
+    const click = vi
+      .spyOn(HTMLAnchorElement.prototype, 'click')
+      .mockImplementation(() => undefined);
+
+    (fixture.nativeElement.querySelector('.document-download') as HTMLButtonElement).click();
+
+    expect(createObjectURL).toHaveBeenCalledWith(file);
+    expect(click).toHaveBeenCalled();
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:document');
+    expect(component['statusMessage']()).toContain('facture.pdf téléchargé');
+
+    createObjectURL.mockRestore();
+    revokeObjectURL.mockRestore();
+    click.mockRestore();
   });
 
   it('filters the balance by year and toggles longer histories', () => {

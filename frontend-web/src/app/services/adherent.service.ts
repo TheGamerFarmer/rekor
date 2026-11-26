@@ -15,6 +15,17 @@ export type RegistrationStatus = (typeof REGISTRATION_STATUSES)[number];
 export const MEMBER_PRONOUNS = ['Il', 'Elle', 'Iel', 'Autre'] as const;
 export type MemberPronoun = (typeof MEMBER_PRONOUNS)[number];
 
+export const MAX_PAYMENT_DOCUMENT_SIZE = 1024 * 1024;
+export interface PaymentDocument {
+  name: string;
+  data: string;
+}
+
+export interface PaymentDetails {
+  comment: string;
+  document: PaymentDocument | null;
+}
+
 export interface Adherent {
   id: number;
   lastName: string;
@@ -28,6 +39,7 @@ export interface Adherent {
   medicalCertificate: boolean | null;
   medicalCertificateReceivedDate: string | null;
   membershipPaymentDate: string | null;
+  paymentDetails?: PaymentDetails;
   rightOfPublicity: boolean | null;
 }
 
@@ -37,6 +49,7 @@ export type AdherentInput = Omit<
   | 'medicalCertificate'
   | 'medicalCertificateReceivedDate'
   | 'membershipPaymentDate'
+  | 'paymentDetails'
   | 'rightOfPublicity'
 >;
 
@@ -189,7 +202,7 @@ export class AdherentService {
     );
   }
 
-  confirmRequirement(id: number, requirement: 'certificate' | 'payment', date: string): void {
+  confirmPayment(id: number, date: string, paymentDetails?: PaymentDetails): void {
     const member = this.members().find((item) => item.id === id);
     if (!member || member.registrationStatus !== 'validated') {
       throw new Error('Seule une inscription validée peut être confirmée.');
@@ -197,18 +210,17 @@ export class AdherentService {
     if (!isValidConfirmationDate(date)) {
       throw new Error('La date de confirmation est invalide.');
     }
-    if (requirement === 'certificate' && member.medicalCertificate !== true) {
-      throw new Error('Le consentement à la collecte du certificat est requis.');
+    if (paymentDetails && !isPaymentDetails(paymentDetails)) {
+      throw new Error('Les informations du paiement sont invalides.');
     }
-    const field =
-      requirement === 'certificate' ? 'medicalCertificateReceivedDate' : 'membershipPaymentDate';
-    if (member[field] !== null) {
+    if (member.membershipPaymentDate !== null) {
       throw new Error('Cette confirmation a déjà été enregistrée.');
     }
-    const updated = { ...member, [field]: date };
-    if (updated.medicalCertificateReceivedDate && updated.membershipPaymentDate) {
-      updated.registrationStatus = 'finalized';
-    }
+    const updated = {
+      ...member,
+      membershipPaymentDate: date,
+      ...(paymentDetails ? { paymentDetails } : {}),
+    };
     this.updateMembers(this.members().map((item) => (item.id === id ? updated : item)));
   }
 
@@ -248,6 +260,26 @@ export class AdherentService {
       return [];
     }
   }
+}
+
+function isPaymentDetails(value: unknown): value is PaymentDetails {
+  if (!value || typeof value !== 'object') return false;
+  const details = value as Record<string, unknown>;
+  if (typeof details['comment'] !== 'string' || details['comment'].length > 1000) return false;
+  if (details['document'] === null) return true;
+  if (!details['document'] || typeof details['document'] !== 'object') return false;
+  const document = details['document'] as Record<string, unknown>;
+  if (typeof document['name'] !== 'string' || !document['name']) return false;
+  if (typeof document['data'] !== 'string') return false;
+  const match =
+    /^data:(application\/pdf|image\/jpeg|image\/png);base64,([A-Za-z0-9+/]*={0,2})$/.exec(
+      document['data'],
+    );
+  if (!match) return false;
+  const base64 = match[2];
+  if (base64.length % 4 !== 0) return false;
+  const size = (base64.length * 3) / 4 - (base64.endsWith('==') ? 2 : base64.endsWith('=') ? 1 : 0);
+  return size <= MAX_PAYMENT_DOCUMENT_SIZE;
 }
 
 /** Migrates a stored member from the legacy birth-year and roles fields. */
@@ -311,6 +343,7 @@ function isAdherent(value: unknown): value is Adherent {
     (member['membershipPaymentDate'] === null ||
       (typeof member['membershipPaymentDate'] === 'string' &&
         isValidStoredDate(member['membershipPaymentDate']))) &&
+    (member['paymentDetails'] === undefined || isPaymentDetails(member['paymentDetails'])) &&
     (typeof member['rightOfPublicity'] === 'boolean' || member['rightOfPublicity'] === null) &&
     REGISTRATION_STATUSES.includes(member['registrationStatus'] as RegistrationStatus)
   );

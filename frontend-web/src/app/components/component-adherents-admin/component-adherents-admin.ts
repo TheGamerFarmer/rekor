@@ -13,11 +13,13 @@ import { Button } from '../component-button/button';
 import {
   AdherentService,
   isValidConfirmationDate,
+  MAX_PAYMENT_DOCUMENT_SIZE,
   MEMBER_PRONOUNS,
   MEMBER_ROLES,
   type Adherent,
   type MemberPronoun,
   type MemberRole,
+  type PaymentDocument,
   type RegistrationStatus,
 } from '../../services/adherent.service';
 
@@ -34,6 +36,8 @@ export class ComponentAdherentsAdmin {
   protected readonly editingId = signal<number | null>(null);
   protected readonly isFormVisible = signal(false);
   protected readonly submitted = signal(false);
+  protected readonly paymentErrors = signal<Record<number, string>>({});
+  protected readonly paymentSaving = signal<ReadonlySet<number>>(new Set());
   protected readonly currentDate = this.formatDate(new Date());
   protected readonly pronouns = MEMBER_PRONOUNS;
   protected readonly roles: readonly MemberRole[] = MEMBER_ROLES;
@@ -138,18 +142,81 @@ export class ComponentAdherentsAdmin {
     this.adherentService.remove(id);
   }
 
-  protected confirmRequirement(
+  protected async confirmPayment(
     member: Adherent,
-    requirement: 'certificate' | 'payment',
     dateInput: HTMLInputElement,
-  ): void {
+    commentInput: HTMLTextAreaElement,
+    documentInput: HTMLInputElement,
+  ): Promise<void> {
+    if (this.paymentSaving().has(member.id)) return;
+    this.paymentErrors.update((errors) => ({ ...errors, [member.id]: '' }));
     if (!isValidConfirmationDate(dateInput.value)) {
       dateInput.setCustomValidity('Saisissez une date valide qui ne soit pas dans le futur.');
       dateInput.reportValidity();
       dateInput.setCustomValidity('');
       return;
     }
-    this.adherentService.confirmRequirement(member.id, requirement, dateInput.value);
+
+    const file = documentInput.files?.[0];
+    if (
+      file &&
+      (!['application/pdf', 'image/jpeg', 'image/png'].includes(file.type) ||
+        file.size > MAX_PAYMENT_DOCUMENT_SIZE)
+    ) {
+      this.paymentErrors.update((errors) => ({
+        ...errors,
+        [member.id]: 'Le justificatif doit être un PDF, JPEG ou PNG de 1 Mo maximum.',
+      }));
+      return;
+    }
+
+    const date = dateInput.value;
+    const comment = commentInput.value.trim();
+    this.paymentSaving.update((saving) => new Set(saving).add(member.id));
+    try {
+      const document = file ? await this.readPaymentDocument(file) : null;
+      this.adherentService.confirmPayment(member.id, date, { comment, document });
+    } catch {
+      this.paymentErrors.update((errors) => ({
+        ...errors,
+        [member.id]:
+          'Impossible de confirmer le paiement ou d’enregistrer le justificatif. Vérifiez le fichier et l’espace disponible dans votre navigateur.',
+      }));
+    } finally {
+      this.paymentSaving.update((saving) => {
+        const next = new Set(saving);
+        next.delete(member.id);
+        return next;
+      });
+    }
+  }
+
+  protected downloadPaymentDocument(document: PaymentDocument): void {
+    const [header, base64] = document.data.split(',');
+    const mimeType = header.slice(5, header.indexOf(';'));
+    const bytes = Uint8Array.from(atob(base64), (character) => character.charCodeAt(0));
+    const url = URL.createObjectURL(new Blob([bytes], { type: mimeType }));
+    const link = window.document.createElement('a');
+    link.href = url;
+    link.download = document.name;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private readPaymentDocument(file: File): Promise<PaymentDocument> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        if (typeof reader.result === 'string') {
+          resolve({ name: file.name, data: reader.result });
+        } else {
+          reject(new Error('Lecture du justificatif impossible.'));
+        }
+      };
+      reader.onerror = () => reject(reader.error);
+      reader.onabort = () => reject(new Error('Lecture du justificatif interrompue.'));
+      reader.readAsDataURL(file);
+    });
   }
 
   /** Resets and hides the member form. */

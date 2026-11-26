@@ -5,6 +5,7 @@ import { ComponentCompte } from './components/component-compte/component-compte'
 import { ComponentConnexion } from './components/component-connexion/component-connexion';
 import { ComponentActualite } from './components/component-actualite/component-actualite';
 import { ComponentActualiteDetail } from './components/component-actualite-detail/component-actualite-detail';
+import { ComponentActualiteAdmin } from './components/component-actualite-admin/component-actualite-admin';
 import { ComponentInscription } from './components/component-inscription/component-inscription';
 import { ComponentClub } from './components/component-club/component-club';
 import { ComponentEvenement } from './components/component-evenement/component-evenement';
@@ -26,6 +27,11 @@ export const routes: Routes = [
   { path: 'connexion', component: ComponentConnexion },
   { path: 'actualites', component: ComponentActualite },
   { path: 'actualites/:id', component: ComponentActualiteDetail },
+  {
+    path: 'admin/actualites/nouveau',
+    component: ComponentActualiteAdmin,
+    canActivate: [administratorGuard],
+  },
   { path: 'inscription', component: ComponentInscription },
   { path: 'politique-confidentialite', component: ComponentPolitique },
   { path: 'reglement-interieur', component: ComponentReglement },

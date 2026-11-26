@@ -5,6 +5,14 @@
 />
 
 <main class="actualites-page">
+  @if (actualiteService.hasStorageError()) {
+    <p role="alert">Impossible de charger les actualités enregistrées dans ce navigateur.</p>
+  }
+  @if (canCreateNews()) {
+    <div class="news-actions">
+      <app-button href="/admin/actualites/nouveau" text="Ajouter une actualité"></app-button>
+    </div>
+  }
   <section class="news-list" aria-label="Actualités du club">
     @for (actualite of visibleActualites(); track actualite.id) {
       <article
