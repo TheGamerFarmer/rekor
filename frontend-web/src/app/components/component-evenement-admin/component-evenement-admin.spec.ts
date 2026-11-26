@@ -32,6 +32,7 @@ describe('ComponentEvenementAdmin', () => {
   });
 
   it('requires the event form fields', () => {
+    expect(fixture.nativeElement.querySelectorAll('.required-marker').length).toBe(7);
     fixture.nativeElement.querySelector('button[type="submit"]').click();
     fixture.detectChanges();
 

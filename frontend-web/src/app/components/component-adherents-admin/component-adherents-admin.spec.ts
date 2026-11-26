@@ -142,10 +142,18 @@ describe('ComponentAdherentsAdmin', () => {
     pendingFilter?.click();
     fixture.detectChanges();
 
+    const row = fixture.nativeElement.querySelector('.member-row-validated') as HTMLElement;
+    expect(row.querySelector('.member-roles')?.textContent).toContain('Adhérent');
+    expect(row.querySelector('.member-icon-actions .edit-action')).not.toBeNull();
+    expect(row.querySelector('.member-icon-actions .delete-action')).not.toBeNull();
+    expect(row.querySelector('.confirmation-form')).not.toBeNull();
     expect(fixture.nativeElement.querySelector('#certificate-date-3')).toBeNull();
     expect(
       fixture.nativeElement.querySelector('[aria-label^="Confirmer la réception"]'),
     ).toBeNull();
+    expect(
+      fixture.nativeElement.querySelector('label[for="payment-date-3"] .required-marker'),
+    ).not.toBeNull();
     const paymentDate = fixture.nativeElement.querySelector('#payment-date-3') as HTMLInputElement;
     expect(paymentDate.required).toBe(true);
     paymentDate.value = '2024-01-03';
@@ -303,6 +311,7 @@ describe('ComponentAdherentsAdmin', () => {
     expect(fixture.nativeElement.querySelector('#email').value).toBe('sam@example.fr');
     expect(fixture.nativeElement.querySelector('#birth-date').type).toBe('date');
     expect(fixture.nativeElement.querySelector('#birth-date').value).toBe('2000-05-12');
+    expect(fixture.nativeElement.querySelectorAll('.required-marker').length).toBe(6);
     expect(fixture.nativeElement.querySelector('#member-form-title').textContent).toContain(
       'Modifier',
     );

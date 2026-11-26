@@ -9,36 +9,42 @@
     <form [formGroup]="newsForm" (ngSubmit)="save()" novalidate>
       <div class="form-grid">
         <label class="field field-wide" for="titre">
-          Titre
-          <input id="titre" type="text" formControlName="titre" />
+          <span>Titre <span class="required-marker" aria-hidden="true">*</span></span>
+          <input id="titre" type="text" formControlName="titre" aria-required="true" />
           @if (newsForm.controls.titre.invalid && newsForm.controls.titre.touched) {
             <small>Le titre est obligatoire.</small>
           }
         </label>
         <label class="field field-wide" for="summary">
-          Résumé
-          <textarea id="summary" rows="3" formControlName="summary"></textarea>
+          <span>Résumé <span class="required-marker" aria-hidden="true">*</span></span>
+          <textarea id="summary" rows="3" formControlName="summary" aria-required="true"></textarea>
           @if (newsForm.controls.summary.invalid && newsForm.controls.summary.touched) {
             <small>Le résumé est obligatoire.</small>
           }
         </label>
         <label class="field field-wide" for="image">
-          Adresse de l'image
-          <input id="image" type="text" formControlName="image" placeholder="/images/volley2.jpg" />
+          <span>Adresse de l'image <span class="required-marker" aria-hidden="true">*</span></span>
+          <input
+            id="image"
+            type="text"
+            formControlName="image"
+            placeholder="/images/volley2.jpg"
+            aria-required="true"
+          />
           @if (newsForm.controls.image.invalid && newsForm.controls.image.touched) {
             <small>L'adresse de l'image est obligatoire.</small>
           }
         </label>
         <label class="field" for="date">
-          Date
-          <input id="date" type="date" formControlName="date" />
+          <span>Date <span class="required-marker" aria-hidden="true">*</span></span>
+          <input id="date" type="date" formControlName="date" aria-required="true" />
           @if (newsForm.controls.date.invalid && newsForm.controls.date.touched) {
             <small>La date est obligatoire.</small>
           }
         </label>
         <label class="field field-wide" for="corps">
-          Contenu
-          <textarea id="corps" rows="8" formControlName="corps"></textarea>
+          <span>Contenu <span class="required-marker" aria-hidden="true">*</span></span>
+          <textarea id="corps" rows="8" formControlName="corps" aria-required="true"></textarea>
           @if (newsForm.controls.corps.invalid && newsForm.controls.corps.touched) {
             <small>Le contenu est obligatoire.</small>
           }

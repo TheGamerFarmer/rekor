@@ -31,6 +31,10 @@
   font-weight: 600;
 }
 
+.required-marker {
+  color: #c62828;
+}
+
 .field-wide {
   grid-column: 1 / -1;
 }
