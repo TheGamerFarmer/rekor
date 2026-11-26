@@ -134,7 +134,11 @@
 
     <div class="member-list" role="list">
       @for (member of filteredAdherents(); track member.id) {
-        <article class="member-row" role="listitem">
+        <article
+          class="member-row"
+          [class.member-row-validated]="member.registrationStatus === 'validated'"
+          role="listitem"
+        >
           <div class="member-information">
             <h2>{{ member.firstName }} {{ member.lastName }}</h2>
             <p>
@@ -222,7 +226,10 @@
                   "
                 >
                   <label class="field" [for]="'payment-date-' + member.id">
-                    Date de paiement de l’adhésion
+                    <span
+                      >Date de paiement de l’adhésion
+                      <span class="required-marker" aria-hidden="true">*</span></span
+                    >
                     <input
                       #paymentDate
                       [id]="'payment-date-' + member.id"
@@ -268,24 +275,26 @@
                 </form>
               }
             }
-            <button
-              class="icon-action edit-action"
-              type="button"
-              [attr.aria-label]="'Modifier ' + member.firstName + ' ' + member.lastName"
-              title="Modifier"
-              (click)="startEdit(member)"
-            >
-              <img src="/icons/crayon.png" alt="" aria-hidden="true" />
-            </button>
-            <button
-              class="icon-action delete-action"
-              type="button"
-              [attr.aria-label]="'Supprimer ' + member.firstName + ' ' + member.lastName"
-              title="Supprimer"
-              (click)="deleteMember(member.id)"
-            >
-              <img src="/icons/corbeille.png" alt="" aria-hidden="true" />
-            </button>
+            <div class="member-icon-actions">
+              <button
+                class="icon-action edit-action"
+                type="button"
+                [attr.aria-label]="'Modifier ' + member.firstName + ' ' + member.lastName"
+                title="Modifier"
+                (click)="startEdit(member)"
+              >
+                <img src="/icons/crayon.png" alt="" aria-hidden="true" />
+              </button>
+              <button
+                class="icon-action delete-action"
+                type="button"
+                [attr.aria-label]="'Supprimer ' + member.firstName + ' ' + member.lastName"
+                title="Supprimer"
+                (click)="deleteMember(member.id)"
+              >
+                <img src="/icons/corbeille.png" alt="" aria-hidden="true" />
+              </button>
+            </div>
           </div>
         </article>
       } @empty {
