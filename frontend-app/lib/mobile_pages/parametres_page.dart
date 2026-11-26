@@ -760,6 +760,7 @@ class _ChangerMotDePasseDialogState extends State<_ChangerMotDePasseDialog> {
     ));
   }
 
+  // Besoin de l'ancien mot de passe por valider le changement.
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
