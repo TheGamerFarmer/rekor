@@ -3,9 +3,10 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 import 'package:frontend_app/mobile_pages/login.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:rekor_api/api.dart' as generated;
 
+import '../api/api_client.dart';
 import '../layouts/main_layout.dart';
-import '../models/utilisateur.dart';
 
 const _jaune = Color(0xFFFFD60A);
 const _fondPopup = Color(0xFF1C1C1E);
@@ -19,15 +20,12 @@ class ParametresPage extends StatefulWidget {
 }
 
 class _ParametresPageState extends State<ParametresPage> {
-  // Utilisateur connecté (exemple, plus tard : celui de la connexion)
-  Utilisateur _utilisateur = const Utilisateur(
-    id: 1,
-    prenom: 'Lucie',
-    nom: 'Loury',
-    mail: 'lucie.loury@exemple.fr',
-    role: 'Joueur',
-    pronom: Pronom.elle,
-  );
+  generated.UserDetails? _profil;
+  bool _chargementProfil = true;
+  bool _enregistrementProfil = false;
+  bool _changementMotDePasse = false;
+  bool _suppressionCompte = false;
+  String? _erreurProfil;
 
   // Photo de profil choisie (null = initiales)
   Uint8List? _photo;
@@ -35,6 +33,37 @@ class _ParametresPageState extends State<ParametresPage> {
   // Notifications (plus tard : enregistrées sur l'API)
   bool _notifMessages = true;
   bool _notifEvenements = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _chargerProfil();
+  }
+
+  Future<void> _chargerProfil() async {
+    setState(() {
+      _chargementProfil = true;
+      _erreurProfil = null;
+    });
+    try {
+      final profil = await ApiClient.instance.getMyProfile();
+      if (!mounted) return;
+      if (profil == null) {
+        throw StateError('Le serveur a renvoyé un profil vide.');
+      }
+      setState(() {
+        _profil = profil;
+        _chargementProfil = false;
+      });
+    } catch (error) {
+      debugPrint('Erreur lors du chargement du profil : $error');
+      if (!mounted) return;
+      setState(() {
+        _erreurProfil = 'Impossible de charger le profil.';
+        _chargementProfil = false;
+      });
+    }
+  }
 
   // Ouvre la galerie et garde la photo choisie
   Future<void> _choisirPhoto() async {
@@ -65,47 +94,71 @@ class _ParametresPageState extends State<ParametresPage> {
   }
 
   Future<void> _modifierPrenom() async {
+    final profil = _profil!;
     final valeur = await _saisirTexte(
       titre: 'Prénom',
-      valeur: _utilisateur.prenom,
+      valeur: profil.firstName ?? '',
     );
     if (valeur == null || valeur.isEmpty || !mounted) return;
-    setState(() => _utilisateur = _utilisateur.copyWith(prenom: valeur));
-    // TODO : envoyer à l'API
+    await _enregistrerProfil(
+      generated.UpdateProfileInput(firstName: valeur),
+      (profil) => profil.firstName = valeur,
+    );
   }
 
   Future<void> _modifierNom() async {
-    final valeur = await _saisirTexte(titre: 'Nom', valeur: _utilisateur.nom);
+    final profil = _profil!;
+    final valeur = await _saisirTexte(titre: 'Nom', valeur: profil.name);
     if (valeur == null || valeur.isEmpty || !mounted) return;
-    setState(() => _utilisateur = _utilisateur.copyWith(nom: valeur));
-    // TODO : envoyer à l'API
+    await _enregistrerProfil(
+      generated.UpdateProfileInput(name: valeur),
+      (profil) => profil.name = valeur,
+    );
+  }
+
+  Future<void> _modifierMail() async {
+    final profil = _profil!;
+    final valeur = await _saisirTexte(
+      titre: 'Adresse mail',
+      valeur: profil.email,
+      clavier: TextInputType.emailAddress,
+    );
+    if (valeur == null || valeur.isEmpty || !mounted) return;
+    await _enregistrerProfil(
+      generated.UpdateProfileInput(email: valeur),
+      (profil) => profil.email = valeur,
+    );
   }
 
   Future<void> _modifierTel() async {
+    final profil = _profil!;
     final valeur = await _saisirTexte(
       titre: 'Téléphone',
-      valeur: _utilisateur.tel ?? '',
+      valeur: profil.phoneNumber ?? '',
       clavier: TextInputType.phone,
     );
     if (valeur == null || !mounted) return;
-    setState(() => _utilisateur = _utilisateur.copyWith(tel: valeur));
-    // TODO : envoyer à l'API
+    await _enregistrerProfil(
+      generated.UpdateProfileInput(phoneNumber: valeur),
+      (profil) => profil.phoneNumber = valeur,
+    );
   }
 
   Future<void> _modifierPronom() async {
-    final choix = await showDialog<Pronom>(
+    final profil = _profil!;
+    final choix = await showDialog<generated.UserDetailsPronounEnum>(
       context: context,
       builder: (context) => SimpleDialog(
         backgroundColor: _fondPopup,
         title: const Text('Pronom', style: TextStyle(color: Colors.white)),
         children: [
-          for (final p in Pronom.values)
+          for (final p in generated.UserDetailsPronounEnum.values)
             SimpleDialogOption(
               onPressed: () => Navigator.pop(context, p),
               child: Text(
-                p.libelle,
+                p.toString(),
                 style: TextStyle(
-                  color: p == _utilisateur.pronom ? _jaune : Colors.white,
+                  color: p == profil.pronoun ? _jaune : Colors.white,
                 ),
               ),
             ),
@@ -113,14 +166,20 @@ class _ParametresPageState extends State<ParametresPage> {
       ),
     );
     if (choix == null || !mounted) return;
-    setState(() => _utilisateur = _utilisateur.copyWith(pronom: choix));
-    // TODO : envoyer à l'API
+    final pronom = generated.UpdateProfileInputPronounEnum.values.firstWhere(
+      (pronom) => pronom.toString() == choix.toString(),
+    );
+    await _enregistrerProfil(
+      generated.UpdateProfileInput(pronoun: pronom),
+      (profil) => profil.pronoun = choix,
+    );
   }
 
   Future<void> _modifierDateNaissance() async {
+    final profil = _profil!;
     final date = await showDatePicker(
       context: context,
-      initialDate: _utilisateur.dateNaissance ?? DateTime(2000),
+      initialDate: profil.birthday ?? DateTime(2000),
       firstDate: DateTime(1900),
       lastDate: DateTime.now(),
       builder: (context, child) => Theme(
@@ -135,8 +194,114 @@ class _ParametresPageState extends State<ParametresPage> {
       ),
     );
     if (date == null || !mounted) return;
-    setState(() => _utilisateur = _utilisateur.copyWith(dateNaissance: date));
-    // TODO : envoyer à l'API
+    await _enregistrerProfil(
+      generated.UpdateProfileInput(birthday: date),
+      (profil) => profil.birthday = date,
+    );
+  }
+
+  Future<void> _enregistrerProfil(
+    generated.UpdateProfileInput modifications,
+    void Function(generated.UserDetails profil) appliquer,
+  ) async {
+    final profil = _profil!;
+    final requete = generated.UpdateProfileInput(
+      email: modifications.email ?? profil.email,
+      name: modifications.name ?? profil.name,
+      firstName: modifications.firstName ?? profil.firstName,
+      phoneNumber: modifications.phoneNumber ?? profil.phoneNumber,
+      birthday: modifications.birthday ?? profil.birthday,
+      pronoun:
+          modifications.pronoun ??
+          generated.UpdateProfileInputPronounEnum.values.firstWhere(
+            (pronom) => pronom.toString() == profil.pronoun.toString(),
+          ),
+      medicalCertificate: profil.medicalCertificate,
+      rightOfPublicity: profil.rightOfPublicity,
+    );
+
+    setState(() => _enregistrementProfil = true);
+    try {
+      await ApiClient.instance.updateMyProfile(requete);
+      if (!mounted) return;
+      setState(() {
+        appliquer(profil);
+        _enregistrementProfil = false;
+      });
+    } catch (error) {
+      debugPrint('Erreur lors de la mise à jour du profil : $error');
+      if (!mounted) return;
+      setState(() => _enregistrementProfil = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Impossible d’enregistrer les modifications du profil.',
+          ),
+        ),
+      );
+    }
+  }
+
+  Future<void> _modifierMotDePasse() async {
+    final informations = await showDialog<({String ancien, String nouveau})>(
+      context: context,
+      builder: (context) => const _ChangerMotDePasseDialog(),
+    );
+    if (informations == null || !mounted) return;
+
+    setState(() => _changementMotDePasse = true);
+    try {
+      await ApiClient.instance.changeMyPassword(
+        oldPassword: informations.ancien,
+        newPassword: informations.nouveau,
+      );
+      if (!mounted) return;
+      setState(() => _changementMotDePasse = false);
+      await _afficherResultat(
+        succes: true,
+        message: 'Mot de passe modifié avec succès.',
+      );
+    } catch (error) {
+      debugPrint('Erreur lors du changement de mot de passe : $error');
+      if (!mounted) return;
+      setState(() => _changementMotDePasse = false);
+      await _afficherResultat(
+        succes: false,
+        message: 'Impossible de modifier le mot de passe.',
+      );
+    }
+  }
+
+  Future<void> _afficherResultat({
+    required bool succes,
+    required String message,
+  }) {
+    return showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: _fondPopup,
+        icon: Icon(
+          succes ? Icons.check_circle_outline : Icons.error_outline,
+          color: succes ? _jaune : Colors.redAccent,
+          size: 40,
+        ),
+        content: Text(
+          message,
+          textAlign: TextAlign.center,
+          style: const TextStyle(color: Colors.white, fontSize: 16),
+        ),
+        actions: [
+          FilledButton(
+            onPressed: () => Navigator.pop(context),
+            style: FilledButton.styleFrom(
+              backgroundColor: _jaune,
+              foregroundColor: Colors.black,
+            ),
+            child: const Text('Fermer'),
+          ),
+        ],
+      ),
+    );
   }
 
   // Popup de confirmation : renvoie true si l'utilisateur confirme
@@ -169,18 +334,8 @@ class _ParametresPageState extends State<ParametresPage> {
   }
 
   Future<void> _seDeconnecter() async {
-    final ok = await _confirmer(
-      titre: 'Se déconnecter ?',
-      message: 'Vous devrez vous reconnecter pour accéder à l\'application.',
-      bouton: 'Se déconnecter',
-    );
-
-    // Annulé (ou page fermée) : on ne fait rien
-    if (!ok || !mounted) return;
-
-    // TODO : effacer la session (token, utilisateur connecté...)
-
-    // Retour à la page de connexion, en vidant l'historique des pages
+    await ApiClient.instance.logout();
+    if (!mounted) return;
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(builder: (context) => const MyLoginPage()),
@@ -197,7 +352,21 @@ class _ParametresPageState extends State<ParametresPage> {
       bouton: 'Supprimer',
     );
     if (!ok || !mounted) return;
-    // TODO : prévenir l'API, puis revenir à la page de connexion
+    setState(() => _suppressionCompte = true);
+    try {
+      await ApiClient.instance.deleteMyProfile();
+    } catch (error) {
+      debugPrint('Erreur lors de la suppression du compte : $error');
+      if (!mounted) return;
+      setState(() => _suppressionCompte = false);
+      await _afficherResultat(
+        succes: false,
+        message: 'Impossible de supprimer le compte. Veuillez réessayer.',
+      );
+      return;
+    }
+    if (!mounted) return;
+    await _seDeconnecter();
   }
 
   // ---------- Affichage ----------
@@ -211,15 +380,15 @@ class _ParametresPageState extends State<ParametresPage> {
 
   // "LL" pour Lucie Loury
   String _initiales() {
-    final p = _utilisateur.prenom;
-    final n = _utilisateur.nom;
-    return '${p.isEmpty ? '' : p[0]}${n.isEmpty ? '' : n[0]}'.toUpperCase();
+    final profil = _profil!;
+    final prenom = profil.firstName ?? '';
+    final nom = profil.name;
+    return '${prenom.isEmpty ? '' : prenom[0]}${nom.isEmpty ? '' : nom[0]}'
+        .toUpperCase();
   }
 
   @override
   Widget build(BuildContext context) {
-    final u = _utilisateur;
-
     return MainLayout(
       child: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(16, 130, 16, 130),
@@ -235,57 +404,75 @@ class _ParametresPageState extends State<ParametresPage> {
               ),
             ),
             const SizedBox(height: 24),
-            _enTete(),
-            const SizedBox(height: 32),
-
-            _titreSection('PROFIL'),
-            _carte([
-              _ligne(
-                icone: Icons.person_outline,
-                titre: 'Prénom',
-                valeur: u.prenom,
-                onTap: _modifierPrenom,
-              ),
-              _ligne(
-                icone: Icons.person_outline,
-                titre: 'Nom',
-                valeur: u.nom,
-                onTap: _modifierNom,
-              ),
-              _ligne(
-                icone: Icons.badge_outlined,
-                titre: 'Pronom',
-                valeur: u.pronom?.libelle ?? 'Non renseigné',
-                onTap: _modifierPronom,
-              ),
-              _ligne(
-                icone: Icons.phone_outlined,
-                titre: 'Téléphone',
-                valeur: (u.tel == null || u.tel!.isEmpty)
-                    ? 'Non renseigné'
-                    : u.tel!,
-                onTap: _modifierTel,
-              ),
-              _ligne(
-                icone: Icons.cake_outlined,
-                titre: 'Date de naissance',
-                valeur: u.dateNaissance == null
-                    ? 'Non renseignée'
-                    : _formaterDate(u.dateNaissance!),
-                onTap: _modifierDateNaissance,
-              ),
-              // Lecture seule : pas de onTap
-              _ligne(
-                icone: Icons.mail_outline,
-                titre: 'Adresse mail',
-                valeur: u.mail ?? 'Non renseignée',
-              ),
-              _ligne(
-                icone: Icons.shield_outlined,
-                titre: 'Rôle',
-                valeur: u.role ?? 'Non renseigné',
-              ),
-            ]),
+            if (_chargementProfil)
+              const Center(child: CircularProgressIndicator())
+            else if (_erreurProfil != null)
+              Center(
+                child: Column(
+                  children: [
+                    Text(
+                      _erreurProfil!,
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                    TextButton(
+                      onPressed: _chargerProfil,
+                      child: const Text('Réessayer'),
+                    ),
+                  ],
+                ),
+              )
+            else if (_profil != null) ...[
+              _enTete(),
+              const SizedBox(height: 32),
+              _titreSection('PROFIL'),
+              _carte([
+                _ligne(
+                  icone: Icons.person_outline,
+                  titre: 'Prénom',
+                  valeur: _profil!.firstName ?? 'Non renseigné',
+                  onTap: _enregistrementProfil ? null : _modifierPrenom,
+                ),
+                _ligne(
+                  icone: Icons.person_outline,
+                  titre: 'Nom',
+                  valeur: _profil!.name,
+                  onTap: _enregistrementProfil ? null : _modifierNom,
+                ),
+                _ligne(
+                  icone: Icons.mail_outline,
+                  titre: 'Adresse mail',
+                  valeur: _profil!.email,
+                  onTap: _enregistrementProfil ? null : _modifierMail,
+                ),
+                _ligne(
+                  icone: Icons.badge_outlined,
+                  titre: 'Pronom',
+                  valeur: _profil!.pronoun.toString(),
+                  onTap: _enregistrementProfil ? null : _modifierPronom,
+                ),
+                _ligne(
+                  icone: Icons.phone_outlined,
+                  titre: 'Téléphone',
+                  valeur: _profil!.phoneNumber?.isNotEmpty == true
+                      ? _profil!.phoneNumber!
+                      : 'Non renseigné',
+                  onTap: _enregistrementProfil ? null : _modifierTel,
+                ),
+                _ligne(
+                  icone: Icons.cake_outlined,
+                  titre: 'Date de naissance',
+                  valeur: _profil!.birthday == null
+                      ? 'Non renseignée'
+                      : _formaterDate(_profil!.birthday!),
+                  onTap: _enregistrementProfil ? null : _modifierDateNaissance,
+                ),
+                _ligne(
+                  icone: Icons.shield_outlined,
+                  titre: 'Rôle',
+                  valeur: _profil!.role.toString(),
+                ),
+              ]),
+            ],
             const SizedBox(height: 32),
 
             _titreSection('NOTIFICATIONS'),
@@ -314,7 +501,15 @@ class _ParametresPageState extends State<ParametresPage> {
                 ),
               ),
               ListTile(
-                onTap: _supprimerCompte,
+                onTap: _changementMotDePasse ? null : _modifierMotDePasse,
+                leading: const Icon(Icons.lock_reset, color: Colors.white),
+                title: const Text(
+                  'Changer mon mot de passe',
+                  style: TextStyle(color: Colors.white),
+                ),
+              ),
+              ListTile(
+                onTap: _suppressionCompte ? null : _supprimerCompte,
                 leading: const Icon(
                   Icons.delete_forever,
                   color: Colors.redAccent,
@@ -323,6 +518,13 @@ class _ParametresPageState extends State<ParametresPage> {
                   'Supprimer mon compte',
                   style: TextStyle(color: Colors.redAccent),
                 ),
+                trailing: _suppressionCompte
+                    ? const SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : null,
               ),
             ]),
           ],
@@ -375,7 +577,7 @@ class _ParametresPageState extends State<ParametresPage> {
           ),
           const SizedBox(height: 12),
           Text(
-            _utilisateur.nomComplet,
+            '${_profil!.firstName ?? ''} ${_profil!.name}'.trim(),
             style: const TextStyle(
               color: Colors.white,
               fontSize: 22,
@@ -524,6 +726,126 @@ class _ChampTexteDialogState extends State<_ChampTexteDialog> {
           child: const Text('Enregistrer'),
         ),
       ],
+    );
+  }
+}
+
+class _ChangerMotDePasseDialog extends StatefulWidget {
+  const _ChangerMotDePasseDialog();
+
+  @override
+  State<_ChangerMotDePasseDialog> createState() =>
+      _ChangerMotDePasseDialogState();
+}
+
+class _ChangerMotDePasseDialogState extends State<_ChangerMotDePasseDialog> {
+  final _formKey = GlobalKey<FormState>();
+  final _ancienMotDePasse = TextEditingController();
+  final _nouveauMotDePasse = TextEditingController();
+  final _confirmation = TextEditingController();
+
+  @override
+  void dispose() {
+    _ancienMotDePasse.dispose();
+    _nouveauMotDePasse.dispose();
+    _confirmation.dispose();
+    super.dispose();
+  }
+
+  void _soumettre() {
+    if (!_formKey.currentState!.validate()) return;
+    Navigator.pop(context, (
+      ancien: _ancienMotDePasse.text,
+      nouveau: _nouveauMotDePasse.text,
+    ));
+  }
+
+  // Besoin de l'ancien mot de passe por valider le changement.
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      backgroundColor: _fondPopup,
+      title: const Text(
+        'Changer mon mot de passe',
+        style: TextStyle(color: Colors.white),
+      ),
+      content: Form(
+        key: _formKey,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _champMotDePasse(
+              controller: _ancienMotDePasse,
+              label: 'Ancien mot de passe',
+            ),
+            const SizedBox(height: 12),
+            _champMotDePasse(
+              controller: _nouveauMotDePasse,
+              label: 'Nouveau mot de passe',
+            ),
+            const SizedBox(height: 12),
+            _champMotDePasse(
+              controller: _confirmation,
+              label: 'Confirmer le nouveau mot de passe',
+              validator: (valeur) {
+                if (valeur == null || valeur.isEmpty) {
+                  return 'Veuillez confirmer le nouveau mot de passe.';
+                }
+                if (valeur != _nouveauMotDePasse.text) {
+                  return 'Les mots de passe ne correspondent pas.';
+                }
+                return null;
+              },
+            ),
+          ],
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.pop(context),
+          style: TextButton.styleFrom(foregroundColor: Colors.white70),
+          child: const Text('Annuler'),
+        ),
+        FilledButton(
+          onPressed: _soumettre,
+          style: FilledButton.styleFrom(
+            backgroundColor: _jaune,
+            foregroundColor: Colors.black,
+          ),
+          child: const Text('Enregistrer'),
+        ),
+      ],
+    );
+  }
+
+  Widget _champMotDePasse({
+    required TextEditingController controller,
+    required String label,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: true,
+      style: const TextStyle(color: Colors.white),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white70),
+        filled: true,
+        fillColor: Colors.white10,
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.white24),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(color: Colors.white54),
+        ),
+      ),
+      validator:
+          validator ??
+          (valeur) => valeur == null || valeur.isEmpty
+              ? 'Ce champ est obligatoire.'
+              : null,
     );
   }
 }

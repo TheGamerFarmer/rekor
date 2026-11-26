@@ -15,6 +15,22 @@ void main() {
       expect(find.text('Menu'), findsOneWidget);
     });
 
+    testWidgets('S’adapte à un écran de téléphone sans débordement', (
+      tester,
+    ) async {
+      await tester.binding.setSurfaceSize(const Size(320, 568));
+      addTearDown(() => tester.binding.setSurfaceSize(null));
+
+      await tester.pumpWidget(
+        MaterialApp(
+          home: Scaffold(body: AppMenu(onClose: () {})),
+        ),
+      );
+      await tester.pump();
+
+      expect(tester.takeException(), isNull);
+    });
+
     testWidgets('Affiche les icônes du menu', (tester) async {
       await tester.pumpWidget(
         MaterialApp(

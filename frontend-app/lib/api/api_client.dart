@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
 import 'package:http/http.dart' as http;
 import 'package:rekor_api/api.dart' as generated;
@@ -93,7 +95,43 @@ class ApiClient {
 
   /// Récupère le profil de l'utilisateur connecté.
   Future<generated.UserDetails?> getMyProfile() {
-    return authenticatedRequest(() => _users.getMyProfile());
+    return authenticatedRequest(() async {
+      final response = await _users.getMyProfileWithHttpInfo();
+      if (response.statusCode >= 400) {
+        throw generated.ApiException(response.statusCode, response.body);
+      }
+      if (response.body.isEmpty || response.statusCode == 204) return null;
+
+      final profile = jsonDecode(response.body) as Map<String, dynamic>;
+      profile['medicalCertificate'] ??= false;
+      profile['rightOfPublicity'] ??= false;
+      return generated.UserDetails.fromJson(profile);
+    });
+  }
+
+  /// Modifie les informations du profil de l'utilisateur connecté.
+  Future<void> updateMyProfile(generated.UpdateProfileInput profile) {
+    return authenticatedRequest(() => _users.updateMyProfile(profile));
+  }
+
+  /// Supprime le compte de l'utilisateur connecté.
+  Future<void> deleteMyProfile() {
+    return authenticatedRequest(() => _users.deleteMyProfile());
+  }
+
+  /// Modifie le mot de passe de l'utilisateur connecté.
+  Future<void> changeMyPassword({
+    required String oldPassword,
+    required String newPassword,
+  }) {
+    return authenticatedRequest(
+      () => _users.changeMyPassword(
+        generated.ChangePasswordInput(
+          oldPassword: oldPassword,
+          newPassword: newPassword,
+        ),
+      ),
+    );
   }
 
   /// Restaure la session utilisateur au démarrage de l'application.

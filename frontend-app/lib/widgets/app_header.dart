@@ -18,14 +18,6 @@ class AppHeader extends StatelessWidget {
           Semantics(
             button: true,
             label: 'Accueil',
-            /*onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const MyHomePage(title: 'Accueil'),
-                ),
-              );
-            },*/
             child: ExcludeSemantics(
               child: InkWell(
                 onTap: () {

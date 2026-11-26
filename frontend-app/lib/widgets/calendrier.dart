@@ -94,25 +94,32 @@ class _CalendrierState extends State<Calendrier> {
   // Flèches + nom du mois
   Widget _entete() {
     return Row(
-      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         IconButton(
           tooltip: 'Mois précédent',
           icon: const Icon(Icons.chevron_left, color: Colors.white),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints.tightFor(width: 40, height: 40),
           onPressed: () => _changerMois(-1),
         ),
-        InkWell(
-          onTap: _revenirAujourdhui,
-          borderRadius: BorderRadius.circular(8),
+        Expanded(
           child: SizedBox(
-            width: 170,
-            child: Text(
-              '${_nomsMois[_mois.month - 1]} ${_mois.year}',
-              textAlign: TextAlign.center,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
+            height: 48,
+            child: InkWell(
+              onTap: _revenirAujourdhui,
+              borderRadius: BorderRadius.circular(8),
+              child: Center(
+                child: Text(
+                  '${_nomsMois[_mois.month - 1]} ${_mois.year}',
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ),
@@ -121,6 +128,8 @@ class _CalendrierState extends State<Calendrier> {
           mouseCursor: SystemMouseCursors.click,
           tooltip: 'Mois suivant',
           icon: const Icon(Icons.chevron_right, color: Colors.white),
+          padding: EdgeInsets.zero,
+          constraints: const BoxConstraints.tightFor(width: 40, height: 40),
           onPressed: () => _changerMois(1),
         ),
       ],
