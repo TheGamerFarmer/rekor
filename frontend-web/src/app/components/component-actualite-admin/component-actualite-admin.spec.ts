@@ -32,6 +32,7 @@ describe('ComponentActualiteAdmin', () => {
   });
 
   it('requires every visible field and rejects whitespace-only content', () => {
+    expect(fixture.nativeElement.querySelectorAll('.required-marker').length).toBe(5);
     fixture.nativeElement.querySelector('button[type="submit"]').click();
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('small').length).toBe(5);

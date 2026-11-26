@@ -51,6 +51,10 @@
   font-weight: 600;
 }
 
+.required-marker {
+  color: var(--color-error);
+}
+
 input:not([type='checkbox']),
 select,
 textarea {

@@ -25,12 +25,13 @@
         <form [formGroup]="memberForm" (ngSubmit)="save()" novalidate>
           <div class="form-grid">
             <label class="field" for="last-name">
-              Nom
+              <span>Nom <span class="required-marker" aria-hidden="true">*</span></span>
               <input
                 id="last-name"
                 type="text"
                 formControlName="lastName"
                 autocomplete="family-name"
+                aria-required="true"
               />
               @if (submitted() && memberForm.controls.lastName.invalid) {
                 <small>Le nom est obligatoire.</small>
@@ -38,12 +39,13 @@
             </label>
 
             <label class="field" for="first-name">
-              Prénom
+              <span>Prénom <span class="required-marker" aria-hidden="true">*</span></span>
               <input
                 id="first-name"
                 type="text"
                 formControlName="firstName"
                 autocomplete="given-name"
+                aria-required="true"
               />
               @if (submitted() && memberForm.controls.firstName.invalid) {
                 <small>Le prénom est obligatoire.</small>
@@ -51,8 +53,8 @@
             </label>
 
             <label class="field" for="pronoun">
-              Pronom
-              <select id="pronoun" formControlName="pronoun">
+              <span>Pronom <span class="required-marker" aria-hidden="true">*</span></span>
+              <select id="pronoun" formControlName="pronoun" aria-required="true">
                 @for (pronoun of pronouns; track pronoun) {
                   <option [value]="pronoun">{{ pronoun }}</option>
                 }
@@ -74,24 +76,36 @@
             </label>
 
             <label class="field" for="phone">
-              Téléphone
-              <input id="phone" type="tel" formControlName="phone" autocomplete="tel" />
+              <span>Téléphone <span class="required-marker" aria-hidden="true">*</span></span>
+              <input
+                id="phone"
+                type="tel"
+                formControlName="phone"
+                autocomplete="tel"
+                aria-required="true"
+              />
               @if (submitted() && memberForm.controls.phone.invalid) {
                 <small>Saisissez un numéro de téléphone valide.</small>
               }
             </label>
 
             <label class="field" for="email">
-              E-mail
-              <input id="email" type="email" formControlName="email" autocomplete="email" />
+              <span>E-mail <span class="required-marker" aria-hidden="true">*</span></span>
+              <input
+                id="email"
+                type="email"
+                formControlName="email"
+                autocomplete="email"
+                aria-required="true"
+              />
               @if (submitted() && memberForm.controls.email.invalid) {
                 <small>Saisissez une adresse e-mail valide.</small>
               }
             </label>
 
             <label class="field" for="role">
-              Rôle
-              <select id="role" formControlName="role">
+              <span>Rôle <span class="required-marker" aria-hidden="true">*</span></span>
+              <select id="role" formControlName="role" aria-required="true">
                 <option value="">Sélectionner un rôle</option>
                 @if (
                   memberForm.controls.role.value && !roles.includes(memberForm.controls.role.value)
@@ -219,7 +233,7 @@
                     />
                   </label>
                   <label class="field" [for]="'payment-comment-' + member.id">
-                    Commentaire (facultatif)
+                    Commentaire
                     <textarea
                       #paymentComment
                       [id]="'payment-comment-' + member.id"
@@ -227,7 +241,7 @@
                     ></textarea>
                   </label>
                   <label class="field" [for]="'payment-document-' + member.id">
-                    Justificatif (facultatif, PDF, JPEG ou PNG, 1 Mo maximum)
+                    Justificatif (PDF, JPEG ou PNG, 1 Mo maximum)
                     <input
                       #paymentDocument
                       [id]="'payment-document-' + member.id"

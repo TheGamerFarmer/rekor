@@ -303,6 +303,7 @@ describe('ComponentAdherentsAdmin', () => {
     expect(fixture.nativeElement.querySelector('#email').value).toBe('sam@example.fr');
     expect(fixture.nativeElement.querySelector('#birth-date').type).toBe('date');
     expect(fixture.nativeElement.querySelector('#birth-date').value).toBe('2000-05-12');
+    expect(fixture.nativeElement.querySelectorAll('.required-marker').length).toBe(6);
     expect(fixture.nativeElement.querySelector('#member-form-title').textContent).toContain(
       'Modifier',
     );

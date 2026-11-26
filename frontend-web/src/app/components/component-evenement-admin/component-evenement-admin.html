@@ -13,16 +13,16 @@
     <form [formGroup]="eventForm" (ngSubmit)="save()" novalidate>
       <div class="form-grid">
         <label class="field field-wide" for="name">
-          Nom de l'événement
-          <input id="name" type="text" formControlName="name" />
+          <span>Nom de l'événement <span class="required-marker" aria-hidden="true">*</span></span>
+          <input id="name" type="text" formControlName="name" aria-required="true" />
           @if (eventForm.controls.name.invalid && eventForm.controls.name.touched) {
             <small>Le nom est obligatoire.</small>
           }
         </label>
 
         <label class="field" for="type">
-          Type
-          <select id="type" formControlName="type">
+          <span>Type <span class="required-marker" aria-hidden="true">*</span></span>
+          <select id="type" formControlName="type" aria-required="true">
             @for (type of eventTypes; track type) {
               <option [value]="type">{{ type }}</option>
             }
@@ -30,28 +30,39 @@
         </label>
 
         <label class="field" for="group">
-          Groupe
-          <input id="group" type="text" formControlName="group" placeholder="Ex. Seniors" />
+          <span>Groupe <span class="required-marker" aria-hidden="true">*</span></span>
+          <input
+            id="group"
+            type="text"
+            formControlName="group"
+            placeholder="Ex. Seniors"
+            aria-required="true"
+          />
         </label>
 
         <label class="field" for="date">
-          Date
-          <input id="date" type="date" formControlName="date" />
+          <span>Date <span class="required-marker" aria-hidden="true">*</span></span>
+          <input id="date" type="date" formControlName="date" aria-required="true" />
         </label>
 
         <label class="field" for="time">
-          Heure
-          <input id="time" type="time" formControlName="time" />
+          <span>Heure <span class="required-marker" aria-hidden="true">*</span></span>
+          <input id="time" type="time" formControlName="time" aria-required="true" />
         </label>
 
         <label class="field field-wide" for="place">
-          Lieu
-          <input id="place" type="text" formControlName="place" />
+          <span>Lieu <span class="required-marker" aria-hidden="true">*</span></span>
+          <input id="place" type="text" formControlName="place" aria-required="true" />
         </label>
 
         <label class="field field-wide" for="description">
-          Description
-          <textarea id="description" rows="5" formControlName="description"></textarea>
+          <span>Description <span class="required-marker" aria-hidden="true">*</span></span>
+          <textarea
+            id="description"
+            rows="5"
+            formControlName="description"
+            aria-required="true"
+          ></textarea>
           @if (eventForm.controls.description.invalid && eventForm.controls.description.touched) {
             <small>La description doit contenir au moins 10 caractères.</small>
           }
