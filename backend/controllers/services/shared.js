@@ -121,6 +121,13 @@ const toPublicGroup = (group) => ({
  */
 const toPublicGroupMember = toPublicUser;
 
+const toPublicMessage = (message) => ({
+  id: message._id.toString(),
+  body: message.body,
+  author: message.created_by.toString(),
+  date: message.created_at.toString(),
+});
+
 module.exports = {
   wrapAsync,
   isValidId,
@@ -130,4 +137,5 @@ module.exports = {
   toPublicParticipant,
   toPublicGroup,
   toPublicGroupMember,
+  toPublicMessage,
 };

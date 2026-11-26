@@ -3,6 +3,7 @@ const createAuthRouter = require('./auth');
 const createAssociationRouter = require('./association');
 const createEventsRouter = require('./event');
 const createGroupsRouter = require('./group');
+const createMessagesRouter = require('./message');
 const swaggerUi = require('swagger-ui-express');
 const { buildSpec } = require('../swagger/openapi');
 
@@ -26,6 +27,7 @@ function registerRoutes(app) {
   app.use('/association', createAssociationRouter());
   app.use('/event', createEventsRouter());
   app.use('/group', createGroupsRouter());
+  app.use('/group/:groupId/messages', createMessagesRouter());
 }
 
 module.exports = { registerSwagger, registerRoutes };

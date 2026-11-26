@@ -1,7 +1,5 @@
-const Event = require('../../db/models/event');
 const User = require('../../db/models/user');
-const Group = require('../../db/models/group');
-const GroupMembre = require('../../db/models/group_member');
+const Event = require('../../db/models/event');
 const Participant = require('../../db/models/participant');
 const groupService = require('./groupService');
 const { USER_ROLE, EVENT_TYPE } = require('../../db/enums');
@@ -77,7 +75,7 @@ async function updateEvent(id, { date, place, type, name, description, group }) 
   if (description) changes.description = description;
   changes.group = group;
 
-  const groupResult = await Group.findOne({ _id: { $eq: group } });
+  const groupResult = await groupService.getGroupById(group);
   if (!groupResult) return { error: 'GROUP_NOT_FOUND' };
 
   const result = await Event.updateOne({ _id: id }, { $set: changes });
@@ -134,13 +132,8 @@ async function registerParticipation(eventId, participate, senderId) {
   }
 
   if (participate) {
-    const existing = await GroupMembre.findOne({
-      group: { $eq: event.group },
-      user: { $eq: senderId },
-    });
-    if (!existing) {
-      await GroupMembre.create({ group: event.group, user: senderId });
-    }
+    const group = await groupService.getGroupById(event.group);
+    if (group) await groupService.addMemberToGroup(event.group, senderId, group.owner);
   }
 
   return { success: true };
@@ -164,6 +157,12 @@ async function updateParticipation(eventId, participate, senderId) {
   );
 
   if (result.matchedCount === 0) return { error: 'NON_PARTICIPATE' };
+
+  const group = await groupService.getGroupById(event.group);
+  if (group) {
+    if (participate) await groupService.addMemberToGroup(event.group, senderId, group.owner);
+    else await groupService.removeMemberFromGroup(event.group, senderId, group.owner);
+  }
 
   return { success: true };
 }

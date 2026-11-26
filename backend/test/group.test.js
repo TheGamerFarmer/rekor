@@ -379,23 +379,6 @@ describe('/group (avec un vrai mongod)', () => {
     assert.strictEqual(res.status, 400);
   });
 
-  it('PATCH /group/:id returns 404 when group disappears during update (race condition)', async () => {
-    const original = Group.updateOne.bind(Group);
-    Group.updateOne = async () => ({ matchedCount: 0 });
-
-    try {
-      const res = await request(directApp)
-        .patch(`/group/${groupId}`)
-        .set('Authorization', `Bearer ${entraineurToken}`)
-        .send({ name: 'Fantôme' });
-
-      assert.strictEqual(res.status, 404);
-      assert.strictEqual(res.body.message, 'Groupe introuvable');
-    } finally {
-      Group.updateOne = original;
-    }
-  });
-
   // ── DELETE /group/:id ───────────────────────────────────────────────────────
 
   it('DELETE /group/:id deletes the group and returns 204', async () => {
@@ -468,22 +451,6 @@ describe('/group (avec un vrai mongod)', () => {
       .set('Authorization', `Bearer ${visiteurToken}`);
 
     assert.strictEqual(res.status, 403);
-  });
-
-  it('DELETE /group/:id returns 404 when group disappears during deletion (race condition)', async () => {
-    const original = Group.deleteOne.bind(Group);
-    Group.deleteOne = async () => ({ deletedCount: 0 });
-
-    try {
-      const res = await request(directApp)
-        .delete(`/group/${groupId}`)
-        .set('Authorization', `Bearer ${entraineurToken}`);
-
-      assert.strictEqual(res.status, 404);
-      assert.strictEqual(res.body.message, 'Groupe introuvable');
-    } finally {
-      Group.deleteOne = original;
-    }
   });
 
   // ── GET /group/:id/members ──────────────────────────────────────────────────

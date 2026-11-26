@@ -222,6 +222,26 @@ const EventPatchInput = z
   })
   .openapi('EventPatchInput');
 
+const MessageId = z
+  .string()
+  .regex(/^[0-9a-f]{24}$/)
+  .openapi({ example: '6ac8c78e50318b28d457048f' });
+
+const MessageDetails = z
+  .object({
+    id: MessageId,
+    body: z.string().openapi({ example: 'Bonjour tout le monde !' }),
+    author: UserId,
+    date: z.string().openapi({ example: '2025-03-15T10:30:00.000Z' }),
+  })
+  .openapi('MessageDetails');
+
+const MessageInput = z
+  .object({
+    body: z.string().min(1).openapi({ example: 'Bonjour tout le monde !' }),
+  })
+  .openapi('MessageInput');
+
 const RegisterParticipationInput = z
   .object({
     participate: z.enum(['true', 'false']).openapi({ example: 'true' }),
@@ -832,6 +852,111 @@ registry.registerPath({
     401: failure('Authentication required or invalid token'),
     403: failure('Not the group owner and not removing self'),
     404: failure('Group, user, or membership not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+// ---------- Messages ----------
+
+registry.registerPath({
+  method: 'get',
+  path: '/group/{groupId}/messages',
+  operationId: 'listGroupMessages',
+  tags: ['Messages'],
+  summary: 'Lists all messages in a group (requires authentication + group membership)',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ groupId: GroupId }) },
+  responses: {
+    200: { description: 'The messages', content: json(z.array(MessageDetails)) },
+    400: failure('Invalid group identifier'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Not a member of the group'),
+    404: failure('Group not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'get',
+  path: '/group/{groupId}/messages/{id}',
+  operationId: 'getGroupMessage',
+  tags: ['Messages'],
+  summary: 'Retrieves a message by its identifier (requires authentication + group membership)',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ groupId: GroupId, id: MessageId }) },
+  responses: {
+    200: { description: 'The message', content: json(MessageDetails) },
+    400: failure('Invalid identifier'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Not a member of the group'),
+    404: failure('Group or message not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'post',
+  path: '/group/{groupId}/messages',
+  operationId: 'createGroupMessage',
+  tags: ['Messages'],
+  summary: 'Creates a new message in the group (requires authentication + group membership)',
+  security: [{ BearerAuth: [] }],
+  request: {
+    params: z.object({ groupId: GroupId }),
+    body: { required: true, content: json(MessageInput) },
+  },
+  responses: {
+    201: { description: 'Message created, no response content' },
+    400: failure('Invalid request body'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Not a member of the group'),
+    404: failure('Group not found'),
+    409: failure('Duplicate message'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'patch',
+  path: '/group/{groupId}/messages/{id}',
+  operationId: 'updateGroupMessage',
+  tags: ['Messages'],
+  summary: 'Updates a message (requires authentication + group membership, must be author)',
+  security: [{ BearerAuth: [] }],
+  request: {
+    params: z.object({ groupId: GroupId, id: MessageId }),
+    body: { required: true, content: json(MessageInput) },
+  },
+  responses: {
+    204: { description: 'Message updated, no response content' },
+    400: failure('Invalid identifier or request body'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Not a member of the group or not the message author'),
+    404: failure('Group or message not found'),
+    429: failure('Too many requests'),
+    500: failure('Internal server error'),
+  },
+});
+
+registry.registerPath({
+  method: 'delete',
+  path: '/group/{groupId}/messages/{id}',
+  operationId: 'deleteGroupMessage',
+  tags: ['Messages'],
+  summary:
+    'Deletes a message (requires authentication + group membership, must be author or admin)',
+  security: [{ BearerAuth: [] }],
+  request: { params: z.object({ groupId: GroupId, id: MessageId }) },
+  responses: {
+    204: { description: 'Message deleted, no response content' },
+    400: failure('Invalid identifier'),
+    401: failure('Authentication required or invalid token'),
+    403: failure('Not a member of the group or not the message author'),
+    404: failure('Group or message not found'),
     429: failure('Too many requests'),
     500: failure('Internal server error'),
   },

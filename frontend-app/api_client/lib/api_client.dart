@@ -211,6 +211,10 @@ class ApiClient {
           return LoginInput.fromJson(value);
         case 'LoginResponse':
           return LoginResponse.fromJson(value);
+        case 'MessageDetails':
+          return MessageDetails.fromJson(value);
+        case 'MessageInput':
+          return MessageInput.fromJson(value);
         case 'ParticipantListItem':
           return ParticipantListItem.fromJson(value);
         case 'Publication':

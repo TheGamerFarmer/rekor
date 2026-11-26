@@ -68,21 +68,37 @@ describe('collections sport', () => {
     beforeEach(() => Match.deleteMany({}));
 
     it('accepte un document valide', async () => {
-      await assert.doesNotReject(Match.create({ event: new ObjectId(), opponent: 'Équipe B' }));
+      await assert.doesNotReject(
+        Match.create({ event: new ObjectId(), team: new ObjectId(), opponent: 'Équipe B' }),
+      );
     });
 
     it('refuse sans event', async () => {
-      await assert.rejects(Match.create({ opponent: 'Équipe B' }), /ValidationError/);
+      await assert.rejects(
+        Match.create({ team: new ObjectId(), opponent: 'Équipe B' }),
+        /ValidationError/,
+      );
+    });
+
+    it('refuse sans team', async () => {
+      await assert.rejects(
+        Match.create({ event: new ObjectId(), opponent: 'Équipe B' }),
+        /ValidationError/,
+      );
     });
 
     it('refuse sans opponent', async () => {
-      await assert.rejects(Match.create({ event: new ObjectId() }), /ValidationError/);
+      await assert.rejects(
+        Match.create({ event: new ObjectId(), team: new ObjectId() }),
+        /ValidationError/,
+      );
     });
 
     it('refuse le doublon event+opponent', async () => {
       const event = new ObjectId();
-      await Match.create({ event, opponent: 'Équipe B' });
-      await assert.rejects(Match.create({ event, opponent: 'Équipe B' }), /duplicate key/);
+      const team = new ObjectId();
+      await Match.create({ event, team, opponent: 'Équipe B' });
+      await assert.rejects(Match.create({ event, team, opponent: 'Équipe B' }), /duplicate key/);
     });
   });
 

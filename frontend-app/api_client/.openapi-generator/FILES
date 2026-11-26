@@ -5,6 +5,7 @@ lib/api/authentication_api.dart
 lib/api/events_api.dart
 lib/api/groups_api.dart
 lib/api/health_api.dart
+lib/api/messages_api.dart
 lib/api/users_api.dart
 lib/api_client.dart
 lib/api_exception.dart
@@ -28,6 +29,8 @@ lib/model/group_patch_input.dart
 lib/model/health_response.dart
 lib/model/login_input.dart
 lib/model/login_response.dart
+lib/model/message_details.dart
+lib/model/message_input.dart
 lib/model/participant_list_item.dart
 lib/model/publication.dart
 lib/model/refresh_token_input.dart
