@@ -215,18 +215,30 @@ describe('AdherentService', () => {
   it.each([null, '2024-01-02'])(
     'keeps payment-confirmed registrations validated even with legacy certificate date %s',
     (medicalCertificateReceivedDate) => {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify([
-          { ...member, registrationStatus: 'validated', medicalCertificateReceivedDate },
-        ]),
-      );
-      const service = new AdherentService();
-      service.confirmPayment(member.id, '2024-01-03');
-      const reloaded = new AdherentService().adherents()[0];
-      expect(reloaded.registrationStatus).toBe('validated');
-      expect(reloaded.medicalCertificateReceivedDate).toBe(medicalCertificateReceivedDate);
-      expect(reloaded.membershipPaymentDate).toBe('2024-01-03');
+      let stored = JSON.stringify([
+        { ...member, registrationStatus: 'validated', medicalCertificateReceivedDate },
+      ]);
+      const getItem = vi.spyOn(Storage.prototype, 'getItem').mockImplementation((key) => {
+        expect(key).toBe(STORAGE_KEY);
+        return stored;
+      });
+      const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation((key, value) => {
+        expect(key).toBe(STORAGE_KEY);
+        stored = value;
+      });
+
+      try {
+        const service = new AdherentService();
+        service.confirmPayment(member.id, '2024-01-03');
+        const reloaded = new AdherentService().adherents()[0];
+        expect(setItem).toHaveBeenCalledOnce();
+        expect(reloaded.registrationStatus).toBe('validated');
+        expect(reloaded.medicalCertificateReceivedDate).toBe(medicalCertificateReceivedDate);
+        expect(reloaded.membershipPaymentDate).toBe('2024-01-03');
+      } finally {
+        getItem.mockRestore();
+        setItem.mockRestore();
+      }
     },
   );
 
